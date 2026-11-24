@@ -219,3 +219,8 @@ Playwright safety: no test confirms on a demo exchange. The terminal test previe
 - Phase 4+: portfolio and positions glance screens, live tickers over WS, and order ticket → preview → confirm-token → submit → reconcile on demo.
 - Voice (STT provider), alerts.
 - Demo video script.
+
+## 2026-11-24 21:40 IST: demo video v2
+- v2 is a product video for everyday traders: natural voice (Chatterbox), first-person script, picture retimed to the voice, and a gesture inset (temple touchpad / R1 ring).
+- Output: `helm_demo_v2.mp4`, 2:49, 1080p30, −14.4 LUFS. Rendered locally; the mp4 is not committed. v1 is kept.
+- Sources are in `video/vo2`, `video/brand/film2.*`, `video/scripts/build_edl_v2.py` and `video/music/generate_music_v2.py`. Evidence is in `evidence/video/`.

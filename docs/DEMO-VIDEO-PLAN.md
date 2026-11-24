@@ -60,3 +60,22 @@ accounts are left flat afterwards (reduce-only closes / exact-quantity sell-back
 - Companion: `video/scripts/rec_companion.mjs`, a Playwright `recordVideo` at 1440×810 (Exchanges, Shield + Crypto-crash scenario, Trade-to-Protect).
 - Edit: `video/scripts/build_edl.py` → `video/brand/film.js` (deterministic `render(t)`, Atlas approach, graphite/amber). Venue latency on preview/submit screens is trimmed. Some screens hold their last real frame while zoomed in on a line.
 - After the shoot: `scripts/sellback-spot.ts`, `demo-cleanup.ts` → `remaining: []`, and `check-flat.ts` → all three demo accounts have positions=0 and openOrders=0.
+
+## v2 — product video for everyday traders (2026-11-24 evening)
+Feedback on v1: the voice sounded like AI, and the whole thing felt like a produced explainer rather than a real demo. v2 is restructured as a plain product demo:
+- **Structure:** ~2 s Rishabh Originals intro (name on top, topic below) → a problem hook in the first ~17 s over real glasses screens → how input works → one-time setup on the companion → morning glance → spoken voice command → preview → confirm → real demo fill read back from the exchange → double-tap backs out with nothing sent → Bybit long with a 3 % stop shown PROTECTED once Bybit lists it → reduce-only close cancels the leftover stop → one honest closing line → ~2 s outro.
+  - The Shield aside was cut to stay under 2:55.
+  - No chapter tags, no zooms, two short captions (the OKX note and "nothing sent").
+- **Input is shown truthfully.** The G2 has no touchscreen. Input comes from the touchpads on the temples, or the optional Even R1 ring with the same gestures: press = tap, double press = back, swipe up/down = scroll. Sources: Even Hub docs "Input & Events" and the Even support article "How to Control".
+  - A small inset shows Swipe / Tap / Double-tap at each real recorded simulator input (from `events.json`). The only exception is a 6-second illustrative loop while the narration explains the touchpad.
+  - Includes one double-tap cancel (`run3.json`: preview → double-tap → back to the ticket, no order).
+- **Voice:** Chatterbox TTS (Resemble AI, MIT), CPU.
+  - Reference timbre: a clip synthesized with the built-in XTTS-v2 studio speaker "Aaron Dreschner", which ships with the model. No personal voice recording was used.
+  - Licensing: XTTS-v2 is under the Coqui Public Model License (non-commercial). Re-check this before any commercial use of the video.
+  - Chatterbox embeds its inaudible Perth watermark in the output.
+  - Settings: exaggeration 0.5, cfg 0.3.
+  - Each paragraph is one unbroken take. Paragraphs are joined with natural 0.6–0.9 s pauses. Nothing is time-stretched or stitched line by line.
+  - Paragraphs with whisper mismatches were regenerated with new seeds; final per-paragraph WER is 0–6 %.
+- **Picture retimed to the voice:** idle venue latency is cut; there are no long silent gaps. Countdown screens play in real time except a few sub-second cuts.
+- **Audio:** low procedural bed (−25 dB under voice), real-input tap ticks, and a soft chime on each confirm. About −14 LUFS overall.
+- **Script:** `video/vo2/script_v2.txt`. EDL: `video/scripts/build_edl_v2.py` → `evidence/video/edl_v2.json`. Renderer: `video/brand/film2.js`.

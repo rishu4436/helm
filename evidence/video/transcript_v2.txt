@@ -1,0 +1,41 @@
+[   0.0-   6.0] If you trade on more than one exchange, you know the routine.
+[   6.0-  12.0] Phone out, a few different apps, and by the time you've found the right account, the moment's gone.
+[  12.0-  15.0] So I put all of it on my glasses.
+[  15.0-  19.0] This is Helm, running on Even Reality's G2.
+[  19.0-  22.0] There's no touchscreen here.
+[  22.0-  29.0] I swipe and tap on the little touchpad on the arm of the glasses, or on the R1 ring if I'm wearing it.
+[  29.0-  34.0] Swipe to move, tap to pick, double tap to go back.
+[  34.0-  38.0] Setup's a one-time thing on the companion site.
+[  38.0-  44.0] I've connected Binance demo for Spot & Futures and Bybit demo.
+[  44.0-  49.0] The keys get checked, they're encrypted on the server, and they never touch the glasses.
+[  49.0-  54.0] OKX is in there too, but I'm in India, so I can't actually test it.
+[  54.0-  57.0] Bybit's standing in for it.
+[  57.0-  59.0] Here's my morning glance.
+[  59.0-  65.0] Everything across my demo accounts, in one place, with the simulated stuff kept separate.
+[  65.0-  67.0] And I can just ask.
+[  67.0-  70.0] Helm, show all my positions.
+[  70.0-  76.0] There it is. One list, every exchange, and where each piece actually sits.
+[  76.0-  79.0] OK, let's buy something.
+[  79.0-  81.0] Buy a hundred dollars of BTC.
+[  81.0-  84.0] I didn't say where, so it doesn't guess.
+[  84.0-  87.0] It asks me, I'll go with Binance demo.
+[  87.0-  90.0] Before anything's sent, I get a preview.
+[  90.0-  95.0] The order, roughly what it'll cost with fees, and what I'll have left to spend.
+[  95.0-  97.0] Then a quick risk check.
+[  97.0- 103.0] The confirm screen always starts on cancel, so I have to swipe over to confirm and tap.
+[ 103.0- 107.0] And that's a real order on Binance's demo exchange.
+[ 107.0- 112.0] The ID on the receipt is Binance's own, and the fill is read back from the exchange.
+[ 112.0- 115.0] It doesn't just assume it worked.
+[ 115.0- 121.0] If I change my mind halfway through, a double tap backs out, and nothing gets sent.
+[ 121.0- 123.0] Now bybit.
+[ 123.0- 128.0] I'll open a small BTC long, with a 3% stop attached.
+[ 128.0- 132.0] Same preview, same check, swipe, tap.
+[ 132.0- 137.0] The stop is sized from the actual fill, and Helm only calls the position protected once,
+[ 137.0- 140.0] bybit itself lists that stop.
+[ 140.0- 143.0] I can see it in the companion too.
+[ 143.0- 145.0] When I'm done, I close it.
+[ 145.0- 149.0] The close is reduce only, so it can't add to the position.
+[ 149.0- 154.0] And once it's flat, the leftover stop gets cancelled automatically.
+[ 154.0- 157.0] Nothing left hanging around.
+[ 157.0- 163.0] Everything you just saw ran on demo accounts, so no real money, and none of this is financial advice.
+[ 163.0- 167.0] OKX is supported, but untested from India.

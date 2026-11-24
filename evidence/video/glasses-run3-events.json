@@ -1,0 +1,98 @@
+{
+ "t0_epoch": 1795533482.0909193,
+ "events": [
+  {
+   "t": 17,
+   "k": "mark",
+   "v": "start"
+  },
+  {
+   "t": 1019,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 1672,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 3174,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 3776,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 4378,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 4980,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 5582,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 5684,
+   "k": "reached",
+   "v": "acct-pick"
+  },
+  {
+   "t": 7186,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 7287,
+   "k": "reached",
+   "v": "ticket"
+  },
+  {
+   "t": 9287,
+   "k": "mark",
+   "v": "impactX"
+  },
+  {
+   "t": 9289,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 14995,
+   "k": "reached",
+   "v": "impact"
+  },
+  {
+   "t": 18495,
+   "k": "mark",
+   "v": "cancel"
+  },
+  {
+   "t": 18498,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 38585,
+   "k": "MISS",
+   "v": "home"
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen home",
+  "[HELM] screen acct-pick",
+  "[HELM] screen ticket",
+  "[HELM] preview p2fdb006ce352b2930797 ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen ticket"
+ ]
+}

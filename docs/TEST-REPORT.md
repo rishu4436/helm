@@ -58,3 +58,14 @@ Driver: `python3 scripts/sim-run.py <flow.json> evidence/g2-trade-flow`. Before 
 | Human voice through the real G2 microphones | **NOT RUN** | Only synthetic (TTS) speech was tested |
 | Voice "add a stop to my BTC position" end to end in the simulator | **NOT RUN** | Covered by unit tests (`apps/api/src/next-screen.test.ts`, parser tests) only |
 | Public deployment | **NOT RUN** | Not deployed, by decision |
+
+## Demo video v2: 2026-11-24 21:40 IST
+| Check | Result |
+|---|---|
+| ffprobe: h264 1920×1080 30 fps, 169.2 s, AAC | PASS |
+| Loudness: I −14.4 LUFS, true peak −0.9 dBTP | PASS |
+| blackdetect (d ≥ 0.3 s): none | PASS |
+| Contact sheet reviewed: `evidence/video/contact_sheet_v2.jpg` | PASS |
+| Whisper small.en transcript of the final mix vs script: WER 1.23 % (406 words); `evidence/video/transcript_v2.txt` | PASS |
+| New capture run3: preview → double-tap → back to ticket; no order submitted | PASS |
+| Read-only flatness check after recording: Binance Spot/USDⓈ-M and Bybit Unified show 0 positions, 0 open orders, 0 emergency items | PASS |
