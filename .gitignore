@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.ehpk
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.turbo/
+next-env.d.ts
+apps/companion/.next/
+evidence/tmp/

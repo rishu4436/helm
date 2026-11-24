@@ -1,0 +1,22 @@
+{
+  "name": "helm",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HELM — Universal Trading Command Center for Even Realities G2",
+  "packageManager": "pnpm@10.34.6",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "build": "pnpm -r --if-present build",
+    "dev:api": "pnpm --filter @helm/api dev",
+    "dev:glasses": "pnpm --filter @helm/glasses dev",
+    "dev:companion": "pnpm --filter @helm/companion dev"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}
