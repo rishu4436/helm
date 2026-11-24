@@ -16,7 +16,7 @@ export const NAV: Array<{ group: string; items: Array<{ href: string; label: str
   { group: 'Account', items: [{ href: '/connect', label: 'Exchanges', icon: '⊕' }, { href: '/security', label: 'Security', icon: '⚿' }, { href: '/settings', label: 'Settings', icon: '⚙' }, { href: '/diagnostics', label: 'Diagnostics', icon: '✓' }] },
 ]
 
-interface Shell { me: { email: string; displayName: string | null } | null; accounts: Account[]; reloadAccounts: () => Promise<void> }
+interface Shell { me: { email: string; displayName: string | null; guest?: boolean } | null; accounts: Account[]; reloadAccounts: () => Promise<void> }
 const Ctx = createContext<Shell>({ me: null, accounts: [], reloadAccounts: async () => {} })
 export const useShell = () => useContext(Ctx)
 
@@ -76,7 +76,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button className="btn btn-ghost h-8 py-1" onClick={async () => { try { await api('/v1/auth/logout', { method: 'POST' }) } catch { /* already gone */ } setToken(null); router.push('/login') }}>Sign out</button>
             </div>
           </header>
-          <main className="mx-auto max-w-7xl px-4 py-8 lg:px-8">{children}</main>
+          <main className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+            {me?.guest && (
+              <div className="mb-6 rounded-xl border border-violet-400/40 bg-violet-400/10 px-4 py-3 text-sm text-violet-200" data-testid="guest-banner">
+                You&apos;re on a simulated demo. The Binance, Bybit and OKX accounts are labelled <span className="font-semibold">SIMULATED</span> — live public prices, fills computed by HELM, nothing is sent to any exchange. This session lasts 12 hours. You can also register and connect your own demo keys.
+              </div>
+            )}
+            {children}
+          </main>
         </div>
       </div>
     </Ctx.Provider>

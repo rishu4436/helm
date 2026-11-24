@@ -36,6 +36,17 @@ export default function Connect() {
     setAlias(p.id === 'ibkr' ? 'Stock Portfolio' : p.id === 'coinbase' ? 'Coinbase Sandbox' : `My ${p.name.split(' ')[0]}`)
     setForm(p.id === 'binance' ? { market: 'spot' } : {})
   }
+  async function addSim(provider: string) {
+    const names: Record<string, string> = { binance: 'Binance (SIMULATED)', bybit: 'Bybit (SIMULATED)', okx: 'OKX (SIMULATED)' }
+    setBusy(`sim-${provider}`); setMsg(null)
+    try {
+      const r = await api<{ connection: Connection }>('/v1/connections', { method: 'POST', body: { provider, alias: names[provider] ?? `${provider} (SIMULATED)`, simulated: true } })
+      setMsg({ ok: true, text: `${r.connection.alias}: ${r.connection.state} — labelled SIMULATED, no keys, nothing is sent to the exchange.`, reasons: r.connection.reasons })
+      setPicked(null)
+      await Promise.all([conns.reload(), reloadAccounts()])
+    } catch (e) { setMsg({ ok: false, text: e instanceof ApiError ? e.message : 'Failed', reasons: e instanceof ApiError ? e.reasons : [] }) }
+    finally { setBusy(null) }
+  }
   async function submit() {
     if (!picked) return
     setBusy('connect'); setMsg(null)
@@ -78,7 +89,15 @@ export default function Connect() {
         <Card className="mt-6" title={`Connect ${prov.data?.providers.find(p => p.id === picked)?.name}`} action={<Btn variant="quiet" onClick={() => setPicked(null)}>Close</Btn>}>
           <div className="grid gap-6 md:grid-cols-[1fr_1.2fr]">
             <div className="text-sm leading-relaxed text-graphite-300">{cfg.help}</div>
-            {BLOCKED.has(picked) || picked === 'alpaca' ? <div className="flex items-start gap-3"><Pill v="BLOCKED" /><p className="text-sm text-graphite-300">Nothing to connect here. The flagship demo uses Binance Demo and Bybit Demo.</p></div> : (
+            {picked === 'alpaca' ? <div className="flex items-start gap-3"><Pill v="BLOCKED" /><p className="text-sm text-graphite-300">Alpaca is not in the official track list, so it stays disabled.</p></div> : (
+              <div className="space-y-6">
+                {['binance', 'bybit', 'okx'].includes(picked) && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-graphite-300">Or add a <span className="font-semibold">SIMULATED</span> account — live public prices, fills computed by HELM, no API keys, nothing sent to the exchange.</p>
+                    <Btn type="button" variant="amber" busy={busy === `sim-${picked}`} testId={`sim-${picked}`} onClick={() => addSim(picked)}>Add {picked === 'okx' ? 'OKX' : picked[0].toUpperCase()+picked.slice(1)} (SIMULATED)</Btn>
+                  </div>
+                )}
+                {BLOCKED.has(picked) ? <div className="flex items-start gap-3"><Pill v="BLOCKED" /><p className="text-sm text-graphite-300">Logged-in OKX demo keys are unavailable in India. Use the simulator above, or connect Binance Demo / Bybit Demo.</p></div> : (
               <form className="space-y-3" onSubmit={e => { e.preventDefault(); void submit() }}>
                 <Field label="Account name"><input className="input" value={alias} onChange={e => setAlias(e.target.value)} required maxLength={40} data-testid="conn-alias" /></Field>
                 {cfg.fields.map(f => <Field key={f.name} label={f.label}>{f.type === 'select'
@@ -87,6 +106,8 @@ export default function Connect() {
                 <Btn type="submit" variant="amber" busy={busy === 'connect'} testId="conn-submit">{picked === 'ibkr' ? 'Check gateway session' : 'Verify & connect'}</Btn>
                 <p className="text-xs text-graphite-500">HELM never asks for exchange passwords, 2FA codes, recovery phrases or withdrawal permission. Keys are AES-256-GCM encrypted and never sent to your glasses.</p>
               </form>
+                )}
+              </div>
             )}
           </div>
         </Card>

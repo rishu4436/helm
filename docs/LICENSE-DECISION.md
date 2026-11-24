@@ -1,15 +1,11 @@
-# License: decision pending
+# License: MIT
 
-**No license has been chosen yet.** This is deliberate, and the repository is private. Until the owner decides, all rights are reserved by the author. No `LICENSE` file is added on purpose, so nothing implies permission to reuse.
+**MIT was chosen.** The repository is licensed under the MIT License; see the `LICENSE` file at the repo root. Copyright is held by **Rishu Kumar Gupta (Rishabh Originals)**.
 
-Points for the owner to decide:
+MIT is the shortest widely used OSI license and is enough for a hackathon submission that needs a public repo. It lets judges and others use, modify and share the code, with the copyright notice kept in place, and it does not add the patent grant that Apache-2.0 would.
 
-| Question | Notes |
-|---|---|
-| Does the hackathon require an OSI license or public source for judging? | Check the DoraHacks / Even Realities rules before making the repo public |
-| Open source (for example MIT / Apache-2.0) vs source-available vs proprietary | Apache-2.0 adds an explicit patent grant; MIT is shortest; a proprietary or source-available license keeps commercial options open |
-| Third-party terms | The Even Realities minimal template, SDK, simulator, CLI and pretext packages, and all npm/PyPI dependencies, keep their own licenses. faster-whisper (MIT) and the Whisper `base.en` model weights (MIT); Kokoro TTS (Apache-2.0) was used only to make test fixtures. Check each before redistributing |
-| Trademarks | "Even Realities", "G2", "Binance", "Bybit", "OKX", "Coinbase" and "Interactive Brokers" belong to their owners. Their use here is descriptive |
-| Financial disclaimer | Whatever the license, keep the "not financial advice; demo/paper only" notice |
+The third-party terms below still apply, and this license does not change them:
 
-When decided, add `LICENSE` at the repo root, update `README.md`, and add SPDX headers if wanted.
+- The Even Realities minimal template, SDK, simulator, CLI and pretext packages, and all npm/PyPI dependencies, keep their own licenses. faster-whisper (MIT) and the Whisper `base.en` model weights (MIT) are used for local speech-to-text. Kokoro TTS (Apache-2.0) was used only to make test fixtures.
+- "Even Realities", "G2", "Binance", "Bybit", "OKX", "Coinbase" and "Interactive Brokers" are trademarks of their owners. Their use here is descriptive.
+- Whatever the license, HELM is **not financial advice**, and this build is **demo, paper and sandbox only**.

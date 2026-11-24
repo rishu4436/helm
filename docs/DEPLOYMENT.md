@@ -1,6 +1,8 @@
 # Deployment
 
-**Current status:** HELM runs **locally only**. Nothing is deployed publicly, by decision: no paid accounts and no public deploy before the user approves it. `helm.ehpk` has been built but **not uploaded** to Even Hub.
+**Current status:** The companion website and API are being hosted so hackathon judges can try them (free plans only). `helm.ehpk` has been built but **not uploaded** to Even Hub. Live URLs are listed in the README once the deploy is verified.
+
+The hosted API is a **new** Render service (`helm-api`) and a **new** Neon project (`helm`). It does not use the ATLAS Social Vercel, Render or Neon projects. Public visitors use **SIMULATED** accounts (or their own demo keys). The owner's Binance/Bybit demo keys are **not** stored on the hosted server. `HELM_LIVE_TRADING=false`. Spoken commands on the free hosted API fall back to typed input or a labelled TEST STT.
 
 ## Local stack (what the demo uses)
 
@@ -21,7 +23,7 @@ cd apps/glasses && pnpm run pack      # tsc + vite build + evenhub pack app.json
 
 The plugin reads the API base URL from `VITE_HELM_API` at build time (default `http://localhost:4000`, see `apps/glasses/src/api.ts`). For a phone test on the same network, point it at the machine's LAN address. Sideloading needs the Even app developer mode. **NOT RUN on real hardware.**
 
-## If and when it is deployed (not done)
+## Hosted deployment checklist
 
 A possible target that fits this stack: managed Postgres, the API as a Node service, and the companion as a Next.js host. Any public deployment must:
 

@@ -37,4 +37,19 @@ describe('pairing + tokens', () => {
     expect(tokenMatches('tok', h)).toBe(true)
     expect(tokenMatches('tok2', h)).toBe(false)
   })
+  it('peppers hashes when HELM_SESSION_SECRET is set', () => {
+    const prev = process.env.HELM_SESSION_SECRET
+    delete process.env.HELM_SESSION_SECRET
+    const plain = hashToken('tok')
+    process.env.HELM_SESSION_SECRET = 'test-pepper'
+    try {
+      const pep = hashToken('tok')
+      expect(pep).not.toBe(plain)
+      expect(pep).toHaveLength(64)
+      expect(tokenMatches('tok', pep)).toBe(true)
+    } finally {
+      if (prev === undefined) delete process.env.HELM_SESSION_SECRET
+      else process.env.HELM_SESSION_SECRET = prev
+    }
+  })
 })

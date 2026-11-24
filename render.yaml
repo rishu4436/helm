@@ -1,0 +1,31 @@
+# HELM API — free Render web service. Database is a separate Neon project named "helm"
+# (not atlas-social). Do not put exchange API keys on this service; public visitors use
+# simulated accounts or connect their own demo keys.
+services:
+  - type: web
+    name: helm-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: corepack enable && corepack prepare pnpm@10.34.6 --activate && pnpm install --frozen-lockfile --filter @helm/api... && pnpm --filter @helm/api db:generate
+    startCommand: pnpm --filter @helm/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: HELM_LIVE_TRADING
+        value: "false"
+      - key: HELM_ENABLE_SIMULATOR
+        value: "true"
+      - key: HELM_STT_PROVIDER
+        value: deterministic
+      - key: DATABASE_URL
+        sync: false
+      - key: HELM_CREDENTIAL_KEY
+        generateValue: true
+      - key: HELM_SESSION_SECRET
+        generateValue: true
+      - key: HELM_CORS_ORIGINS
+        sync: false

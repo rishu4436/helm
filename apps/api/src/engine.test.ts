@@ -20,6 +20,12 @@ const fakeFetch: FetchLike = async url => {
   const sym = (u.searchParams.get('symbol') ?? '').replace(/USDT$/, '')
   if (u.pathname.endsWith('/depth')) return json({ ...book(px[sym] ?? 100), E: Date.now(), T: Date.now() })
   if (u.pathname === '/v5/market/orderbook') { const b = book(px[sym] ?? 100); return json({ retCode: 0, retMsg: 'OK', result: { b: b.bids, a: b.asks, ts: Date.now() }, time: Date.now() }) }
+  if (u.pathname === '/api/v5/market/books' || u.pathname.endsWith('/market/books')) {
+    const inst = u.searchParams.get('instId') ?? 'BTC-USDT'
+    const asset = inst.split('-')[0]
+    const b = book(px[asset] ?? 100)
+    return json({ code: '0', data: [{ bids: b.bids, asks: b.asks, ts: String(Date.now()) }] })
+  }
   return json({ error: 'unmocked' }, 404)
 }
 
@@ -309,5 +315,36 @@ describe('insights for the companion', () => {
     expect(d.checks.find((c: { id: string }) => c.id === 'live')).toMatchObject({ status: 'PASS' })
     expect(d.checks.find((c: { id: string }) => c.id === 'okx').detail).toMatch(/BLOCKED/)
     expect(d.guard.binance.signedHostsAllowed.every((h: string) => h.startsWith('demo-'))).toBe(true)
+  })
+})
+
+describe('try-demo guest session', () => {
+  it('creates a guest user with simulated Binance, Bybit and OKX accounts, labelled SIMULATED', async () => {
+    const r = await app.inject({ method: 'POST', url: '/v1/auth/demo', payload: {} })
+    expect(r.statusCode).toBe(201)
+    const body = r.json()
+    expect(body.user.guest).toBe(true)
+    expect(body.user.email).toMatch(/@guest\.helm\.local$/)
+    expect(body.token).toEqual(expect.any(String))
+    expect(body.label).toMatch(/SIMULATED/)
+    expect(body.accounts).toHaveLength(3)
+    expect(body.accounts.map((a: { provider: string }) => a.provider).sort()).toEqual(['binance', 'bybit', 'okx'])
+    for (const a of body.accounts) {
+      expect(a.environment).toBe('simulated')
+      expect(a.alias).toMatch(/SIMULATED/)
+    }
+    const me = await app.inject({ url: '/v1/me', headers: H(body.token) })
+    expect(me.statusCode).toBe(200)
+    expect(me.json().user.guest).toBe(true)
+    const accts = (await app.inject({ url: '/v1/accounts', headers: H(body.token) })).json().accounts
+    expect(accts).toHaveLength(3)
+    const btc = accts.find((a: { provider: string }) => a.provider === 'binance')
+    const pv = await preview(body.token, { accountId: btc.id, asset: 'BTC', product: 'spot', side: 'BUY', notional: '50' })
+    expect(pv.statusCode).toBe(200)
+    expect(pv.json().account.environmentLabel).toBe('SIMULATED')
+    const c = await confirm(body.token, pv.json())
+    expect(c.statusCode).toBe(200)
+    expect(c.json().receipt.label).toMatch(/SIMULATED/)
+    expect(c.json().receipt.status).toBe('FILLED')
   })
 })

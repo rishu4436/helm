@@ -48,8 +48,13 @@ export function normalisePairingCode(input: string): string {
 }
 
 export function newOpaqueToken(bytes = 32): string { return randomBytes(bytes).toString('base64url') }
-/** Tokens are stored only as SHA-256 hashes. */
-export function hashToken(token: string): string { return createHash('sha256').update(token).digest('hex') }
+/** Tokens are stored only as SHA-256 hashes, peppered with HELM_SESSION_SECRET when set. */
+export function hashToken(token: string): string {
+  const h = createHash('sha256')
+  const pepper = process.env.HELM_SESSION_SECRET
+  if (pepper) h.update(pepper)
+  return h.update(token).digest('hex')
+}
 export function tokenMatches(token: string, storedHash: string): boolean {
   const a = Buffer.from(hashToken(token), 'hex'), b = Buffer.from(storedHash, 'hex')
   return a.length === b.length && timingSafeEqual(a, b)

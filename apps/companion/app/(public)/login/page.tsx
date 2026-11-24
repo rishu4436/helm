@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { api, ApiError, setToken } from '@/lib/api'
 import { HelmMark } from '../../brand'
+import { TryDemoButton } from '../try-demo'
 
 function LoginInner() {
   const router = useRouter()
@@ -49,6 +50,9 @@ function LoginInner() {
           {mode === 'register' && <p className="text-xs text-graphite-500">At least 10 characters. This is your HELM password only.</p>}
           {err && <p role="alert" className="text-sm text-down">{err}</p>}
           <button className="btn btn-amber w-full justify-center" disabled={busy} type="submit">{busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
+          <div className="relative py-1 text-center text-xs text-graphite-500">or</div>
+          <div className="flex justify-center"><TryDemoButton className="btn btn-ghost w-full justify-center" label="Try the demo — simulated accounts, no keys" /></div>
+          <p className="text-xs text-graphite-500">Opens a guest session with simulated Binance, Bybit and OKX accounts. Fills are computed by HELM and labelled SIMULATED.</p>
         </form>
       </div>
     </div>

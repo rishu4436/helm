@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { PROVIDER_INFO } from '@helm/shared'
 import { HelmMark } from '../brand'
 import { LandingDemo } from './demo'
+import { TryDemoButton } from './try-demo'
 
 const FLOW = ['Observe', 'Understand', 'Prepare', 'Check risk', 'Confirm', 'Execute', 'Verify']
 const SAFETY: Array<[string, string]> = [
@@ -26,10 +27,12 @@ export default function Landing() {
           <div className="mb-5 flex items-center gap-3 text-xs font-semibold tracking-[0.25em] text-amber-helm"><HelmMark size={20} /> FOR EVEN REALITIES G2</div>
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">Every exchange.<br />One glance.<br /><span className="text-amber-helm">Nothing executes unseen.</span></h1>
           <p className="mt-6 max-w-2xl text-lg text-graphite-300">HELM is a trading command center for your G2 glasses. It connects the exchange accounts you already have, shows the exposure that matters, and turns a spoken command into a previewed, risk-checked order you confirm with a deliberate tap.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#demo" className="btn btn-amber">Try the interactive demo</a>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <TryDemoButton label="Try the demo" />
+            <a href="#demo" className="btn btn-ghost">Interactive glasses demo</a>
             <Link href="/login?mode=register" className="btn btn-ghost">Create a HELM account</Link>
           </div>
+          <p className="mt-3 max-w-2xl text-sm text-graphite-400">One click creates a guest session with simulated Binance, Bybit and OKX accounts — labelled SIMULATED, no API keys, nothing sent to any exchange.</p>
           <p className="mt-6 text-xs text-graphite-500">Hackathon build · live trading is switched off · not financial advice.</p>
         </div>
       </section>
@@ -65,7 +68,7 @@ export default function Landing() {
               <p className="mt-3 text-sm text-graphite-300">{line}</p>
             </div>) })}
         </div>
-        <div className="mt-10 flex flex-wrap gap-3"><Link href="/login?mode=register" className="btn btn-amber">Get started</Link><Link href="/login" className="btn btn-ghost">Sign in</Link></div>
+        <div className="mt-10 flex flex-wrap items-center gap-3"><TryDemoButton label="Try the demo" /><Link href="/login?mode=register" className="btn btn-ghost">Create a HELM account</Link><Link href="/login" className="btn btn-ghost">Sign in</Link></div>
       </section>
     </div>
   )

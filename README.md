@@ -59,7 +59,7 @@ After a machine restart, `bash scripts/dev-up.sh` brings Postgres, STT, API and 
 | [GLASSES-UX](docs/GLASSES-UX.md) · [VOICE-COMMANDS](docs/VOICE-COMMANDS.md) | Screens, gestures, G2 limits, voice grammar |
 | [SECURITY](docs/SECURITY.md) · [DEPLOYMENT](docs/DEPLOYMENT.md) | Safety rails, secrets, secret scan; local stack and packaging |
 | [TEST-REPORT](docs/TEST-REPORT.md) · [DEMO-RUNBOOK](docs/DEMO-RUNBOOK.md) · [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md) | Exact commands with PASS/FAIL/BLOCKED/NOT RUN and evidence; how to run the demo; honest gaps |
-| [HACKATHON-SUBMISSION](docs/HACKATHON-SUBMISSION.md) · [DEMO-VIDEO-PLAN](docs/DEMO-VIDEO-PLAN.md) · [LICENSE-DECISION](docs/LICENSE-DECISION.md) | Submission text, video plan, license (pending) |
+| [HACKATHON-SUBMISSION](docs/HACKATHON-SUBMISSION.md) · [DEMO-VIDEO-PLAN](docs/DEMO-VIDEO-PLAN.md) · [LICENSE-DECISION](docs/LICENSE-DECISION.md) | Submission text, video plan, MIT license |
 | [PROGRESS](docs/PROGRESS.md) · [RESEARCH](docs/RESEARCH.md) · [STT](docs/STT.md) | Build log, sources, speech-to-text notes |
 
 ## Repo layout
@@ -92,4 +92,4 @@ Everything else in this repo was written during the build week, starting Nov 23,
 
 ## License
 
-Not chosen yet; see [LICENSE-DECISION](docs/LICENSE-DECISION.md). The repository is private.
+[MIT](LICENSE) © 2026 Rishu Kumar Gupta (Rishabh Originals). See [LICENSE-DECISION](docs/LICENSE-DECISION.md).

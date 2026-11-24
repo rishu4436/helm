@@ -31,7 +31,7 @@ export interface AppDeps {
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   assertLiveTradingDisabled() // refuse to boot with live trading enabled
   const app = Fastify({ logger: deps.logger ? { redact: ['req.headers.authorization', 'req.body.credentials', 'req.body.password'] } : false, bodyLimit: 64 * 1024 })
-  await app.register(cors, { origin: deps.corsOrigins ?? ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], credentials: false, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] })
+  await app.register(cors, { origin: deps.corsOrigins ?? defaultCorsOrigins(), credentials: false, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] })
   await app.register(rateLimit, { max: deps.rateLimitMax ?? 120, timeWindow: '1 minute' })
 
   app.setErrorHandler((err, _req, reply) => {
@@ -49,7 +49,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   if (deps.marketFetch) setMarketFetch(deps.marketFetch)
   const scale = deps.rateLimitScale ?? 1
-  const ctx: AppCtx = { prisma: deps.prisma, key: deps.credentialKey, adapters: deps.adapterFactory ?? makeAdapterFactory(), rl: (max: number) => ({ rateLimit: { max: max * scale, timeWindow: '1 minute' } }) }
+  const ctx: AppCtx = { prisma: deps.prisma, key: deps.credentialKey, adapters: deps.adapterFactory ?? makeAdapterFactory(), rl: (max: number, timeWindow = '1 minute') => ({ rateLimit: { max: max * scale, timeWindow } }) }
   await app.register(metaRoutes(ctx))
   await app.register(authRoutes(ctx))
   await app.register(pairingRoutes(ctx))
@@ -60,4 +60,13 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   return app
 }
 
-export type AppCtx = { prisma: PrismaClient; key: Buffer; adapters: AdapterFactory; rl: (max: number) => { rateLimit: { max: number; timeWindow: string } } }
+export type AppCtx = { prisma: PrismaClient; key: Buffer; adapters: AdapterFactory; rl: (max: number, timeWindow?: string) => { rateLimit: { max: number; timeWindow: string } } }
+
+const LOCAL_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173']
+
+/** Local companion + glasses, plus any comma-separated HELM_CORS_ORIGINS (hosted companion). */
+export function defaultCorsOrigins(env: NodeJS.ProcessEnv = process.env): string[] {
+  const extra = (env.HELM_CORS_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean)
+  return [...new Set([...LOCAL_ORIGINS, ...extra])]
+}
+

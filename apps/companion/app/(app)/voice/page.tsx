@@ -62,7 +62,7 @@ function Voice() {
             <div className="flex flex-wrap items-center gap-3">
               <Btn variant={busy === 'mic' ? 'danger' : 'amber'} onClick={busy === 'mic' ? () => { stopRef.current.stop = true } : mic} disabled={!!busy && busy !== 'mic'} testId="mic">{busy === 'mic' ? '■ Stop & send' : '● Hold a command (mic)'}</Btn>
               {busy === 'mic' && <div className="h-2 w-40 rounded bg-graphite-800"><div className="h-2 rounded bg-amber-helm transition-all" style={{ width: `${Math.min(100, level * 600)}%` }} /></div>}
-              <span className="text-xs text-graphite-500">Records up to 8 s, 16 kHz mono — like the G2 microphones. Audio is transcribed on the HELM server (local faster-whisper) and not stored.</span>
+              <span className="text-xs text-graphite-500">Records up to 8 s, 16 kHz mono — like the G2 microphones. On a full server this is transcribed by local faster-whisper and not stored. The hosted demo may be too small for that model and then falls back to typed commands, or a labelled TEST STT.</span>
             </div>
             <form className="mt-4 flex gap-2" onSubmit={e => { e.preventDefault(); if (text.trim()) send({ transcript: text.trim() }, 'typed') }}>
               <input className="input" value={text} onChange={e => setText(e.target.value)} placeholder='Or type: "long 200 dollars of ETH on Binance with a 3 percent stop"' data-testid="voice-text" />
