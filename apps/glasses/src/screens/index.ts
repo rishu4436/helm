@@ -1,4 +1,4 @@
-import { H, W, type ScreenSpec } from '../layout'
+import { H, W, clipBytes, type ScreenSpec } from '../layout'
 
 /** Shared frame: header strip (title + context), body, footer hint. */
 function frame(key: string, title: string, context: string, body: string, hint: string, opts: { bodyBorder?: boolean } = {}): ScreenSpec {
@@ -50,10 +50,10 @@ export function connectionErrorScreen(reason: string): ScreenSpec {
 
 export interface AccountRow { alias: string; provider: string; environment: string; state: string }
 
-const ENV_LABEL: Record<string, string> = { demo: 'DEMO', paper: 'PAPER', sandbox_static: 'SANDBOX' }
+const ENV_LABEL: Record<string, string> = { demo: 'DEMO', paper: 'PAPER', sandbox_static: 'SANDBOX', simulated: 'SIM' }
 export function accountLabel(a: AccountRow): string {
   const dot = a.state === 'CONNECTED' ? '●' : a.state === 'READ_ONLY' || a.state === 'LIMITED' ? '◐' : '○'
-  return `${dot} ${a.alias} · ${ENV_LABEL[a.environment] ?? a.environment}`.slice(0, 64)
+  return clipBytes(`${dot} ${a.alias} · ${ENV_LABEL[a.environment] ?? a.environment}`)
 }
 
 export function accountSelectorScreen(userName: string, accounts: AccountRow[]): ScreenSpec {

@@ -2,13 +2,19 @@ import {
   CreateStartUpPageContainer, ImageContainerProperty, ImageRawDataUpdate, ListContainerProperty, ListItemContainerProperty,
   RebuildPageContainer, TextContainerProperty, TextContainerUpgrade, type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
-import { structureSignature, validateSpec, type ScreenSpec } from './layout'
+import { clipBytes, structureSignature, validateSpec, type ScreenSpec } from './layout'
 import { drawCode, drawWordmark } from './wordmark'
 
 /**
  * Renders ScreenSpecs efficiently: identical structure → flicker-free textContainerUpgrade of
  * only the changed containers; otherwise a full rebuild. Image pushes are serialised.
  */
+/** The G2 firmware font lacks some glyphs (e.g. Ⓢ in "USDⓈ-M", ✓); map them to safe ASCII. */
+export const g2safe = (t: string) => t.replace(/Ⓢ/g, 'S').replace(/✓/g, '+').replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
+
+/** Simulator 0.9.5 rejected a rebuild whose list items held '@', '(', ')' or '_' (bisected 2026-11-24); keep list items plain. */
+export const listSafe = (t: string) => g2safe(t).replace(/ @ /g, ' at ').replace(/[()]/g, '').replace(/_/g, ' ')
+
 export class Renderer {
   private started = false
   private sig = ''
@@ -17,6 +23,7 @@ export class Renderer {
   constructor(private readonly bridge: EvenAppBridge) {}
 
   async show(spec: ScreenSpec): Promise<void> {
+    spec = { ...spec, texts: spec.texts.map(t => ({ ...t, text: g2safe(t.text) })), lists: spec.lists?.map(l => ({ ...l, items: l.items.map(i => clipBytes(listSafe(i))) })) }
     const errs = validateSpec(spec)
     if (errs.length) { console.error('[HELM] invalid screen', spec.key, errs); return }
     const sig = structureSignature(spec)

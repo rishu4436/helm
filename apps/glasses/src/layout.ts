@@ -35,6 +35,15 @@ export interface ScreenSpec {
   images?: ImageBox[]
 }
 
+/** Firmware limits list items to 64 BYTES (UTF-8), not characters — '·' is 2 bytes. */
+export const utf8Len = (t: string) => new TextEncoder().encode(t).length
+export function clipBytes(t: string, max = 64): string {
+  if (utf8Len(t) <= max) return t
+  let out = ''
+  for (const ch of t) { if (utf8Len(out + ch + '…') > max) break; out += ch }
+  return out + '…'
+}
+
 export function structureSignature(s: ScreenSpec): string {
   const t = s.texts.map(b => `t${b.id}:${b.name}:${b.x},${b.y},${b.w},${b.h},${b.border ?? 0},${b.capture ? 1 : 0}`)
   const l = (s.lists ?? []).map(b => `l${b.id}:${b.items.join('|')}`)
@@ -62,7 +71,7 @@ export function validateSpec(s: ScreenSpec): string[] {
   for (const i of images) if (i.w < 20 || i.w > 288 || i.h < 20 || i.h > 144) errs.push(`${i.name} image size out of range`)
   for (const l of lists) {
     if (l.items.length < 1 || l.items.length > 20) errs.push(`${l.name} needs 1–20 items`)
-    for (const it of l.items) if (it.length > 64) errs.push(`${l.name} item too long`)
+    for (const it of l.items) if (utf8Len(it) > 64) errs.push(`${l.name} item exceeds 64 bytes`)
   }
   for (const t of s.texts) if (t.text.length > 1000) errs.push(`${t.name} > 1000 chars`)
   return errs

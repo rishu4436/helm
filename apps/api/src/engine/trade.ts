@@ -115,7 +115,7 @@ function engineEstimate(req: OrderRequest, book: OrderBook | null, provider: str
     base.estimatedPrice = n.div(q).toDecimalPlaces(8); base.estimatedNotional = n; base.estimatedFee = n.mul(feeRate)
     base.estimatedSlippageBps = base.estimatedPrice.minus(top).abs().div(top).mul(10000)
   }
-  if (req.instrument.product !== 'spot' && base.estimatedNotional) base.requiredMargin = base.estimatedNotional.div(req.leverage ?? 1)
+  if (req.instrument.product !== 'spot' && !req.reduceOnly && base.estimatedNotional) base.requiredMargin = base.estimatedNotional.div(req.leverage ?? 1)
   base.estimateNotes.push(`HELM estimate: walked the public book; fee assumes ${feeRate.mul(100).toFixed()}% taker`)
   return base
 }
@@ -332,7 +332,9 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
     if (!TERMINAL.has(s)) await sleep(400)
   }
   if (ack) {
-    const fills = await storeFills(prisma, la, order.id, ack)
+    let fills = await storeFills(prisma, la, order.id, ack)
+    // Execution lists can lag the order state by a moment; one short re-read (never a resubmit).
+    for (let k = 0; k < 4 && !fills.length && !ack.filledQuantity.isZero(); k++) { await sleep(1500); fills = await storeFills(prisma, la, order.id, ack) }
     // Some venues ack FILLED with avgPrice 0 — fetch provider truth again, else use the venue's own trade list.
     if (!ack.filledQuantity.isZero() && (!ack.avgFillPrice || ack.avgFillPrice.isZero())) {
       const r = await la.adapter.reconcileOrder(inst.id, ack.providerOrderId ? { providerOrderId: ack.providerOrderId } : { clientOrderId: request.clientOrderId }).catch(() => null)
@@ -416,10 +418,11 @@ export async function receipt(ctx: EngineCtx, userId: string, orderId: string) {
 export async function refreshOrder(ctx: EngineCtx, userId: string, orderId: string) {
   const o = await ctx.prisma.order.findFirst({ where: { id: orderId, userId } })
   if (!o) throw httpErr(404, 'NOT_FOUND', 'Order not found')
-  if (!TERMINAL.has(o.status as OrderStatus)) {
+  const needFills = o.status === 'FILLED' && (await ctx.prisma.fill.count({ where: { orderId: o.id } })) === 0
+  if (!TERMINAL.has(o.status as OrderStatus) || needFills) {
     const la = await loadAccount(ctx.prisma, ctx.key, ctx.adapters, userId, o.accountId)
     const r = await la.adapter.reconcileOrder(o.instrumentId, o.providerOrderId ? { providerOrderId: o.providerOrderId } : { clientOrderId: o.clientOrderId }).catch(() => null)
-    if (r) { await applyProvider(ctx.prisma, o.id, o.status as OrderStatus, r); await storeFills(ctx.prisma, la, o.id, r) }
+    if (r) { if (!TERMINAL.has(o.status as OrderStatus)) await applyProvider(ctx.prisma, o.id, o.status as OrderStatus, r); await storeFills(ctx.prisma, la, o.id, r) }
   }
   return receipt(ctx, userId, orderId)
 }
