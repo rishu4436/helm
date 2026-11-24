@@ -29,7 +29,7 @@ function listScreen(key: string, title: string, ctx: string, items: string[], hi
 }
 
 // ---------- home / overview / holdings ----------
-export const HOME_ITEMS = ['Overview', 'Positions & holdings', 'Watchlist', 'Voice command', 'Trade', 'Pulse', 'Exposure Compass', 'Receipts', 'Emergency review', 'Accounts'] as const
+export const HOME_ITEMS = ['Overview', 'Positions & holdings', 'Watchlist', 'Voice command', 'Trade', 'Pulse', 'Exposure Compass', 'Receipts', 'Emergency review', 'Protect positions', 'Accounts'] as const
 export const homeScreen = (user: string, sim: boolean) => listScreen('home', 'HELM', sim ? 'incl. SIM' : user.slice(0, 14), [...HOME_ITEMS], 'swipe · tap: open · double-tap: exit')
 
 export function overviewScreen(p: any): ScreenSpec {
@@ -87,6 +87,7 @@ function orderLine(p: PreviewResp) {
 export const secondsLeft = (p: PreviewResp, now = Date.now()) => Math.max(0, Math.round((Date.parse(p.expiresAt) - now) / 1000))
 
 export function impactScreen(p: PreviewResp, now = Date.now()): ScreenSpec {
+  if (p.kind === 'protect_existing') return protectImpactScreen(p, now)
   const v = p.preview, i = v.impact
   const body = [
     orderLine(p),
@@ -108,6 +109,13 @@ export function riskScreen(p: PreviewResp, now = Date.now()): ScreenSpec {
 /** Explicit confirmation. Cancel is item 0 (the default selection); Confirm requires a deliberate move + tap. */
 export function confirmScreen(p: PreviewResp, now = Date.now()): ScreenSpec {
   const s = sym(p.order.instrument)
+  if (p.kind === 'protect_existing') return {
+    key: 'confirm',
+    texts: [...head('CONFIRM STOP', `${envTag(p.account.environmentLabel)} · ${secondsLeft(p, now)}s`),
+      { id: 5, name: 'summary', x: 6, y: 42, w: W - 12, h: 120, text: `Reduce-only stop ${n(p.order.stopPrice ?? null, 1)}\nfor ${qty(p.order.quantity)} ${s.base} ${prodLabel(s.product)} · ${p.account.alias}\nShown PROTECTED only once the venue lists it`, pad: 6, border: 2, borderColor: 10, radius: 6 },
+      foot('swipe to Confirm · tap: select · double-tap: cancel')],
+    lists: [{ id: 3, name: 'choice', x: 6, y: 166, w: W - 12, h: 80, items: ['Cancel', clipBytes(`Confirm stop on ${p.account.alias}`)], capture: true }],
+  }
   return {
     key: 'confirm',
     texts: [...head('CONFIRM ORDER', `${envTag(p.account.environmentLabel)} · ${secondsLeft(p, now)}s`),
@@ -137,6 +145,25 @@ export function receiptScreen(r: Receipt): ScreenSpec {
 }
 
 export const errorScreen = (title: string, msg: string) => textScreen('err', title, 'HELM', `${msg.slice(0, 160)}\n\nNothing was submitted unless a receipt says so.`, 'tap: home · double-tap: back', true)
+
+// ---------- Trade-to-Protect recovery ----------
+export interface UnprotectedItem { accountId: string; instrumentId: string; side: string; notionalUsd: string | null; alias: string }
+export const unprotectedScreen = (items: UnprotectedItem[]) =>
+  listScreen('unprotected', 'PROTECT POSITIONS', `${items.length} open`, items.length ? items.map(i => `${sym(i.instrumentId).base} ${i.side === 'SHORT' || (i.notionalUsd && Number(i.notionalUsd) < 0) ? 'SHORT' : 'LONG'} ${prodLabel(sym(i.instrumentId).product)} · ${i.alias}${i.notionalUsd ? ` · ${usd(String(Math.abs(Number(i.notionalUsd))), 0)}` : ''}`) : ['Every position has a venue-listed stop'], items.length ? 'tap: add a stop · double-tap: back' : 'double-tap: back', items.length ? 'No venue-listed stop on these positions' : undefined)
+export const STOP_DISTANCES = ['2', '3', '5'] as const
+export const protectPickScreen = (i: UnprotectedItem) =>
+  listScreen('protect-pick', `PROTECT ${sym(i.instrumentId).base}`, envTag(i.alias), STOP_DISTANCES.map(d => `Reduce-only stop ${d}% from mark`), 'tap: preview · double-tap: back', i.alias)
+function protectImpactScreen(p: PreviewResp, now: number): ScreenSpec {
+  const s = sym(p.order.instrument), r = p.preview.recovery
+  const body = [
+    `${r?.positionSide ?? ''} ${qty(p.order.quantity)} ${s.base} ${prodLabel(s.product)} has no stop`,
+    `Add: reduce-only STOP ${n(p.order.stopPrice ?? null, 1)}`,
+    `Mark ${n(r?.referencePrice ?? null, 1)} · entry ${n(r?.entryPrice ?? null, 1)}`,
+    p.preview.estimateNotes.find(x => x.startsWith('If triggered'))?.replace(' before fees and slippage', '') ?? '',
+    'Places no new exposure · confirm once',
+  ].join('\n')
+  return textScreen('impact', 'PROTECT POSITION', `${envTag(p.account.environmentLabel)} · ${secondsLeft(p, now)}s`, body, 'tap: risk check · double-tap: cancel', true)
+}
 
 // ---------- pulse / compass / emergency / receipts ----------
 export const pulseScreen = (ev: Array<{ kind: string; severity: number; reason: string; count: number }>) =>

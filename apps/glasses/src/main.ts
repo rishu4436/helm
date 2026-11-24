@@ -29,6 +29,8 @@ type State =
   | { name: 'receipts'; rs: Receipt[] }
   | { name: 'pulse'; ev: Array<{ kind: string; severity: number; reason: string; count: number }> }
   | { name: 'compass'; c: any; net: string }
+  | { name: 'unprotected'; items: T.UnprotectedItem[] }
+  | { name: 'protect-pick'; item: T.UnprotectedItem }
   | { name: 'emergency'; items: Array<{ kind: string; accountId: string; instrumentId: string; detail: string }> }
   | { name: 'listening'; started: number; chunks: Uint8Array[] }
   | { name: 'heard'; v: VoiceResp }
@@ -99,6 +101,8 @@ async function go(next: State) {
     case 'pulse': return ui.show(T.pulseScreen(next.ev))
     case 'compass': return ui.show(T.compassScreen(next.c, next.net))
     case 'emergency': return ui.show(T.emergencyScreen(next.items))
+    case 'unprotected': return ui.show(T.unprotectedScreen(next.items))
+    case 'protect-pick': return ui.show(T.protectPickScreen(next.item))
     case 'heard': return ui.show(T.heardScreen(next.v))
     case 'fail': return ui.show(T.errorScreen(next.title, next.msg))
     case 'listening': {
@@ -131,9 +135,24 @@ async function openHome(idx: number) {
       case 'Exposure Compass': { const r = (await trade.compass(token)).data; return nav({ name: 'compass', c: r.compass, net: r.netLiquidationUsd }) }
       case 'Receipts': return nav({ name: 'receipts', rs: (await trade.receipts(token)).data.receipts })
       case 'Emergency review': return nav({ name: 'emergency', items: (await trade.emergency(token)).data.items })
+      case 'Protect positions': return openUnprotected()
       case 'Accounts': { me = (await api.me(token)).data; return nav({ name: 'accounts', me }) }
     }
   } catch (e) { return fail('UNAVAILABLE', e) }
+}
+
+async function openUnprotected() {
+  const r = (await trade.compass(token)).data
+  const items: T.UnprotectedItem[] = (r.compass.unprotected as Array<{ accountId: string; instrumentId: string; side: string; notionalUsd: string | null }>).map(u => ({ ...u, alias: accts.find(a => a.id === u.accountId)?.alias ?? 'account' }))
+  return nav({ name: 'unprotected', items })
+}
+
+async function runProtectPreview(item: T.UnprotectedItem, stopOffsetPercent: string) {
+  try {
+    const p = (await trade.protectPreview(token, { accountId: item.accountId, instrumentId: item.instrumentId, stopOffsetPercent })).data
+    console.log(`[HELM] protect preview ${p.proposalId} ${p.risk.verdict} stop ${p.order.stopPrice}`)
+    await nav({ name: 'impact', p, via: 'glasses', key: newKey() })
+  } catch (e) { await fail('PREVIEW FAILED', e) }
 }
 
 async function runPreview(tk: Ticket, via: 'glasses' | 'voice') {
@@ -238,6 +257,8 @@ bridge.onEvenHubEvent((event: EvenHubEvent) => {
       return
     case 'receipt': case 'fail': return void loadHome()
     case 'receipts': { const r = s.rs[idx]; if (event.listEvent && r) void nav({ name: 'receipt', r }); return }
+    case 'unprotected': { const it = s.items[idx]; if (event.listEvent && it) void nav({ name: 'protect-pick', item: it }); return }
+    case 'protect-pick': { const d = T.STOP_DISTANCES[idx]; if (event.listEvent && d) void runProtectPreview(s.item, d); return }
     case 'listening': return void finishListening()
     case 'heard': return void continueVoice(s.v)
     default: return

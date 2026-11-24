@@ -34,10 +34,12 @@ export const api = {
 export interface Acct { id: string; alias: string; provider: string; environment: string; environmentLabel: string; state: string; canTrade: boolean; products: string[]; label: string | null }
 export interface Finding { rule: string; verdict: 'ALLOW' | 'WARN' | 'BLOCK'; message: string }
 export interface PreviewResp {
+  kind?: 'protect_existing'
   proposalId: string; confirmToken: string | null; expiresAt: string; canConfirm: boolean; label: string | null
   account: { id: string; alias: string; provider: string; environmentLabel: string; connectionState: string }
-  order: { instrument: string; side: string; type: string; quantity?: string; quoteQuantity?: string; price?: string; reduceOnly?: boolean; leverage?: string }
+  order: { instrument: string; side: string; type: string; quantity?: string; quoteQuantity?: string; price?: string; stopPrice?: string; reduceOnly?: boolean; leverage?: string }
   preview: { estimatedPrice: string | null; estimatedNotional: string | null; estimatedFee: string | null; estimatedSlippageBps: string | null; requiredMargin: string | null; remainingBuyingPower: string | null; estimateNotes: string[]
+    recovery?: { positionQty: string; positionSide: 'LONG' | 'SHORT'; entryPrice: string | null; markPrice: string | null; referencePrice: string; stopOffsetPercent: string | null }
     impact: { asset: string; currentExposureUsd: string; proposedExposureUsd: string; currentPositionQty: string; proposedPositionQty: string; spreadBps: string | null; liquidation: { current: string | null; proposed: string | null; note: string } }
     protection: { stopOffsetPercent: string; estimatedStopPrice: string | null; supported: boolean; note: string } | null }
   risk: { verdict: 'ALLOW' | 'WARN' | 'BLOCK'; findings: Finding[]; policyVersion: number }
@@ -53,6 +55,7 @@ export const trade = {
   market: (t: string, asset: string) => call<{ asset: string; venues: Array<{ venue: string; bid: string | null; ask: string | null; spreadBps: string | null; error?: string }> }>(`/v1/markets/${asset}`, { token: t }),
   preview: (t: string, tk: Ticket) => call<PreviewResp>('/v1/trade/preview', { method: 'POST', token: t, body: tk }),
   confirm: (t: string, p: PreviewResp, idempotencyKey: string, via: 'glasses' | 'voice') => call<{ receipt: Receipt; replayed?: boolean }>('/v1/trade/confirm', { method: 'POST', token: t, body: { proposalId: p.proposalId, confirmToken: p.confirmToken, idempotencyKey, via } }),
+  protectPreview: (t: string, body: { accountId: string; instrumentId: string; stopOffsetPercent: string }) => call<PreviewResp>('/v1/protection/preview', { method: 'POST', token: t, body }),
   receipts: (t: string) => call<{ receipts: Receipt[] }>('/v1/receipts', { token: t }),
   pulse: (t: string) => call<{ events: Array<{ kind: string; severity: number; reason: string; count: number }> }>('/v1/pulse', { token: t }),
   compass: (t: string) => call<{ compass: any; netLiquidationUsd: string }>('/v1/shield/compass', { token: t }),

@@ -56,7 +56,13 @@ const prev = {
 }
 const rcpt = { orderId: 'o1', account: 'Bybit Demo · Unified', provider: 'bybit', environmentLabel: 'DEMO', label: null, instrumentId: 'bybit:perp:BTC-USDT:USDT', side: 'BUY', type: 'MARKET', status: 'FILLED', providerOrderId: '2355', quantity: '0.002', quoteQuantity: null, filledQuantity: '0.002', avgFillPrice: '60343.1', fills: [{ price: '60343.1', qty: '0.002', fee: '0.0663', feeAsset: 'USDT' }], protection: { state: 'PROTECTED', stopPrice: '58532.8', protectedQuantity: '0.002' }, fillTruth: 'Reported by the exchange demo environment', events: [] }
 const pf = { netLiquidationUsd: '251234.5', unrealizedPnlUsd: '-12.3', accounts: [{ alias: 'Bybit Demo · Unified', valueUsd: '161970' }, { alias: 'Binance Demo · Spot', valueUsd: '80000' }, { alias: 'Binance Demo · USDⓈ-M', valueUsd: '5000' }, { alias: 'Binance · SIM', valueUsd: '15000' }], exposures: [{ asset: 'BTC', netDirectionalUsd: '97193', spotUsd: '97193' }, { asset: 'ETH', netDirectionalUsd: '20400', spotUsd: '20400' }], positions: [{ instrumentId: 'binance:perp:BTC-USDT:USDT', side: 'NET', quantity: '-0.002', unrealizedPnl: '1.2', accountId: 'x' }] }
+const uitem = { accountId: 'a1', instrumentId: 'binance:perp:BTC-USDT:USDT', side: 'NET', notionalUsd: '-150.12', alias: 'Binance Demo · USDⓈ-M' }
+const protPrev = { ...prev, kind: 'protect_existing' as const, account: { ...prev.account, alias: 'Binance Demo · USDⓈ-M' },
+  order: { instrument: 'binance:perp:BTC-USDT:USDT', side: 'SELL', type: 'STOP_MARKET', quantity: '0.0025', stopPrice: '58532.8', reduceOnly: true },
+  preview: { ...prev.preview, estimateNotes: ['Protects the existing LONG 0.0025 BTC', 'If triggered: P&L vs entry ≈ -4.52 USDT before fees and slippage'], recovery: { positionQty: '0.0025', positionSide: 'LONG' as const, entryPrice: '60343.1', markPrice: '60341.2', referencePrice: '60341.2', stopOffsetPercent: '3' } } }
 const tradeScreens: ScreenSpec[] = [
+  T.unprotectedScreen([uitem, { ...uitem, instrumentId: 'bybit:perp:ETH-USDT:USDT', side: 'SHORT', alias: 'Bybit Demo · Unified' }]), T.unprotectedScreen([]), T.protectPickScreen(uitem),
+  T.impactScreen(protPrev), T.confirmScreen(protPrev),
   T.homeScreen('rishabh', true), T.overviewScreen(pf), T.holdingsScreen(pf), T.watchlistScreen([{ asset: 'BTC', price: '60312.5' }, { asset: 'SOL', price: '150.123' }]),
   T.marketScreen('BTC', [{ venue: 'binance', bid: '60312.0', ask: '60312.1', spreadBps: '0.02' }, { venue: 'okx', bid: '60311.9', ask: '60312.0', spreadBps: '0.02' }, { venue: 'bybit', bid: null, ask: null, spreadBps: null, error: 'EXCHANGE_UNAVAILABLE' }]),
   T.accountPickScreen([acct, { ...acct, id: 'a2', alias: 'Binance Demo · Spot', products: ['spot'] }]), T.ticketScreen(acct, 'BTC'),
@@ -88,6 +94,14 @@ describe('G2 trading screens', () => {
   it('list items are clipped to 64 UTF-8 bytes (firmware limit; "·" is 2 bytes)', () => {
     const s = T.emergencyScreen([{ kind: 'CLOSE_POSITION', detail: 'LONG 0.002 (reduce-only close, needs its own preview + confirm)', instrumentId: 'bybit:perp:BTC-USDT:USDT' }])
     for (const it of s.lists![0]!.items) expect(new TextEncoder().encode(it).length).toBeLessThanOrEqual(64)
+  })
+  it('recovery: unprotected list, stop distances, PROTECT impact, and a Cancel-first stop confirmation', () => {
+    expect(T.unprotectedScreen([uitem]).lists![0]!.items[0]).toMatch(/^BTC SHORT PERP · Binance Demo/)
+    expect(T.protectPickScreen(uitem).lists![0]!.items).toEqual(['Reduce-only stop 2% from mark', 'Reduce-only stop 3% from mark', 'Reduce-only stop 5% from mark'])
+    expect(T.impactScreen(protPrev).texts.find(t => t.name === 'header')!.text).toBe('PROTECT POSITION')
+    const c = T.confirmScreen(protPrev)
+    expect(c.lists![0]!.items[0]).toBe('Cancel'); expect(c.lists![0]!.items[1]).toMatch(/^Confirm stop on Binance Demo/)
+    expect(c.texts.find(t => t.name === 'summary')!.text).toMatch(/PROTECTED only once the venue lists it/)
   })
   it('blocked risk cannot continue', () => { expect(T.riskScreen({ ...prev, canConfirm: false, risk: { ...prev.risk, verdict: 'BLOCK' } }).texts.find(t => t.name === 'footer')!.text).toMatch(/Blocked/) })
 })

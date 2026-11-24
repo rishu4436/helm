@@ -28,7 +28,7 @@ export const insightRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
 
   app.get('/v1/protection', { preHandler: any }, async req => {
     const rows = await prisma.protectionPlan.findMany({ where: { userId: req.userId! }, orderBy: { updatedAt: 'desc' }, take: 100 })
-    return toJsonSafe({ plans: rows.map(r => ({ id: r.id, accountId: r.accountId, instrumentId: r.instrumentId, entryOrderId: r.entryOrderId, protectionOrderId: r.protectionOrderId, stopOffsetPercent: r.stopOffsetPercent, stopPrice: r.stopPrice, protectedQuantity: r.protectedQuantity, state: r.state, history: r.history, updatedAt: r.updatedAt })) })
+    return toJsonSafe({ plans: rows.map(r => ({ id: r.id, accountId: r.accountId, instrumentId: r.instrumentId, entryOrderId: r.entryOrderId, source: r.source, protectionOrderId: r.protectionOrderId, stopOffsetPercent: r.stopOffsetPercent, stopPrice: r.stopPrice, protectedQuantity: r.protectedQuantity, state: r.state, history: r.history, updatedAt: r.updatedAt })) })
   })
 
   app.get('/v1/diagnostics', { preHandler: user }, async req => {

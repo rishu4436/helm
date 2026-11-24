@@ -22,6 +22,7 @@ export function PreviewPanel({ preview, onDone, onDiscard, testId = 'preview' }:
   const left = Math.max(0, Math.round((Date.parse(preview.expiresAt) - now) / 1000))
   const pv = preview.preview, im = pv.impact, risk = preview.risk
   const s = sym(preview.order.instrument ?? (preview.order as unknown as { instrumentId?: string }).instrumentId ?? '')
+  const recovery = (preview as { kind?: string }).kind === 'protect_existing'
 
   async function confirm() {
     setBusy(true); setErr(null)
@@ -39,7 +40,7 @@ export function PreviewPanel({ preview, onDone, onDiscard, testId = 'preview' }:
   return (
     <div className="space-y-4" data-testid={testId}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-lg font-semibold">{preview.order.side} {s.label}</span>
+        <span className="text-lg font-semibold">{recovery ? `Protect ${s.label}` : `${preview.order.side} ${s.label}`}</span>
         <Pill v={risk.verdict} />
         <span className="pill border border-graphite-700">{preview.account.environmentLabel}</span>
         <span className="text-sm text-graphite-300">{preview.account.alias}</span>
@@ -52,7 +53,7 @@ export function PreviewPanel({ preview, onDone, onDiscard, testId = 'preview' }:
           <Row k="Type" v={`${preview.order.type}${preview.order.reduceOnly ? ' · reduce-only' : ''}`} />
           <Row k="Quantity" v={preview.order.quantity ? `${qty(preview.order.quantity)} ${s.base}` : preview.order.quoteQuantity ? `${usd(preview.order.quoteQuantity)} of ${s.base}` : '—'} />
           {preview.order.leverage && <Row k="Leverage" v={`${preview.order.leverage}×`} />}
-          <Row k="Est. price" v={usd(pv.estimatedPrice)} />
+          <Row k={recovery ? 'Stop price' : 'Est. price'} v={usd(pv.estimatedPrice)} />
           <Row k="Est. notional" v={usd(pv.estimatedNotional)} />
           <Row k="Est. fee" v={usd(pv.estimatedFee, 4)} />
           <Row k="Est. slippage" v={pv.estimatedSlippageBps ? `${pv.estimatedSlippageBps} bps` : '—'} />
@@ -65,7 +66,7 @@ export function PreviewPanel({ preview, onDone, onDiscard, testId = 'preview' }:
           <Row k="Position" v={`${qty(im.currentPositionQty)} → ${qty(im.proposedPositionQty)}`} />
           <Row k="Spread" v={im.spreadBps ? `${im.spreadBps} bps` : '—'} />
           <Row k="Liquidation" v={im.liquidation.proposed ? usd(im.liquidation.proposed) : '—'} />
-          {pv.protection && <Row k="Trade-to-Protect" v={pv.protection.supported ? `stop −${pv.protection.stopOffsetPercent}% ≈ ${usd(pv.protection.estimatedStopPrice)}` : 'not supported here'} tone={pv.protection.supported ? 'text-up' : 'text-amber-helm'} />}
+          {pv.protection && <Row k={recovery ? 'Adds stop' : 'Trade-to-Protect'} v={pv.protection.supported ? `${pv.protection.stopOffsetPercent ? `${recovery ? '' : '−'}${pv.protection.stopOffsetPercent}% ` : ''}≈ ${usd(pv.protection.estimatedStopPrice)}${recovery ? ' (reduce-only)' : ''}` : 'not supported here'} tone={pv.protection.supported ? 'text-up' : 'text-amber-helm'} />}
           {pv.willCancel && pv.willCancel.length > 0 && <Row k="Full close" v={`cancels ${pv.willCancel.length} protective order(s)`} tone="text-amber-helm" />}
           <p className="mt-2 text-xs text-graphite-500">{im.liquidation.note}</p>
         </div>
@@ -79,7 +80,7 @@ export function PreviewPanel({ preview, onDone, onDiscard, testId = 'preview' }:
       <div className="flex flex-wrap items-center gap-3 border-t border-graphite-800 pt-4">
         {preview.canConfirm ? <>
           <label className="flex items-center gap-2 text-sm text-graphite-300"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} data-testid="ack" /> I reviewed the impact and risk</label>
-          <Btn variant="amber" danger onClick={confirm} busy={busy} disabled={!ack || left === 0 || (err?.unknown ?? false)} testId="confirm">{err?.unknown ? 'Outcome unknown' : `Confirm ${preview.order.side.toLowerCase()}`}</Btn>
+          <Btn variant="amber" danger onClick={confirm} busy={busy} disabled={!ack || left === 0 || (err?.unknown ?? false)} testId="confirm">{err?.unknown ? 'Outcome unknown' : recovery ? 'Confirm reduce-only stop' : `Confirm ${preview.order.side.toLowerCase()}`}</Btn>
         </> : <span className="text-sm text-down">Blocked by Shield — no confirm token was issued.</span>}
         <Btn variant="quiet" onClick={onDiscard} testId="discard">{left === 0 ? 'Close' : 'Discard'}</Btn>
       </div>
