@@ -2,7 +2,7 @@
   "name": "helm",
   "private": true,
   "version": "0.1.0",
-  "description": "HELM \u2014 Universal Trading Command Center for Even Realities G2",
+  "description": "HELM — Universal Trading Command Center for Even Realities G2",
   "packageManager": "pnpm@10.34.6",
   "engines": {
     "node": ">=20"
@@ -30,6 +30,7 @@
     "@helm/shared": "workspace:*",
     "@helm/trading-core": "workspace:*",
     "@helm/voice-engine": "workspace:*",
+    "@playwright/test": "1.65.1",
     "@prisma/client": "6.19.3",
     "@types/node": "^22.10.0",
     "dotenv": "^18.0.10",
