@@ -113,6 +113,7 @@ export class BinanceAdapter extends BaseAdapter {
   }
 
   private async signed<T>(method: 'GET' | 'POST' | 'DELETE', path: string, params: Record<string, string | number | boolean | undefined>, submitsOrder = false): Promise<T> {
+    this.http.preflight({ method, url: `${this.base}${path}`, authenticated: true })
     const qs = await this.buildSigned(params)
     const r = await this.http.request({ method, url: `${this.base}${path}?${qs}`, headers: { 'X-MBX-APIKEY': this.creds.apiKey }, authenticated: true, submitsOrder })
     return this.unwrap<T>(r.status, r.body)
@@ -210,6 +211,14 @@ export class BinanceAdapter extends BaseAdapter {
   async getMarketSnapshot(id: InstrumentId): Promise<MarketSnapshot> {
     const r = await this.publicGet<{ bidPrice: string; askPrice: string; lastPrice: string; volume: string; closeTime: number }>(`${this.prefix}/ticker/24hr`, { symbol: this.symbolOf(id) })
     return { provider: 'binance', instrumentId: id, bid: decOrNull(r.bidPrice), ask: decOrNull(r.askPrice), last: decOrNull(r.lastPrice), volume24h: decOrNull(r.volume), timestamp: new Date(r.closeTime).toISOString(), receivedAt: nowIso() }
+  }
+
+  /** Single-symbol filters (spot supports ?symbol=; futures returns all symbols, cached by the caller). */
+  async getInstrument(id: InstrumentId): Promise<Instrument | null> {
+    const sym = this.symbolOf(id)
+    const r = await this.publicGet<{ symbols: Array<{ symbol: string; status: string; baseAsset: string; quoteAsset: string; marginAsset?: string; contractType?: string; filters: Array<Record<string, string>> }> }>(`${this.prefix}/exchangeInfo`, this.market === 'spot' ? { symbol: sym } : {})
+    const s = r.symbols.find(x => x.symbol === sym && (this.market === 'spot' || x.contractType === 'PERPETUAL'))
+    return s ? parseBinanceSymbol(s, this.market) : null
   }
 
   async getInstruments(): Promise<Instrument[]> {

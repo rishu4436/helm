@@ -2,7 +2,7 @@
   "name": "helm",
   "private": true,
   "version": "0.1.0",
-  "description": "HELM — Universal Trading Command Center for Even Realities G2",
+  "description": "HELM \u2014 Universal Trading Command Center for Even Realities G2",
   "packageManager": "pnpm@10.34.6",
   "engines": {
     "node": ">=20"
@@ -25,7 +25,13 @@
     "prisma": "6.19.3",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "@helm/trading-core": "workspace:*",
+    "@helm/portfolio": "workspace:*",
+    "@helm/risk-engine": "workspace:*",
+    "@helm/voice-engine": "workspace:*",
+    "@helm/pulse": "workspace:*",
+    "@helm/security": "workspace:*"
   },
   "type": "module"
 }

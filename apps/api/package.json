@@ -20,7 +20,14 @@
     "@helm/trading-core": "workspace:*",
     "@prisma/client": "^6.19.0",
     "fastify": "^5.2.0",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@helm/portfolio": "workspace:*",
+    "@helm/risk-engine": "workspace:*",
+    "@helm/voice-engine": "workspace:*",
+    "@helm/pulse": "workspace:*"
   },
-  "devDependencies": { "prisma": "^6.19.0", "tsx": "^4.19.0" }
+  "devDependencies": {
+    "prisma": "^6.19.0",
+    "tsx": "^4.19.0"
+  }
 }

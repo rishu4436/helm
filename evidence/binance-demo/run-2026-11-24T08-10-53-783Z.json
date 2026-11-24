@@ -1,0 +1,1110 @@
+{
+  "ranAt": "2026-11-24T08:10:53.783Z",
+  "environment": "Binance Demo Trading (demo-api.binance.com, demo-fapi.binance.com)",
+  "credentials": "from env, redacted",
+  "rows": [
+    {
+      "step": "spot: connect (authenticated account read + environment check)",
+      "result": "PASS",
+      "detail": {
+        "state": "CONNECTED",
+        "reasons": [
+          "Key withdrawal scope not inspectable in this environment (no apiRestrictions); Demo Trading funds are not withdrawable"
+        ],
+        "checkedAt": "2026-11-24T08:10:39.769Z"
+      }
+    },
+    {
+      "step": "spot: capabilities after connect",
+      "result": "PASS",
+      "detail": {
+        "environment": "demo",
+        "permissions": {
+          "read": true,
+          "trade": true,
+          "withdraw": false
+        },
+        "simulation": "demo_matching_engine"
+      }
+    },
+    {
+      "step": "spot: balances (non-zero)",
+      "result": "PASS",
+      "detail": [
+        {
+          "asset": "BTC",
+          "free": "0.00018964",
+          "locked": "0"
+        },
+        {
+          "asset": "USDT",
+          "free": "4988.50915436",
+          "locked": "0"
+        },
+        {
+          "asset": "USDC",
+          "free": "5000",
+          "locked": "0"
+        }
+      ]
+    },
+    {
+      "step": "spot: BTCUSDT filters from exchangeInfo",
+      "result": "PASS",
+      "detail": {
+        "id": "binance:spot:BTC-USDT",
+        "provider": "binance",
+        "providerSymbol": "BTCUSDT",
+        "product": "spot",
+        "base": "BTC",
+        "quote": "USDT",
+        "contractMultiplier": "1",
+        "quantityUnit": "base",
+        "lotSize": "0.00001",
+        "minQty": "0.00001",
+        "maxQty": "9000",
+        "minNotional": "5",
+        "tickSize": "0.01",
+        "venue": "Binance Spot (Demo)",
+        "currency": "USDT",
+        "tradingHours": "continuous",
+        "status": "trading",
+        "raw": {
+          "symbol": "BTCUSDT",
+          "status": "TRADING",
+          "baseAsset": "BTC",
+          "baseAssetPrecision": 8,
+          "quoteAsset": "USDT",
+          "quotePrecision": 8,
+          "quoteAssetPrecision": 8,
+          "baseCommissionPrecision": 8,
+          "quoteCommissionPrecision": 8,
+          "orderTypes": [
+            "LIMIT",
+            "LIMIT_MAKER",
+            "MARKET",
+            "STOP_LOSS",
+            "STOP_LOSS_LIMIT",
+            "TAKE_PROFIT",
+            "TAKE_PROFIT_LIMIT"
+          ],
+          "icebergAllowed": true,
+          "ocoAllowed": true,
+          "otoAllowed": true,
+          "opoAllowed": true,
+          "quoteOrderQtyMarketAllowed": true,
+          "allowTrailingStop": true,
+          "cancelReplaceAllowed": true,
+          "amendAllowed": true,
+          "pegInstructionsAllowed": true,
+          "marketQuoteNotionalLimitAllowed": false,
+          "limitQuoteNotionalLimitAllowed": false,
+          "isSpotTradingAllowed": true,
+          "isMarginTradingAllowed": true,
+          "filters": [
+            {
+              "filterType": "PRICE_FILTER",
+              "minPrice": "0.01000000",
+              "maxPrice": "1000000.00000000",
+              "tickSize": "0.01000000"
+            },
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.00001000",
+              "maxQty": "9000.00000000",
+              "stepSize": "0.00001000"
+            },
+            {
+              "filterType": "ICEBERG_PARTS",
+              "limit": 100
+            },
+            {
+              "filterType": "MARKET_LOT_SIZE",
+              "minQty": "0.00000000",
+              "maxQty": "155.83077506",
+              "stepSize": "0.00000000"
+            },
+            {
+              "filterType": "TRAILING_DELTA",
+              "minTrailingAboveDelta": 10,
+              "maxTrailingAboveDelta": 2000,
+              "minTrailingBelowDelta": 10,
+              "maxTrailingBelowDelta": 2000
+            },
+            {
+              "filterType": "PERCENT_PRICE_BY_SIDE",
+              "bidMultiplierUp": "1.2",
+              "bidMultiplierDown": "0.5",
+              "askMultiplierUp": "2",
+              "askMultiplierDown": "0.8",
+              "avgPriceMins": 5
+            },
+            {
+              "filterType": "NOTIONAL",
+              "minNotional": "5.00000000",
+              "applyMinToMarket": true,
+              "maxNotional": "9000000.00000000",
+              "applyMaxToMarket": false,
+              "avgPriceMins": 5
+            },
+            {
+              "filterType": "MAX_NUM_ORDERS",
+              "maxNumOrders": 200
+            },
+            {
+              "filterType": "MAX_NUM_ORDER_LISTS",
+              "maxNumOrderLists": 20
+            },
+            {
+              "filterType": "MAX_NUM_ALGO_ORDERS",
+              "maxNumAlgoOrders": 5
+            },
+            {
+              "filterType": "MAX_NUM_ORDER_AMENDS",
+              "maxNumOrderAmends": 10
+            }
+          ],
+          "permissions": [],
+          "permissionSets": [
+            [
+              "SPOT",
+              "MARGIN",
+              "TRD_GRP_004",
+              "TRD_GRP_005",
+              "TRD_GRP_006",
+              "TRD_GRP_015",
+              "TRD_GRP_016",
+              "TRD_GRP_017",
+              "TRD_GRP_018",
+              "TRD_GRP_019",
+              "TRD_GRP_020",
+              "TRD_GRP_021",
+              "TRD_GRP_022",
+              "TRD_GRP_023",
+              "TRD_GRP_024",
+              "TRD_GRP_025",
+              "TRD_GRP_049",
+              "TRD_GRP_050",
+              "TRD_GRP_051",
+              "TRD_GRP_052",
+              "TRD_GRP_053",
+              "TRD_GRP_054",
+              "TRD_GRP_055",
+              "TRD_GRP_056",
+              "TRD_GRP_057",
+              "TRD_GRP_058",
+              "TRD_GRP_059",
+              "TRD_GRP_060",
+              "TRD_GRP_061",
+              "TRD_GRP_062",
+              "TRD_GRP_063",
+              "TRD_GRP_064",
+              "TRD_GRP_065",
+              "TRD_GRP_066",
+              "TRD_GRP_067",
+              "TRD_GRP_068",
+              "TRD_GRP_069",
+              "TRD_GRP_070",
+              "TRD_GRP_071",
+              "TRD_GRP_072",
+              "TRD_GRP_073",
+              "TRD_GRP_074",
+              "TRD_GRP_075",
+              "TRD_GRP_076",
+              "TRD_GRP_077",
+              "TRD_GRP_078",
+              "TRD_GRP_079",
+              "TRD_GRP_080",
+              "TRD_GRP_081",
+              "TRD_GRP_082",
+              "TRD_GRP_083",
+              "TRD_GRP_084",
+              "TRD_GRP_085",
+              "TRD_GRP_086",
+              "TRD_GRP_087",
+              "TRD_GRP_088",
+              "TRD_GRP_089",
+              "TRD_GRP_090",
+              "TRD_GRP_091",
+              "TRD_GRP_092",
+              "TRD_GRP_093",
+              "TRD_GRP_094",
+              "TRD_GRP_095",
+              "TRD_GRP_096",
+              "TRD_GRP_097",
+              "TRD_GRP_098",
+              "TRD_GRP_099",
+              "TRD_GRP_100",
+              "TRD_GRP_101",
+              "TRD_GRP_102",
+              "TRD_GRP_103",
+              "TRD_GRP_104",
+              "TRD_GRP_105",
+              "TRD_GRP_106",
+              "TRD_GRP_107",
+              "TRD_GRP_108",
+              "TRD_GRP_109",
+              "TRD_GRP_110",
+              "TRD_GRP_111",
+              "TRD_GRP_112",
+              "TRD_GRP_113",
+              "TRD_GRP_114",
+              "TRD_GRP_115",
+              "TRD_GRP_116",
+              "TRD_GRP_117",
+              "TRD_GRP_118",
+              "TRD_GRP_119",
+              "TRD_GRP_120",
+              "TRD_GRP_121",
+              "TRD_GRP_122",
+              "TRD_GRP_123",
+              "TRD_GRP_124",
+              "TRD_GRP_125",
+              "TRD_GRP_126",
+              "TRD_GRP_127",
+              "TRD_GRP_128",
+              "TRD_GRP_129",
+              "TRD_GRP_130",
+              "TRD_GRP_131",
+              "TRD_GRP_132",
+              "TRD_GRP_133",
+              "TRD_GRP_134",
+              "TRD_GRP_135",
+              "TRD_GRP_136",
+              "TRD_GRP_137",
+              "TRD_GRP_138",
+              "TRD_GRP_139",
+              "TRD_GRP_140",
+              "TRD_GRP_141",
+              "TRD_GRP_142",
+              "TRD_GRP_143",
+              "TRD_GRP_144",
+              "TRD_GRP_145",
+              "TRD_GRP_146",
+              "TRD_GRP_147",
+              "TRD_GRP_148",
+              "TRD_GRP_149",
+              "TRD_GRP_150",
+              "TRD_GRP_151",
+              "TRD_GRP_152",
+              "TRD_GRP_153",
+              "TRD_GRP_154",
+              "TRD_GRP_155",
+              "TRD_GRP_156",
+              "TRD_GRP_157",
+              "TRD_GRP_158",
+              "TRD_GRP_159",
+              "TRD_GRP_160",
+              "TRD_GRP_161",
+              "TRD_GRP_162",
+              "TRD_GRP_163",
+              "TRD_GRP_164",
+              "TRD_GRP_165",
+              "TRD_GRP_166",
+              "TRD_GRP_167",
+              "TRD_GRP_168",
+              "TRD_GRP_169",
+              "TRD_GRP_170",
+              "TRD_GRP_171",
+              "TRD_GRP_172",
+              "TRD_GRP_173",
+              "TRD_GRP_174",
+              "TRD_GRP_175",
+              "TRD_GRP_176",
+              "TRD_GRP_177",
+              "TRD_GRP_178",
+              "TRD_GRP_179",
+              "TRD_GRP_180",
+              "TRD_GRP_181",
+              "TRD_GRP_182",
+              "TRD_GRP_183",
+              "TRD_GRP_184",
+              "TRD_GRP_185",
+              "TRD_GRP_186",
+              "TRD_GRP_187",
+              "TRD_GRP_188",
+              "TRD_GRP_189",
+              "TRD_GRP_190",
+              "TRD_GRP_191",
+              "TRD_GRP_192",
+              "TRD_GRP_193",
+              "TRD_GRP_194",
+              "TRD_GRP_195",
+              "TRD_GRP_196",
+              "TRD_GRP_197",
+              "TRD_GRP_198",
+              "TRD_GRP_199",
+              "TRD_GRP_200",
+              "TRD_GRP_201",
+              "TRD_GRP_202",
+              "TRD_GRP_203",
+              "TRD_GRP_204",
+              "TRD_GRP_205",
+              "TRD_GRP_206",
+              "TRD_GRP_207",
+              "TRD_GRP_208",
+              "TRD_GRP_209",
+              "TRD_GRP_210",
+              "TRD_GRP_211",
+              "TRD_GRP_212",
+              "TRD_GRP_213",
+              "TRD_GRP_214",
+              "TRD_GRP_215",
+              "TRD_GRP_216",
+              "TRD_GRP_217",
+              "TRD_GRP_218",
+              "TRD_GRP_219",
+              "TRD_GRP_220",
+              "TRD_GRP_221",
+              "TRD_GRP_222",
+              "TRD_GRP_223",
+              "TRD_GRP_224",
+              "TRD_GRP_225",
+              "TRD_GRP_226",
+              "TRD_GRP_227",
+              "TRD_GRP_228",
+              "TRD_GRP_229",
+              "TRD_GRP_230",
+              "TRD_GRP_231",
+              "TRD_GRP_232",
+              "TRD_GRP_233",
+              "TRD_GRP_234",
+              "TRD_GRP_235",
+              "TRD_GRP_236",
+              "TRD_GRP_237",
+              "TRD_GRP_238",
+              "TRD_GRP_239",
+              "TRD_GRP_240",
+              "TRD_GRP_242",
+              "TRD_GRP_243",
+              "TRD_GRP_244",
+              "TRD_GRP_245",
+              "TRD_GRP_246",
+              "TRD_GRP_247",
+              "TRD_GRP_248",
+              "TRD_GRP_249",
+              "TRD_GRP_250",
+              "TRD_GRP_251",
+              "TRD_GRP_252",
+              "TRD_GRP_253",
+              "TRD_GRP_256",
+              "TRD_GRP_258",
+              "TRD_GRP_259",
+              "TRD_GRP_271"
+            ]
+          ],
+          "defaultSelfTradePreventionMode": "EXPIRE_MAKER",
+          "allowedSelfTradePreventionModes": [
+            "EXPIRE_TAKER",
+            "EXPIRE_MAKER",
+            "EXPIRE_BOTH",
+            "DECREMENT",
+            "TRANSFER"
+          ]
+        }
+      }
+    },
+    {
+      "step": "spot: BTCUSDT book",
+      "result": "PASS",
+      "detail": {
+        "bid": "60282",
+        "ask": "60282.01",
+        "ts": "2026-11-24T08:10:41.246Z"
+      }
+    },
+    {
+      "step": "spot: submit LIMIT BUY (resting, 15% below bid)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845628352",
+        "clientOrderId": "helmlvmwuf0d8w0p2h0m6e3h0d6p3j",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "ACCEPTED",
+        "qty": "0.00024",
+        "quoteQty": null,
+        "price": "51239.7",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:41.702Z"
+      }
+    },
+    {
+      "step": "spot: open orders contains the limit order",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845628352",
+        "clientOrderId": "helmlvmwuf0d8w0p2h0m6e3h0d6p3j",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "ACCEPTED",
+        "qty": "0.00024",
+        "quoteQty": null,
+        "price": "51239.7",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:41.702Z"
+      }
+    },
+    {
+      "step": "spot: cancel limit order",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845628352",
+        "clientOrderId": "hyNmywMXfYgAjMG6X89fJC",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "CANCELED",
+        "qty": "0.00024",
+        "quoteQty": null,
+        "price": "51239.7",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:42.300Z"
+      }
+    },
+    {
+      "step": "spot: reconcile cancelled order (provider truth)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845628352",
+        "clientOrderId": "helmlvmwuf0d8w0p2h0m6e3h0d6p3j",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "CANCELED",
+        "qty": "0.00024",
+        "quoteQty": null,
+        "price": "51239.7",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:42.300Z"
+      }
+    },
+    {
+      "step": "spot: submit MARKET BUY quoteOrderQty 11 USDT",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845631423",
+        "clientOrderId": "helmlvmwuf0e6466573r4f5n6x5d2f",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.00018",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.00018",
+        "avgFill": "60280.01",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:42.898Z"
+      }
+    },
+    {
+      "step": "spot: reconcile market order → FILLED with exchange-reported fills",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845631423",
+        "clientOrderId": "helmlvmwuf0e6466573r4f5n6x5d2f",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.00018",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.00018",
+        "avgFill": "60280.01",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:42.898Z"
+      }
+    },
+    {
+      "step": "spot: trade history (myTrades) for the fill",
+      "result": "PASS",
+      "detail": [
+        {
+          "tradeId": "353870360",
+          "price": "60280.01",
+          "qty": "0.00018",
+          "fee": "0.00000018",
+          "feeAsset": "BTC"
+        }
+      ]
+    },
+    {
+      "step": "spot: MARKET SELL the filled qty back",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845637793",
+        "clientOrderId": "helmlvmwuf0fbv4c6k3d3x2k6j5y34",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.00017",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.00017",
+        "avgFill": "60266",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:44.400Z"
+      }
+    },
+    {
+      "step": "spot: reconcile sell → FILLED",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "85845637793",
+        "clientOrderId": "helmlvmwuf0fbv4c6k3d3x2k6j5y34",
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.00017",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.00017",
+        "avgFill": "60266",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:44.400Z"
+      }
+    },
+    {
+      "step": "spot: duplicate clientOrderId is rejected by venue (no double submit)",
+      "result": "PASS",
+      "detail": {
+        "first": "ACCEPTED",
+        "second": "rejected: ORDER_REJECTED -2010"
+      }
+    },
+    {
+      "step": "usdm: connect",
+      "result": "PASS",
+      "detail": {
+        "state": "CONNECTED",
+        "reasons": [],
+        "checkedAt": "2026-11-24T08:10:48.898Z"
+      }
+    },
+    {
+      "step": "usdm: balances",
+      "result": "PASS",
+      "detail": [
+        {
+          "asset": "BTC",
+          "free": "0.01",
+          "total": "0.01"
+        },
+        {
+          "asset": "USDT",
+          "free": "4999.66319805",
+          "total": "4999.66319805"
+        },
+        {
+          "asset": "USDC",
+          "free": "5000",
+          "total": "5000"
+        }
+      ]
+    },
+    {
+      "step": "usdm: positions (before)",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "usdm: BTCUSDT perp filters",
+      "result": "PASS",
+      "detail": {
+        "id": "binance:perp:BTC-USDT:USDT",
+        "provider": "binance",
+        "providerSymbol": "BTCUSDT",
+        "product": "perp",
+        "base": "BTC",
+        "quote": "USDT",
+        "settle": "USDT",
+        "contractMultiplier": "1",
+        "quantityUnit": "base",
+        "lotSize": "0.0001",
+        "minQty": "0.0001",
+        "maxQty": "1000",
+        "minNotional": "50",
+        "tickSize": "0.1",
+        "venue": "Binance USDⓈ-M (Demo)",
+        "currency": "USDT",
+        "tradingHours": "continuous",
+        "status": "trading",
+        "raw": {
+          "symbol": "BTCUSDT",
+          "pair": "BTCUSDT",
+          "contractType": "PERPETUAL",
+          "deliveryDate": 4133404802000,
+          "onboardDate": 1569398400000,
+          "status": "TRADING",
+          "maintMarginPercent": "2.5000",
+          "requiredMarginPercent": "5.0000",
+          "baseAsset": "BTC",
+          "quoteAsset": "USDT",
+          "marginAsset": "USDT",
+          "pricePrecision": 2,
+          "quantityPrecision": 4,
+          "baseAssetPrecision": 8,
+          "quotePrecision": 8,
+          "underlyingType": "COIN",
+          "underlyingSubType": [],
+          "triggerProtect": "0.0500",
+          "liquidationFee": "0.020000",
+          "marketTakeBound": "0.30",
+          "maxMoveOrderLimit": 1000,
+          "filters": [
+            {
+              "maxPrice": "809484",
+              "filterType": "PRICE_FILTER",
+              "minPrice": "261.10",
+              "tickSize": "0.10"
+            },
+            {
+              "filterType": "LOT_SIZE",
+              "minQty": "0.0001",
+              "stepSize": "0.0001",
+              "maxQty": "1000"
+            },
+            {
+              "maxQty": "120",
+              "stepSize": "0.0001",
+              "minQty": "0.0001",
+              "filterType": "MARKET_LOT_SIZE"
+            },
+            {
+              "filterType": "MAX_NUM_ORDERS",
+              "limit": 10000
+            },
+            {
+              "filterType": "MIN_NOTIONAL",
+              "notional": "50"
+            },
+            {
+              "filterType": "PERCENT_PRICE",
+              "multiplierUp": "1.0500",
+              "multiplierDown": "0.9500",
+              "multiplierDecimal": "4"
+            },
+            {
+              "filterType": "POSITION_RISK_CONTROL",
+              "positionControlSide": "NONE"
+            }
+          ],
+          "orderTypes": [
+            "LIMIT",
+            "MARKET",
+            "STOP",
+            "STOP_MARKET",
+            "TAKE_PROFIT",
+            "TAKE_PROFIT_MARKET",
+            "TRAILING_STOP_MARKET"
+          ],
+          "timeInForce": [
+            "GTC",
+            "IOC",
+            "FOK",
+            "GTX",
+            "GTD"
+          ],
+          "permissionSets": [
+            "GRID",
+            "COPY",
+            "RPI"
+          ]
+        }
+      }
+    },
+    {
+      "step": "usdm: set leverage 2x",
+      "result": "PASS",
+      "detail": "ok"
+    },
+    {
+      "step": "usdm: MARKET BUY (open long, ≈$120 notional)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "28693376873",
+        "clientOrderId": "helmlvmwuf0k70014t0t622d4l600r",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.002",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.002",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:50.711Z"
+      }
+    },
+    {
+      "step": "usdm: reconcile open → FILLED",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "28693376873",
+        "clientOrderId": "helmlvmwuf0k70014t0t622d4l600r",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.002",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.002",
+        "avgFill": "60303.9",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:50.711Z"
+      }
+    },
+    {
+      "step": "usdm: position update visible",
+      "result": "PASS",
+      "detail": {
+        "side": "NET",
+        "qty": "0.002",
+        "entry": "60303.9",
+        "mark": "60255.4",
+        "liq": null
+      }
+    },
+    {
+      "step": "usdm: reduce-only STOP_MARKET protection 10% below",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "algo:1000000300500010",
+        "clientOrderId": "helmstmwuf0kyc1a6q1c4g301y0o66",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "ACCEPTED",
+        "qty": "0.002",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": true,
+        "updatedAt": "2026-11-24T08:10:51.696Z"
+      }
+    },
+    {
+      "step": "usdm: protection visible in open orders",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "algo:1000000300500010",
+        "clientOrderId": "helmstmwuf0kyc1a6q1c4g301y0o66",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "ACCEPTED",
+        "qty": "0.002",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": true,
+        "updatedAt": "2026-11-24T08:10:51.696Z"
+      }
+    },
+    {
+      "step": "usdm: cancel protection",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "algo:1000000300500010",
+        "clientOrderId": "helmstmwuf0kyc1a6q1c4g301y0o66",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "status": "CANCELED",
+        "qty": null,
+        "quoteQty": null,
+        "price": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:52.812Z"
+      }
+    },
+    {
+      "step": "usdm: reduce-only MARKET SELL (close long)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "28693376903",
+        "clientOrderId": "helmlvmwuf0lxp646f0x054o471c23",
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.002",
+        "quoteQty": null,
+        "price": null,
+        "filled": "0.002",
+        "avgFill": null,
+        "reduceOnly": true,
+        "updatedAt": "2026-11-24T08:10:52.991Z"
+      }
+    },
+    {
+      "step": "usdm: reconcile close → FILLED, position flat",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "providerOrderId": "28693376903",
+          "clientOrderId": "helmlvmwuf0lxp646f0x054o471c23",
+          "instrument": "binance:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "status": "FILLED",
+          "qty": "0.002",
+          "quoteQty": null,
+          "price": null,
+          "filled": "0.002",
+          "avgFill": "60249",
+          "reduceOnly": true,
+          "updatedAt": "2026-11-24T08:10:52.991Z"
+        },
+        "positionAfter": "0"
+      }
+    },
+    {
+      "step": "guard: same keys against PRODUCTION host are blocked before network",
+      "result": "PASS",
+      "detail": "ENVIRONMENT_MISMATCH, 0 network calls"
+    }
+  ],
+  "wire": [
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/time",
+      "status": 200,
+      "ms": 942
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/account",
+      "status": 200,
+      "ms": 1199
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/sapi/v1/account/apiRestrictions",
+      "status": 404,
+      "ms": 298
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/account",
+      "status": 200,
+      "ms": 325
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/exchangeInfo",
+      "status": 200,
+      "ms": 466
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/depth",
+      "status": 200,
+      "ms": 302
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 297
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/openOrders",
+      "status": 200,
+      "ms": 298
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 297
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 298
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 299
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 298
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/myTrades",
+      "status": 200,
+      "ms": 302
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/account",
+      "status": 200,
+      "ms": 298
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/myTrades",
+      "status": 200,
+      "ms": 301
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 299
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 298
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 299
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 400,
+      "ms": 298
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "demo-api.binance.com/api/v3/order",
+      "status": 200,
+      "ms": 1388
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/time",
+      "status": 200,
+      "ms": 1127
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v3/account",
+      "status": 200,
+      "ms": 934
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v3/balance",
+      "status": 200,
+      "ms": 305
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v3/positionRisk",
+      "status": 200,
+      "ms": 303
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/exchangeInfo",
+      "status": 200,
+      "ms": 336
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/leverage",
+      "status": 200,
+      "ms": 305
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/depth",
+      "status": 200,
+      "ms": 306
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/order",
+      "status": 200,
+      "ms": 367
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/order",
+      "status": 200,
+      "ms": 305
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v3/positionRisk",
+      "status": 200,
+      "ms": 308
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/algoOrder",
+      "status": 200,
+      "ms": 323
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/openOrders",
+      "status": 200,
+      "ms": 305
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/openAlgoOrders",
+      "status": 200,
+      "ms": 310
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/algoOrder",
+      "status": 200,
+      "ms": 333
+    },
+    {
+      "method": "POST",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/order",
+      "status": 200,
+      "ms": 356
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v1/order",
+      "status": 200,
+      "ms": 305
+    },
+    {
+      "method": "GET",
+      "endpoint": "demo-fapi.binance.com/fapi/v3/positionRisk",
+      "status": 200,
+      "ms": 306
+    }
+  ]
+}

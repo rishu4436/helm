@@ -1,7 +1,7 @@
 import {
-  AlpacaPaperAdapter, BinanceAdapter, BybitAdapter, CoinbaseSandboxAdapter, IbkrGatewayAdapter, OkxAdapter, type FetchLike,
+  AlpacaPaperAdapter, BinanceAdapter, BybitAdapter, CoinbaseSandboxAdapter, IbkrGatewayAdapter, OkxAdapter, SimulatedAdapter, type FetchLike, type MarketSource, type SimStore,
 } from '@helm/connectors'
-import { HelmError, PROVIDER_INFO, type ExchangeAdapter, type ProviderId } from '@helm/shared'
+import { HelmError, PROVIDER_INFO, SIM_VENUES, type Environment, type ExchangeAdapter, type ProviderId, type SimVenue } from '@helm/shared'
 import { z } from 'zod'
 
 /** Provider-specific credential schemas. No passwords, 2FA codes, recovery phrases or withdrawal keys — ever. */
@@ -14,12 +14,29 @@ export const CredentialSchemas = {
   alpaca: z.object({ keyId: z.string().min(10).max(64), secretKey: z.string().min(16).max(128) }),
 } as const
 
-export type AdapterFactory = (provider: ProviderId, creds: Record<string, string>, accountId: string) => ExchangeAdapter
+export interface FactoryExtras { environment?: Environment; simStore?: SimStore }
+export type AdapterFactory = (provider: ProviderId, creds: Record<string, string>, accountId: string, extras?: FactoryExtras) => ExchangeAdapter
+
+export function simulatorEnabled(env: NodeJS.ProcessEnv = process.env) { return env.HELM_ENABLE_SIMULATOR !== 'false' }
+export const isSimVenue = (p: ProviderId): p is SimVenue => (SIM_VENUES as readonly string[]).includes(p)
+
+/** Public (unauthenticated) market data per venue — used to price the HELM simulator and valuations. */
+export function publicMarket(venue: SimVenue, fetchImpl?: FetchLike): MarketSource {
+  const none = { apiKey: 'public', apiSecret: 'public' }
+  const spot = venue === 'binance' ? new BinanceAdapter(none, { market: 'spot', accountId: 'public', fetch: fetchImpl }) : venue === 'okx' ? new OkxAdapter({ ...none, passphrase: 'public' }, { accountId: 'public', fetch: fetchImpl }) : new BybitAdapter(none, { accountId: 'public', fetch: fetchImpl })
+  const perp = venue === 'binance' ? new BinanceAdapter(none, { market: 'usdm', accountId: 'public', fetch: fetchImpl }) : spot
+  return { getOrderBook: (id, depth) => (id.includes(':perp:') ? perp : spot).getOrderBook(id, depth) }
+}
 
 export function alpacaEnabled(env: NodeJS.ProcessEnv = process.env) { return env.HELM_ENABLE_ALPACA === 'true' }
 
 export function makeAdapterFactory(fetchImpl?: FetchLike, env: NodeJS.ProcessEnv = process.env): AdapterFactory {
-  return (provider, c, accountId) => {
+  return (provider, c, accountId, extras) => {
+    if (extras?.environment === 'simulated') {
+      if (!simulatorEnabled(env)) throw new HelmError('UNSUPPORTED_OPERATION', 'HELM simulator disabled (HELM_ENABLE_SIMULATOR=false)')
+      if (!isSimVenue(provider) || !extras.simStore) throw new HelmError('UNSUPPORTED_OPERATION', `No simulator for ${provider}`)
+      return new SimulatedAdapter({ venue: provider, accountId, market: publicMarket(provider, fetchImpl), store: extras.simStore })
+    }
     switch (provider) {
       case 'binance': return new BinanceAdapter({ apiKey: c.apiKey!, apiSecret: c.apiSecret! }, { market: (c.market as 'spot' | 'usdm') ?? 'spot', accountId, fetch: fetchImpl })
       case 'okx': return new OkxAdapter({ apiKey: c.apiKey!, apiSecret: c.apiSecret!, passphrase: c.passphrase! }, { accountId, fetch: fetchImpl })

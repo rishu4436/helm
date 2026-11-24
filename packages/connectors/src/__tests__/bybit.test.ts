@@ -72,3 +72,24 @@ describe('Bybit orders', () => {
     expect(mapBybitStatus('Rejected')).toBe('REJECTED')
   })
 })
+
+describe('Bybit conditional stops + preflight guard', () => {
+  it('linear SELL stop → Market + triggerPrice + triggerDirection 2 + reduceOnly', async () => {
+    const { BybitAdapter } = await import('../bybit/adapter')
+    const { dec } = await import('@helm/shared')
+    const calls: Array<{ url: string; body?: string }> = []
+    const a = new BybitAdapter({ apiKey: 'k', apiSecret: 's' }, { accountId: 'a', fetch: async (url, init) => { calls.push({ url, body: init.body as string | undefined }); return new Response(JSON.stringify(url.includes('/market/time') ? { retCode: 0, retMsg: 'OK', result: { timeNano: String(Date.now() * 1e6), timeSecond: String(Math.floor(Date.now() / 1000)) }, time: Date.now() } : { retCode: 0, retMsg: 'OK', result: { orderId: 'X1', orderLinkId: 'helmstabc' }, time: Date.now() })) } })
+    const inst = { id: 'bybit:perp:BTC-USDT:USDT', provider: 'bybit', providerSymbol: 'BTCUSDT', assetClass: 'perp', base: 'BTC', quote: 'USDT', settle: 'USDT', lotSize: dec('0.001'), minQty: dec('0.001'), maxQty: null, tickSize: dec('0.1'), minNotional: dec('5'), contractSize: null, status: 'trading' } as never
+    await a.submitOrder({ accountId: 'a', instrument: inst, side: 'SELL', type: 'STOP_MARKET', quantity: dec('0.001'), stopPrice: dec('58000'), reduceOnly: true, clientOrderId: 'helmstabc' }).catch(() => null) // reconcile after ack hits the mock; we only assert the request body
+    const create = calls.find(c => c.url.endsWith('/v5/order/create'))!
+    const b = JSON.parse(create.body!)
+    expect(b).toMatchObject({ category: 'linear', orderType: 'Market', triggerPrice: '58000', triggerDirection: 2, reduceOnly: true, triggerBy: 'MarkPrice' })
+  })
+  it('production host: zero network calls (not even clock sync)', async () => {
+    const { BybitAdapter } = await import('../bybit/adapter')
+    let n = 0
+    const a = new BybitAdapter({ apiKey: 'k', apiSecret: 's' }, { accountId: 'a', baseUrl: 'https://api.bybit.com', fetch: async () => { n++; return new Response('{}') } })
+    await expect(a.getBalances()).rejects.toMatchObject({ code: 'ENVIRONMENT_MISMATCH' })
+    expect(n).toBe(0)
+  })
+})

@@ -1,4 +1,4 @@
-import {
+import { type Fill,
   BaseAdapter, Decimal, HelmError, dec, decOrNull, deriveConnectionHealth, instrumentId, parseInstrumentId, toProviderSymbol,
   type AccountEquity, type Balance, type CapabilityManifest, type ConnectionHealth, type HelmErrorCode, type Instrument, type InstrumentId,
   type MarketSnapshot, type Order, type OrderBook, type OrderRequest, type OrderStatus, type Position, type ValidationResult,
@@ -57,9 +57,9 @@ export class BybitAdapter extends BaseAdapter {
       provider: 'bybit', environment: 'demo', accountTypes: ['unified'],
       permissions: { read: this.health.state !== 'ERROR', trade: this.health.state === 'CONNECTED', withdraw: false },
       products: ['spot', 'perp'], spot: true, futures: true, stocks: false,
-      orderTypes: ['MARKET', 'LIMIT'], reduceOnly: true, hedgeMode: true, margin: true, cancelReplace: true,
+      orderTypes: ['MARKET', 'LIMIT', 'STOP_MARKET'], reduceOnly: true, hedgeMode: true, margin: true, cancelReplace: true,
       streaming: { market: true, account: true }, simulation: 'demo_matching_engine',
-      operations: ['connect', 'disconnect', 'getConnectionState', 'getCapabilities', 'getBalances', 'getEquity', 'getPositions', 'getOpenOrders', 'getOrderHistory',
+      operations: ['connect', 'disconnect', 'getConnectionState', 'getCapabilities', 'getBalances', 'getEquity', 'getPositions', 'getOpenOrders', 'getOrderHistory', 'getFills',
         'getOrderBook', 'getMarketSnapshot', 'getInstruments', 'validateOrder', 'submitOrder', 'cancelOrder', 'amendOrder', 'reconcileOrder', 'setLeverage'],
       restrictions: ['Bybit Demo Trading (api-demo.bybit.com): not every V5 endpoint is available; WS trading unsupported; demo orders kept 7 days'],
       verification: 'documented',
@@ -94,6 +94,7 @@ export class BybitAdapter extends BaseAdapter {
     } else {
       payload = JSON.stringify(clean)
     }
+    this.http.preflight({ method, url, authenticated: true })
     const headers = await this.signedHeaders(payload)
     const r = await this.http.request({ method, url, headers, body: method === 'POST' ? payload : undefined, authenticated: true, submitsOrder })
     return this.unwrap<T>(r.status, r.body)
@@ -188,15 +189,21 @@ export class BybitAdapter extends BaseAdapter {
   async validateOrder(req: OrderRequest): Promise<ValidationResult> { return validateAgainstInstrument(req) }
 
   buildOrderBody(req: OrderRequest): Record<string, string | boolean | number | undefined> {
-    if (req.type !== 'MARKET' && req.type !== 'LIMIT') throw new HelmError('UNSUPPORTED_OPERATION', `Bybit ${req.type} not enabled in HELM yet`, { provider: 'bybit' })
+    if (req.type !== 'MARKET' && req.type !== 'LIMIT' && req.type !== 'STOP_MARKET') throw new HelmError('UNSUPPORTED_OPERATION', `Bybit ${req.type} not enabled in HELM yet`, { provider: 'bybit' })
     const category = this.category(req.instrument.id)
     const body: Record<string, string | boolean | number | undefined> = {
-      category, symbol: req.instrument.providerSymbol, side: req.side === 'BUY' ? 'Buy' : 'Sell', orderType: req.type === 'MARKET' ? 'Market' : 'Limit',
+      category, symbol: req.instrument.providerSymbol, side: req.side === 'BUY' ? 'Buy' : 'Sell', orderType: req.type === 'LIMIT' ? 'Limit' : 'Market',
       orderLinkId: req.clientOrderId, price: req.type === 'LIMIT' ? req.price?.toFixed() : undefined, timeInForce: req.type === 'LIMIT' ? (req.timeInForce ?? 'GTC') : undefined,
     }
     if (category === 'spot' && req.type === 'MARKET' && req.quoteQuantity && !req.quantity) { body.qty = req.quoteQuantity.toFixed(); body.marketUnit = 'quoteCoin' }
     else if (req.quantity) { body.qty = req.quantity.toFixed(); if (category === 'spot' && req.type === 'MARKET') body.marketUnit = 'baseCoin' }
     else throw new HelmError('INVALID_QUANTITY', 'quantity required', { provider: 'bybit' })
+    if (req.type === 'STOP_MARKET') {
+      if (!req.stopPrice) throw new HelmError('INVALID_QUANTITY', 'stop price required', { provider: 'bybit' })
+      // Conditional market order. SELL stop triggers when price FALLS to trigger (2); BUY stop when it RISES (1).
+      body.triggerPrice = req.stopPrice.toFixed(); body.triggerDirection = req.side === 'SELL' ? 2 : 1
+      if (category === 'linear') { body.triggerBy = 'MarkPrice'; body.orderFilter = undefined } else { body.orderFilter = 'StopOrder'; body.marketUnit = 'baseCoin' }
+    }
     if (category === 'linear') {
       if (req.reduceOnly) body.reduceOnly = true
       body.positionIdx = req.positionSide === 'LONG' ? 1 : req.positionSide === 'SHORT' ? 2 : 0
@@ -231,6 +238,7 @@ export class BybitAdapter extends BaseAdapter {
     const q = { category: this.category(id), symbol: this.symbolOf(id), orderId: ids.providerOrderId, orderLinkId: ids.providerOrderId ? undefined : ids.clientOrderId }
     const open = await this.signed<{ list: BybitOrder[] }>('GET', '/v5/order/realtime', q)
     let o = open.list[0]
+    if (!o && q.category === 'spot') o = (await this.signed<{ list: BybitOrder[] }>('GET', '/v5/order/realtime', { ...q, orderFilter: 'StopOrder' })).list[0]
     if (!o) o = (await this.signed<{ list: BybitOrder[] }>('GET', '/v5/order/history', q)).list[0]
     return o ? this.toOrder(o, id) : null
   }
@@ -246,16 +254,23 @@ export class BybitAdapter extends BaseAdapter {
     return r.list.map(o => this.toOrder(o, id))
   }
 
+  /** Exchange-reported executions (/v5/execution/list). */
+  async getFills(id: InstrumentId, limit = 50): Promise<Fill[]> {
+    const r = await this.signed<{ list: Array<{ orderId: string; execId: string; side: 'Buy' | 'Sell'; execPrice: string; execQty: string; execFee: string; feeCurrency?: string; isMaker: boolean; execTime: string }> }>('GET', '/v5/execution/list', { category: this.category(id), symbol: this.symbolOf(id), limit })
+    return r.list.map(e => ({ accountId: this.opts.accountId, provider: 'bybit' as const, instrumentId: id, providerOrderId: e.orderId, providerTradeId: e.execId, side: e.side === 'Buy' ? 'BUY' as const : 'SELL' as const, price: dec(e.execPrice), quantity: dec(e.execQty), fee: decOrNull(e.execFee), feeAsset: e.feeCurrency ?? null, isMaker: e.isMaker, timestamp: new Date(Number(e.execTime)).toISOString(), raw: e }))
+  }
+
   async setLeverage(id: InstrumentId, leverage: Decimal): Promise<void> {
     if (this.category(id) !== 'linear') return this.unsupported('setLeverage (spot)')
-    await this.signed('POST', '/v5/position/set-leverage', { category: 'linear', symbol: this.symbolOf(id), buyLeverage: leverage.toFixed(), sellLeverage: leverage.toFixed() })
+    try { await this.signed('POST', '/v5/position/set-leverage', { category: 'linear', symbol: this.symbolOf(id), buyLeverage: leverage.toFixed(), sellLeverage: leverage.toFixed() }) }
+    catch (e) { if (!(e instanceof HelmError && e.providerCode === '110043')) throw e } // 110043 = leverage not modified (already set)
   }
 
   private toOrder(o: BybitOrder, id: InstrumentId): Order {
     const quoteUnit = o.marketUnit === 'quoteCoin'
     return {
       accountId: this.opts.accountId, provider: 'bybit', instrumentId: id, providerOrderId: o.orderId, clientOrderId: o.orderLinkId, side: o.side === 'Buy' ? 'BUY' : 'SELL',
-      type: o.orderType === 'Market' ? 'MARKET' : 'LIMIT', timeInForce: (['GTC', 'IOC', 'FOK'].includes(o.timeInForce) ? o.timeInForce : null) as Order['timeInForce'],
+      type: o.triggerPrice && !dec(o.triggerPrice).isZero() && o.orderType === 'Market' ? 'STOP_MARKET' : o.orderType === 'Market' ? 'MARKET' : 'LIMIT', timeInForce: (['GTC', 'IOC', 'FOK'].includes(o.timeInForce) ? o.timeInForce : null) as Order['timeInForce'],
       quantity: quoteUnit ? null : decOrNull(o.qty), quoteQuantity: quoteUnit ? decOrNull(o.qty) : null, price: o.price && !dec(o.price).isZero() ? dec(o.price) : null,
       stopPrice: o.triggerPrice && !dec(o.triggerPrice).isZero() ? dec(o.triggerPrice) : null, reduceOnly: o.reduceOnly, status: mapBybitStatus(o.orderStatus),
       filledQuantity: dec(o.cumExecQty || '0'), avgFillPrice: o.avgPrice && !dec(o.avgPrice).isZero() ? dec(o.avgPrice) : null,

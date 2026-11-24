@@ -102,6 +102,7 @@ export class OkxAdapter extends BaseAdapter {
     } else {
       body = JSON.stringify(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined)))
     }
+    this.http.preflight({ method, url: `${this.base}${requestPath}`, authenticated: true, headers: { ...OKX_DEMO_HEADER } })
     const headers = await this.signedHeaders(method, requestPath, body)
     const r = await this.http.request({ method, url: `${this.base}${requestPath}`, headers, body: body || undefined, authenticated: true, submitsOrder })
     return this.unwrap<T>(r.status, r.body)

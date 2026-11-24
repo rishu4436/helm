@@ -1,0 +1,850 @@
+{
+  "ranAt": "2026-11-24T08:10:31.138Z",
+  "environment": "Bybit Demo Trading (api-demo.bybit.com)",
+  "credentials": "from env, redacted",
+  "rows": [
+    {
+      "step": "connect (authenticated read, environment, key permissions)",
+      "result": "PASS",
+      "detail": {
+        "state": "CONNECTED",
+        "reasons": [],
+        "checkedAt": "2026-11-24T08:09:51.158Z"
+      }
+    },
+    {
+      "step": "wallet balances (UNIFIED, non-zero)",
+      "result": "PASS",
+      "detail": [
+        {
+          "asset": "USDC",
+          "total": "50000",
+          "free": "50000"
+        },
+        {
+          "asset": "BTC",
+          "total": "0.99999984",
+          "free": "0.99999984"
+        },
+        {
+          "asset": "ETH",
+          "total": "1",
+          "free": "1"
+        },
+        {
+          "asset": "USDT",
+          "total": "49999.91306103",
+          "free": "49999.91306103"
+        }
+      ]
+    },
+    {
+      "step": "equity",
+      "result": "PASS",
+      "detail": {
+        "currency": "USD",
+        "equity": "161798.45452376",
+        "available": "99933.61316579",
+        "marginUsed": "0"
+      }
+    },
+    {
+      "step": "spot: BTCUSDT instrument filters",
+      "result": "PASS",
+      "detail": {
+        "id": "bybit:spot:BTC-USDT",
+        "provider": "bybit",
+        "providerSymbol": "BTCUSDT",
+        "product": "spot",
+        "base": "BTC",
+        "quote": "USDT",
+        "contractMultiplier": "1",
+        "quantityUnit": "base",
+        "lotSize": "0.000001",
+        "minQty": "0.000001",
+        "maxQty": "230",
+        "minNotional": "5",
+        "tickSize": "0.1",
+        "venue": "Bybit Spot (Demo)",
+        "currency": "USDT",
+        "tradingHours": "continuous",
+        "status": "trading",
+        "raw": {
+          "symbolId": 9,
+          "symbol": "BTCUSDT",
+          "baseCoin": "BTC",
+          "quoteCoin": "USDT",
+          "innovation": "0",
+          "status": "Trading",
+          "marginTrading": "utaOnly",
+          "stTag": "0",
+          "lotSizeFilter": {
+            "basePrecision": "0.000001",
+            "quotePrecision": "0.0000001",
+            "minOrderQty": "0.000001",
+            "maxOrderQty": "230",
+            "minOrderAmt": "5",
+            "maxOrderAmt": "8000000",
+            "maxLimitOrderQty": "230",
+            "maxMarketOrderQty": "120",
+            "postOnlyMaxLimitOrderSize": "1150"
+          },
+          "priceFilter": {
+            "tickSize": "0.1"
+          },
+          "riskParameters": {
+            "priceLimitRatioX": "0.005",
+            "priceLimitRatioY": "0.01"
+          },
+          "symbolType": "",
+          "xstockMultiplier": "1"
+        }
+      }
+    },
+    {
+      "step": "spot: LIMIT BUY resting 15% below bid",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284531013225728",
+        "clientOrderId": "helmlvmwuezdjw3i0u4434200n610d",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "ACCEPTED",
+        "qty": "0.000235",
+        "quoteQty": null,
+        "price": "51229.5",
+        "stopPrice": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:09:55.632Z"
+      }
+    },
+    {
+      "step": "spot: limit visible in open orders",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284531013225728",
+        "clientOrderId": "helmlvmwuezdjw3i0u4434200n610d",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "ACCEPTED",
+        "qty": "0.000235",
+        "quoteQty": null,
+        "price": "51229.5",
+        "stopPrice": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:09:55.632Z"
+      }
+    },
+    {
+      "step": "spot: cancel → reconcile CANCELED",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284531013225728",
+        "clientOrderId": "helmlvmwuezdjw3i0u4434200n610d",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "LIMIT",
+        "status": "CANCELED",
+        "qty": "0.000235",
+        "quoteQty": null,
+        "price": "51229.5",
+        "stopPrice": null,
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:09:58.205Z"
+      }
+    },
+    {
+      "step": "spot: MARKET BUY 10 USDT (quote)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284567914712320",
+        "clientOrderId": "helmlvmwuezglr4i6t1k1s1i5n160j",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": null,
+        "quoteQty": "10",
+        "price": null,
+        "stopPrice": null,
+        "filled": "0.000165904336241636",
+        "avgFill": "60275.7",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:00.032Z"
+      }
+    },
+    {
+      "step": "spot: reconcile market → FILLED",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284567914712320",
+        "clientOrderId": "helmlvmwuezglr4i6t1k1s1i5n160j",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": null,
+        "quoteQty": "10",
+        "price": null,
+        "stopPrice": null,
+        "filled": "0.000165904336241636",
+        "avgFill": "60275.7",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:00.032Z"
+      }
+    },
+    {
+      "step": "spot: execution list for the order",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "spot: conditional STOP sell (StopOrder) on the bought qty, 10% below",
+      "result": "PASS",
+      "detail": {
+        "stop": {
+          "providerOrderId": "2355284602417057024",
+          "clientOrderId": "helmstmwuezk47221262313z6f1b5w",
+          "instrument": "bybit:spot:BTC-USDT",
+          "side": "SELL",
+          "type": "STOP_MARKET",
+          "status": "ACCEPTED",
+          "qty": "0.000165",
+          "quoteQty": null,
+          "price": null,
+          "stopPrice": "54243",
+          "filled": "0",
+          "avgFill": null,
+          "reduceOnly": false,
+          "updatedAt": "2026-11-24T08:10:04.145Z"
+        },
+        "cancelled": {
+          "providerOrderId": "2355284602417057024",
+          "clientOrderId": "helmstmwuezk47221262313z6f1b5w",
+          "instrument": "bybit:spot:BTC-USDT",
+          "side": "SELL",
+          "type": "STOP_MARKET",
+          "status": "CANCELED",
+          "qty": "0.000165",
+          "quoteQty": null,
+          "price": null,
+          "stopPrice": "54243",
+          "filled": "0",
+          "avgFill": null,
+          "reduceOnly": false,
+          "updatedAt": "2026-11-24T08:10:06.430Z"
+        }
+      }
+    },
+    {
+      "step": "spot: MARKET SELL bought qty back",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "2355284637288500480",
+        "clientOrderId": "helmlvmwuezmyp4w3c3p2j71166d1k",
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.000165",
+        "quoteQty": null,
+        "price": null,
+        "stopPrice": null,
+        "filled": "0.000165",
+        "avgFill": "60303.3",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:08.301Z"
+      }
+    },
+    {
+      "step": "linear: BTCUSDT perp filters",
+      "result": "PASS",
+      "detail": {
+        "id": "bybit:perp:BTC-USDT:USDT",
+        "provider": "bybit",
+        "providerSymbol": "BTCUSDT",
+        "product": "perp",
+        "base": "BTC",
+        "quote": "USDT",
+        "settle": "USDT",
+        "contractMultiplier": "1",
+        "quantityUnit": "base",
+        "lotSize": "0.001",
+        "minQty": "0.001",
+        "maxQty": "1500",
+        "minNotional": "5",
+        "tickSize": "0.1",
+        "venue": "Bybit USDT Perpetual (Demo)",
+        "currency": "USDT",
+        "tradingHours": "continuous",
+        "status": "trading",
+        "raw": {
+          "symbol": "BTCUSDT",
+          "contractType": "LinearPerpetual",
+          "status": "Trading",
+          "baseCoin": "BTC",
+          "quoteCoin": "USDT",
+          "launchTime": "1584230400000",
+          "deliveryTime": "0",
+          "deliveryFeeRate": "",
+          "priceScale": "2",
+          "leverageFilter": {
+            "minLeverage": "1",
+            "maxLeverage": "150.00",
+            "leverageStep": "0.01"
+          },
+          "priceFilter": {
+            "minPrice": "0.10",
+            "maxPrice": "1999999.80",
+            "tickSize": "0.10"
+          },
+          "lotSizeFilter": {
+            "maxOrderQty": "1500.000",
+            "minOrderQty": "0.001",
+            "qtyStep": "0.001",
+            "postOnlyMaxOrderQty": "1500.000",
+            "maxMktOrderQty": "150.000",
+            "minNotionalValue": "5"
+          },
+          "unifiedMarginTrade": true,
+          "fundingInterval": 480,
+          "settleCoin": "USDT",
+          "copyTrading": "both",
+          "upperFundingRate": "0.00333",
+          "lowerFundingRate": "-0.00333",
+          "isPreListing": false,
+          "preListingInfo": null,
+          "riskParameters": {
+            "priceLimitRatioX": "0.01",
+            "priceLimitRatioY": "0.02"
+          },
+          "displayName": "BTCUSDT",
+          "symbolType": "",
+          "forbidUplWithdrawal": false,
+          "symbolId": 5,
+          "fullName": "Bitcoin",
+          "marketRegion": "",
+          "underlyingTicker": "",
+          "tags": []
+        }
+      }
+    },
+    {
+      "step": "linear: set leverage 2x",
+      "result": "PASS",
+      "detail": "ok"
+    },
+    {
+      "step": "linear: LIMIT BUY resting 15% below → cancel",
+      "result": "PASS",
+      "detail": {
+        "placed": {
+          "providerOrderId": "d5a9dfae-2f7d-4fbe-830a-b5bcee819721",
+          "clientOrderId": "helmlvmwuezri91j2x01292o2y2q4r",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "BUY",
+          "type": "LIMIT",
+          "status": "ACCEPTED",
+          "qty": "0.001",
+          "quoteQty": null,
+          "price": "51224.2",
+          "stopPrice": null,
+          "filled": "0",
+          "avgFill": null,
+          "reduceOnly": false,
+          "updatedAt": "2026-11-24T08:10:14.163Z"
+        },
+        "cancelled": {
+          "providerOrderId": "d5a9dfae-2f7d-4fbe-830a-b5bcee819721",
+          "clientOrderId": "helmlvmwuezri91j2x01292o2y2q4r",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "BUY",
+          "type": "LIMIT",
+          "status": "CANCELED",
+          "qty": "0.001",
+          "quoteQty": null,
+          "price": "51224.2",
+          "stopPrice": null,
+          "filled": "0",
+          "avgFill": null,
+          "reduceOnly": false,
+          "updatedAt": "2026-11-24T08:10:16.044Z"
+        }
+      }
+    },
+    {
+      "step": "T2P: entry MARKET BUY (long ≈$120)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "060b296f-28d8-45ff-a539-f661b9b10086",
+        "clientOrderId": "helmenmwuezudv2r3x35200w6i196d",
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.001",
+        "quoteQty": null,
+        "price": "60855.6",
+        "stopPrice": null,
+        "filled": "0.001",
+        "avgFill": "60249.3",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:17.519Z"
+      }
+    },
+    {
+      "step": "T2P: reconcile entry → FILLED (provider truth)",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "060b296f-28d8-45ff-a539-f661b9b10086",
+        "clientOrderId": "helmenmwuezudv2r3x35200w6i196d",
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "qty": "0.001",
+        "quoteQty": null,
+        "price": "60855.6",
+        "stopPrice": null,
+        "filled": "0.001",
+        "avgFill": "60249.3",
+        "reduceOnly": false,
+        "updatedAt": "2026-11-24T08:10:17.519Z"
+      }
+    },
+    {
+      "step": "linear: position update visible",
+      "result": "PASS",
+      "detail": {
+        "side": "LONG",
+        "qty": "0.001",
+        "entry": "60249.3",
+        "mark": "60253.23",
+        "liq": null,
+        "lev": "2"
+      }
+    },
+    {
+      "step": "T2P: reduce-only STOP_MARKET 3% below actual avg fill, qty = actual filled",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "36ff14a0-8ff3-4b2d-9cb1-848e23c9f90f",
+        "clientOrderId": "helmstmwuezxal6v4b0o5i0n4c133m",
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "ACCEPTED",
+        "qty": "0.001",
+        "quoteQty": null,
+        "price": null,
+        "stopPrice": "58441.8",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": true,
+        "updatedAt": "2026-11-24T08:10:21.646Z"
+      }
+    },
+    {
+      "step": "T2P: venue lists the stop as live → PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "stop": {
+          "providerOrderId": "36ff14a0-8ff3-4b2d-9cb1-848e23c9f90f",
+          "clientOrderId": "helmstmwuezxal6v4b0o5i0n4c133m",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "STOP_MARKET",
+          "status": "ACCEPTED",
+          "qty": "0.001",
+          "quoteQty": null,
+          "price": null,
+          "stopPrice": "58441.8",
+          "filled": "0",
+          "avgFill": null,
+          "reduceOnly": true,
+          "updatedAt": "2026-11-24T08:10:21.646Z"
+        },
+        "venueStatus": "Untriggered",
+        "protectionHistory": [
+          {
+            "from": null,
+            "to": "PLANNED",
+            "at": "2026-11-24T08:10:17.107Z"
+          },
+          {
+            "from": "PLANNED",
+            "to": "ENTRY_SUBMITTED",
+            "at": "2026-11-24T08:10:17.107Z"
+          },
+          {
+            "from": "ENTRY_SUBMITTED",
+            "to": "ENTRY_FILLED",
+            "at": "2026-11-24T08:10:19.734Z"
+          },
+          {
+            "from": "ENTRY_FILLED",
+            "to": "PROTECTION_SUBMITTED",
+            "at": "2026-11-24T08:10:20.877Z"
+          },
+          {
+            "from": "PROTECTION_SUBMITTED",
+            "to": "PROTECTED",
+            "at": "2026-11-24T08:10:24.295Z",
+            "note": "venue order 36ff14a0-8ff3-4b2d-9cb1-848e23c9f90f Untriggered"
+          }
+        ]
+      }
+    },
+    {
+      "step": "T2P cleanup: cancel stop",
+      "result": "PASS",
+      "detail": {
+        "providerOrderId": "36ff14a0-8ff3-4b2d-9cb1-848e23c9f90f",
+        "clientOrderId": "helmstmwuezxal6v4b0o5i0n4c133m",
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "CANCELED",
+        "qty": "0.001",
+        "quoteQty": null,
+        "price": null,
+        "stopPrice": "58441.8",
+        "filled": "0",
+        "avgFill": null,
+        "reduceOnly": true,
+        "updatedAt": "2026-11-24T08:10:25.062Z"
+      }
+    },
+    {
+      "step": "linear: reduce-only MARKET close → FILLED, position flat",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "providerOrderId": "3782993a-162d-49ab-9ffe-a50041bffe58",
+          "clientOrderId": "helmlvmwuf01cl2h453z1z4c5l3a5k",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "status": "FILLED",
+          "qty": "0.001",
+          "quoteQty": null,
+          "price": "59661.5",
+          "stopPrice": null,
+          "filled": "0.001",
+          "avgFill": "60254.8",
+          "reduceOnly": true,
+          "updatedAt": "2026-11-24T08:10:26.899Z"
+        },
+        "positionAfter": "0"
+      }
+    },
+    {
+      "step": "linear: executions for entry",
+      "result": "PASS",
+      "detail": [
+        {
+          "execId": "83895144-173a-4e59-89ed-65d34b836dc7",
+          "price": "60249.3",
+          "qty": "0.001",
+          "fee": "0.03645083"
+        }
+      ]
+    },
+    {
+      "step": "linear: reduce-only order with no position is rejected by venue (cannot open opposite)",
+      "result": "PASS",
+      "detail": "rejected ORDER_REJECTED 110017"
+    },
+    {
+      "step": "guard: production api.bybit.com signed request blocked before network",
+      "result": "PASS",
+      "detail": "ENVIRONMENT_MISMATCH, 0 network calls"
+    }
+  ],
+  "wire": [
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/market/time",
+      "status": 200,
+      "ms": 1919
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/account/info",
+      "status": 200,
+      "ms": 1845
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/user/query-api",
+      "status": 200,
+      "ms": 1142
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/account/wallet-balance",
+      "status": 200,
+      "ms": 686
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/account/wallet-balance",
+      "status": 200,
+      "ms": 702
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/market/instruments-info",
+      "status": 200,
+      "ms": 936
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/market/orderbook",
+      "status": 200,
+      "ms": 1121
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 685
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1171
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 706
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/cancel",
+      "status": 200,
+      "ms": 704
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 683
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 1143
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 696
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 705
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/execution/list",
+      "status": 200,
+      "ms": 843
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/account/wallet-balance",
+      "status": 200,
+      "ms": 1153
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 700
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1123
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/cancel",
+      "status": 200,
+      "ms": 1161
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 701
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 1169
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 693
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 702
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/market/instruments-info",
+      "status": 200,
+      "ms": 728
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/position/set-leverage",
+      "status": 200,
+      "ms": 711
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/market/orderbook",
+      "status": 200,
+      "ms": 770
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 1141
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1169
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/cancel",
+      "status": 200,
+      "ms": 712
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 703
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 767
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 702
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1150
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/position/list",
+      "status": 200,
+      "ms": 1142
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 1123
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1140
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 1149
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/cancel",
+      "status": 200,
+      "ms": 1112
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 722
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 1114
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 684
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/order/realtime",
+      "status": 200,
+      "ms": 693
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/position/list",
+      "status": 200,
+      "ms": 1122
+    },
+    {
+      "method": "GET",
+      "endpoint": "api-demo.bybit.com/v5/execution/list",
+      "status": 200,
+      "ms": 690
+    },
+    {
+      "method": "POST",
+      "endpoint": "api-demo.bybit.com/v5/order/create",
+      "status": 200,
+      "ms": 694
+    }
+  ]
+}

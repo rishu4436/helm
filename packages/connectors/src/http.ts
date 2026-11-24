@@ -29,6 +29,11 @@ export class GuardedHttp {
     private readonly timeoutMs = 10_000,
   ) {}
 
+  /** Run the environment guard without sending anything (call before clock sync / signing). */
+  preflight(req: Pick<HttpRequest, 'url' | 'method' | 'authenticated' | 'headers'>): void {
+    assertEndpointAllowed({ provider: this.provider, url: req.url, method: req.method, authenticated: req.authenticated, headers: req.headers })
+  }
+
   async request(req: HttpRequest): Promise<HttpResult> {
     // Throws ENVIRONMENT_MISMATCH / LIVE_TRADING_DISABLED before any byte leaves the process.
     assertEndpointAllowed({ provider: this.provider, url: req.url, method: req.method, authenticated: req.authenticated, headers: req.headers })
