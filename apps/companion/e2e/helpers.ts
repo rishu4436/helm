@@ -34,4 +34,13 @@ export async function settle(page: Page, ms = 1500) {
   await expect(page.locator('.animate-pulse')).toHaveCount(0, { timeout: 30_000 }).catch(() => {})
   await page.waitForTimeout(ms)
 }
-export const shot = (page: Page, name: string) => page.screenshot({ path: `${EVIDENCE}${name}.png`, fullPage: true })
+/** Full-height screenshot that keeps the sticky header/sidebar in place: grow the viewport to the content height. */
+export async function shot(page: Page, name: string) {
+  const vp = page.viewportSize() ?? { width: 1440, height: 900 }
+  await page.evaluate(() => window.scrollTo(0, 0))
+  const h = await page.evaluate(() => Math.min(6000, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)))
+  await page.setViewportSize({ width: vp.width, height: Math.max(vp.height, h) })
+  await page.waitForTimeout(300)
+  await page.screenshot({ path: `${EVIDENCE}${name}.png` })
+  await page.setViewportSize(vp)
+}

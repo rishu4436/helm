@@ -2,6 +2,42 @@
 
 Times are IST (UTC+5:30). Status keys: PASS · FAIL · BLOCKED · NOT RUN.
 
+## 2026-11-24 15:51 IST — Orphan-stop fix, local STT, recipes + scenarios, complete companion site
+
+**Done**
+- **Orphan-stop cleanup:** a full reduce-only close cancels that position's reduce-only protective orders at the venue. The preview itemizes them; the receipt, Pulse and audit log record the result; protection plans go to CANCELED. Real run on Bybit Demo + Binance Demo: **PASS 12/12** → `evidence/orphan-cleanup/run-2026-11-24T08-51-42-863Z.json`.
+- **Local open-source STT:** faster-whisper `base.en` sidecar on 127.0.0.1:8178 (`services/stt`), `LocalWhisperSTT` with an explicitly labelled TEST-STT fallback. Fixtures are Kokoro-spoken WAVs (synthetic voice, not human). Real WAV → STT → intent → API: **PASS 8/8, 0 orders placed** → `evidence/stt-local/run-2026-11-24T09-00-13-347Z.json`.
+  - Finding: `int8` compute was nondeterministic on this CPU (up to ~40% variant/garbage transcripts for identical audio). `float32` + serialized inference gave 25/25 identical results. Documented in `docs/STT.md`.
+- **Recipes** (`/v1/recipes`, versioned CRUD + 5 built-ins). Running a recipe never places orders: trade steps become previews with their own 45 s single-use tokens; a missing venue returns "Which exchange?".
+- **Scenarios:** `/v1/shield/scenarios` multi-asset, stop-aware stress test (perp losses capped at a venue-listed reduce-only stop) + 5 presets.
+- **Insights API:** `/v1/audit`, `/v1/voice/history`, `/v1/protection`, `/v1/diagnostics` (DB, live-trading guard, STT, each account, OKX BLOCKED, devices, signed-host allow-list). `PATCH /v1/me` (display name). Read-only 3 s per-user portfolio cache (trade engine never uses it).
+- **Companion website** (Next.js 15, graphite + amber): landing with a clearly labelled **SIMULATED SAMPLE DATA** interactive G2 demo (real screen builders + real deterministic parser, runs in the browser, nothing sent), auth, Exchanges (OKX BLOCKED card, Coinbase STATIC SANDBOX), capability matrix, dashboard, terminal (preview → "I reviewed" → confirm; network error = "outcome unknown", no resubmit), portfolio, positions & orders (itemized emergency review), Trade-to-Protect, Recipes, Voice Studio (mic → 16 kHz PCM, spoken samples, typed), Shield & Exposure Compass with scenario lab, Pulse, market intelligence, Vision (live G2 mirror with ring controls), devices, history & receipts (CSV), security (sessions, key fingerprints, guard hosts, audit log), settings, diagnostics.
+- `scripts/dev-up.sh` restores Postgres/STT/API/companion after a box reset.
+
+**Verification**
+
+| Check | Result |
+|---|---|
+| `pnpm test` | **PASS — 255/255 tests, 20 files** (incl. 6 real-WAV STT tests with the sidecar up) |
+| `pnpm -r typecheck` | PASS (all 11 packages) |
+| `next build` (companion) | PASS — 21 routes |
+| Playwright (`apps/companion`, prod build, real local API + demo accounts) | **PASS 45/45** (26 page/flow tests + 19-page dead-button audit, 0 dead buttons) → `evidence/companion/playwright-report.json` |
+| Screenshots | `evidence/companion/*.png` (every page + flows) |
+| Demo accounts after the run | **Flat**: `demo-cleanup` → `remaining: []`; portfolio 0 positions, 0 open orders on Binance Demo Spot, Binance Demo USDⓈ-M, Bybit Demo Unified |
+| OKX logged in | **BLOCKED** (region: India) |
+| Real G2 hardware | NOT RUN |
+
+Playwright safety: no test confirms on a demo exchange. The terminal test previews on Binance Demo and discards; the only confirm is on a HELM SIMULATED account (fills computed locally). The dead-button audit never clicks danger buttons (confirm, cancel order, disconnect, revoke, delete, sign out).
+
+**Bugs found (fixed):** Tailwind 4 unlayered custom CSS overrode utilities (moved to `@layer`); Next.js rejected non-default exports from page/layout files; `/v1/portfolio` 3.6–5 s (parallel reads + cache → ~1.7 s); dead-button audit found selected-state buttons without `aria-pressed`, ring swipes at list bounds, and CSV export with no feedback.
+
+**Known gaps**
+- Attaching a stop to an *existing* unprotected position is not built (stated on /protect).
+- Spot orphan cleanup is not implemented (spot stops are not reduce-only).
+- "Vision" is interpreted as the live G2 HUD mirror (no separate spec text was available).
+- Dead-button audit covers up to 30 buttons per page; on long lists (history, pulse, voice samples) it clicks a subset.
+- Box resets wipe /tmp and uncommitted work; WIP is now committed often.
+
 ## 2026-11-24 14:15 IST — Real demo trading end to end, trade engine, glasses trade flow
 
 **Exchanges in the flagship demo:** Binance Demo and Bybit Demo (real logged-in demo accounts).

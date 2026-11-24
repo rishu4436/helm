@@ -3,10 +3,7 @@
     "argv": [
       "/usr/local/lib/nodejs/node",
       "/workspace/helm/node_modules/.pnpm/@playwright+test@1.65.1/node_modules/@playwright/test/cli.js",
-      "test",
-      "e2e/dead-buttons.spec.ts",
-      "-g",
-      "on /$|protect|devices|settings|capabilities"
+      "test"
     ],
     "configFile": "/workspace/helm/apps/companion/playwright.config.ts",
     "rootDir": "/workspace/helm/apps/companion/e2e",
@@ -98,6 +95,915 @@
   },
   "suites": [
     {
+      "title": "companion.spec.ts",
+      "file": "companion.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "public",
+          "file": "companion.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "landing renders and the labelled simulated demo walks voice → Which exchange? → confirm",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1648,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:13:45.242Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-69db2b2955c70862f27d",
+              "file": "companion.spec.ts",
+              "line": 17,
+              "column": 3
+            },
+            {
+              "title": "register, sign out, bad password, sign in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3248,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:13:46.990Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-302c97df5d8974d9baf5",
+              "file": "companion.spec.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "unauthenticated app routes redirect to login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 95,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:13:50.246Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-e46bc13edecafea9b435",
+              "file": "companion.spec.ts",
+              "line": 68,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "signed in as the demo user",
+          "file": "companion.spec.ts",
+          "line": 74,
+          "column": 6,
+          "specs": [
+            {
+              "title": "page /dashboard loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6894,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:13:50.349Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-e5cbf30d43d1992e11a8",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /portfolio loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6028,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:13:57.253Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-820a487d92c24ebd0c23",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /positions loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6312,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:03.291Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-bf99415bd03ab4de39a3",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /terminal loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5156,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:09.613Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-a360399d2141062fa49f",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /protect loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7055,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:14.780Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-fcc7142aba993fb15b04",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /recipes loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3561,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:21.844Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-13980d654ecadb496376",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /voice loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3574,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:25.416Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-6e1f9c349ea23eebdb60",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /shield loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6970,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:29.002Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-fcd6a3b1346b10e14a51",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /pulse loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3608,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:35.983Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-677ee88b5bffe7d12ff0",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /markets loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5049,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:39.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-7009b2406d02504d59d7",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /vision loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6300,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:44.680Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-51e1c37313b8f7aa5a91",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /devices loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3527,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:50.988Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-2e1c023e9a60bc4adc3f",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /history loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3664,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:54.524Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-ff4bd515d419050f0758",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /connect loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:14:58.197Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-c77e640ff55947066eee",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /capabilities loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3546,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:01.786Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-f3687ff1a2489e51c54e",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /security loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3695,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:05.341Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-e360bd79f2b15a1489b6",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /settings loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3521,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:09.048Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-266220fef7d921093dd1",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "page /diagnostics loads without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3571,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:12.579Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-73568bf9b6157bf7e157",
+              "file": "companion.spec.ts",
+              "line": 78,
+              "column": 5
+            },
+            {
+              "title": "terminal previews on Binance Demo without confirming, then confirms only on a SIMULATED account",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20533,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:16.160Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-a1e8d13c9456fba88962",
+              "file": "companion.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "voice sample (real WAV) → local STT → intent, no order placed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4299,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:36.702Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-b1a911bf0493f7e09ab4",
+              "file": "companion.spec.ts",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "shield scenario: crypto crash preset with stop-aware result",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6090,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:41.010Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-f8332a5d229a31bd9349",
+              "file": "companion.spec.ts",
+              "line": 129,
+              "column": 3
+            },
+            {
+              "title": "recipes: pre-sleep runs checks + scenario; spot buy asks Which exchange?",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6263,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:47.110Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-d0379089a76725cd3543",
+              "file": "companion.spec.ts",
+              "line": 139,
+              "column": 3
+            },
+            {
+              "title": "vision mirrors live screens with ring navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2693,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-24T10:15:53.382Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-620f8734d76f23f8e880",
+              "file": "companion.spec.ts",
+              "line": 150,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "dead-buttons.spec.ts",
       "file": "dead-buttons.spec.ts",
       "column": 0,
@@ -124,7 +1030,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 9395,
+                  "duration": 9250,
                   "errors": [],
                   "stdout": [
                     {
@@ -133,7 +1039,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-24T10:04:37.749Z",
+                  "startTime": "2026-11-24T10:15:56.097Z",
                   "annotations": [
                     {
                       "type": "audit",
@@ -147,6 +1053,198 @@
             }
           ],
           "id": "2c5e3b75e22f5d9aac9e-1df8bd74277c1634fc63",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /dashboard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/dashboard: 6 buttons clicked, 6 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11485,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /dashboard: clicked 6/6 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:16:05.356Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/dashboard: 6 buttons clicked, 6 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-0d361231b0a3c710933d",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /portfolio",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/portfolio: 3 buttons clicked, 3 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8530,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /portfolio: clicked 3/3 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:16:16.850Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/portfolio: 3 buttons clicked, 3 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-6e75cde229a3932bcb6a",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /positions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/positions: 1 buttons clicked, 1 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6353,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /positions: clicked 1/1 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:16:25.389Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/positions: 1 buttons clicked, 1 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-b9f75b863323cf11135e",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /terminal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/terminal: 12 buttons clicked, 12 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14543,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /terminal: clicked 12/12 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:16:31.752Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/terminal: 12 buttons clicked, 12 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-dcafa347fb610d433e54",
           "file": "dead-buttons.spec.ts",
           "line": 21,
           "column": 3
@@ -172,7 +1270,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6123,
+                  "duration": 5724,
                   "errors": [],
                   "stdout": [
                     {
@@ -181,7 +1279,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-24T10:04:47.224Z",
+                  "startTime": "2026-11-24T10:16:46.304Z",
                   "annotations": [
                     {
                       "type": "audit",
@@ -195,6 +1293,294 @@
             }
           ],
           "id": "2c5e3b75e22f5d9aac9e-87e378e8ded210402723",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /recipes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/recipes: 6 buttons clicked, 6 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8355,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /recipes: clicked 6/6 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:16:52.036Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/recipes: 6 buttons clicked, 6 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-cd208538dfe56db6eefa",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /voice",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/voice: 16 buttons clicked, 25 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17676,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /voice: clicked 16/25 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:17:00.401Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/voice: 16 buttons clicked, 25 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-d8f2584fde44c0f83186",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /shield",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/shield: 8 buttons clicked, 8 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13726,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /shield: clicked 8/8 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:17:18.086Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/shield: 8 buttons clicked, 8 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-659f28857ff0fbff3781",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /pulse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/pulse: 3 buttons clicked, 12 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5555,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /pulse: clicked 3/12 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:17:31.819Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/pulse: 3 buttons clicked, 12 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-277c848c461c0239433c",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /markets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/markets: 6 buttons clicked, 6 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9974,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /markets: clicked 6/6 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:17:37.384Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/markets: 6 buttons clicked, 6 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-5636df85f474f5192dc9",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /vision",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/vision: 9 buttons clicked, 10 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13758,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /vision: clicked 9/10 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:17:47.370Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/vision: 9 buttons clicked, 10 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-4e57ced59acb96ec9ebb",
           "file": "dead-buttons.spec.ts",
           "line": 21,
           "column": 3
@@ -220,7 +1606,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2712,
+                  "duration": 2708,
                   "errors": [],
                   "stdout": [
                     {
@@ -229,7 +1615,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-24T10:04:53.357Z",
+                  "startTime": "2026-11-24T10:18:01.136Z",
                   "annotations": [
                     {
                       "type": "audit",
@@ -243,6 +1629,102 @@
             }
           ],
           "id": "2c5e3b75e22f5d9aac9e-111346dfbee6d3bd4873",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/history: 3 buttons clicked, 39 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5611,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /history: clicked 3/39 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:18:03.853Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/history: 3 buttons clicked, 39 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-315c8cd08e90cd2e8e63",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /connect",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/connect: 17 buttons clicked, 17 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18717,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /connect: clicked 17/17 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:18:09.472Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/connect: 17 buttons clicked, 17 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-dbba8a4bb537fb70d190",
           "file": "dead-buttons.spec.ts",
           "line": 21,
           "column": 3
@@ -268,7 +1750,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2689,
+                  "duration": 2681,
                   "errors": [],
                   "stdout": [
                     {
@@ -277,7 +1759,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-24T10:04:56.083Z",
+                  "startTime": "2026-11-24T10:18:28.196Z",
                   "annotations": [
                     {
                       "type": "audit",
@@ -291,6 +1773,54 @@
             }
           ],
           "id": "2c5e3b75e22f5d9aac9e-ab982c6d590678e08b71",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /security",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/security: 1 buttons clicked, 1 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3663,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /security: clicked 1/1 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:18:30.886Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/security: 1 buttons clicked, 1 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-ec7643f32ae87ffdd89c",
           "file": "dead-buttons.spec.ts",
           "line": 21,
           "column": 3
@@ -316,7 +1846,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2683,
+                  "duration": 2681,
                   "errors": [],
                   "stdout": [
                     {
@@ -325,7 +1855,7 @@
                   ],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-24T10:04:58.780Z",
+                  "startTime": "2026-11-24T10:18:34.557Z",
                   "annotations": [
                     {
                       "type": "audit",
@@ -342,15 +1872,63 @@
           "file": "dead-buttons.spec.ts",
           "line": 21,
           "column": 3
+        },
+        {
+          "title": "no dead buttons on /diagnostics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/diagnostics: 1 buttons clicked, 1 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3664,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /diagnostics: clicked 1/1 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:18:37.245Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/diagnostics: 1 buttons clicked, 1 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-e9afba1e603aa530d63f",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-24T10:04:37.335Z",
-    "duration": 24199.493000000002,
-    "expected": 5,
+    "startTime": "2026-11-24T10:13:44.868Z",
+    "duration": 296125.033,
+    "expected": 45,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
