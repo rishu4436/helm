@@ -33,6 +33,12 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/security:
+    dependencies:
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/shared:
     dependencies:
       decimal.js:
@@ -41,6 +47,12 @@ importers:
       zod:
         specifier: ^3.24.0
         version: 3.25.76
+
+  packages/trading-core:
+    dependencies:
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
 
 packages:
 
