@@ -77,7 +77,3 @@ pnpm --filter @helm/glasses pack   # builds helm.ehpk (gitignored)
 - Open-source libraries listed in the `package.json` files: Fastify, Prisma, Next.js, React, Tailwind, Zod, decimal.js, Vitest and Vite.
 
 Everything else in this repo was written during the build week, starting Nov 23, 2026.
-
-## License
-
-MIT
