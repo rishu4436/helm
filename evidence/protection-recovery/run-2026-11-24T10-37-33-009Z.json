@@ -1,0 +1,412 @@
+{
+  "ranAt": "2026-11-24T10:37:33.009Z",
+  "what": "Trade-to-Protect recovery (perps) + spot stop cleanup on sale — real Bybit Demo + Binance Demo",
+  "rows": [
+    {
+      "step": "Bybit Demo · Unified: entry WITHOUT a stop FILLED (no protection attached)",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "side": "BUY",
+        "type": "MARKET",
+        "qty": "0.004",
+        "avg": "59817.7",
+        "providerOrderId": "…a6011c",
+        "protection": null,
+        "orphanCleanup": null
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: Compass lists the position as UNPROTECTED",
+      "result": "PASS",
+      "detail": [
+        {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrumentId": "bybit:perp:BTC-USDT:USDT",
+          "side": "LONG",
+          "notionalUsd": "239.3012"
+        }
+      ]
+    },
+    {
+      "step": "Bybit Demo · Unified: recovery preview = reduce-only STOP_MARKET SELL for the full position, stop below mark",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "kind": "protect_existing",
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "STOP_MARKET",
+          "quantity": "0.004",
+          "stopPrice": "58030.5",
+          "reduceOnly": true,
+          "clientOrderId": "helmstp3fe1749024842235b034"
+        },
+        "recovery": {
+          "positionQty": "0.004",
+          "positionSide": "LONG",
+          "entryPrice": "59817.7",
+          "markPrice": "59825.3",
+          "referencePrice": "59825.3",
+          "stopOffsetPercent": "3"
+        },
+        "risk": "ALLOW",
+        "notes": [
+          "Protects the existing LONG 0.004 BTC (no venue-listed stop found)",
+          "Reduce-only stop 58030.5 vs mark 59825.3",
+          "If triggered: P&L vs entry ≈ -7.15 USDT before fees and slippage"
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: stop accepted and LISTED by the venue → PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "status": "ACCEPTED",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "qty": "0",
+        "avg": null,
+        "providerOrderId": "…8a9fbf",
+        "protection": {
+          "state": "PROTECTED",
+          "stopPrice": "58030.5",
+          "qty": "0.004",
+          "providerOrderId": null
+        },
+        "orphanCleanup": null
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: venue open orders show the reduce-only stop",
+      "result": "PASS",
+      "detail": [
+        {
+          "kind": "CANCEL_ORDER",
+          "detail": "SELL STOP_MARKET 0.004 @ 58030.5"
+        },
+        {
+          "kind": "CLOSE_POSITION",
+          "detail": "LONG 0.004 (reduce-only close, needs its own preview + confirm)"
+        }
+      ]
+    },
+    {
+      "step": "Bybit Demo · Unified: Compass no longer lists it as unprotected",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Bybit Demo · Unified: second recovery preview refused ALREADY_PROTECTED (no duplicate stop)",
+      "result": "PASS",
+      "detail": {
+        "status": 409,
+        "code": "ALREADY_PROTECTED",
+        "message": "The venue already lists 1 reduce-only stop(s) on this position"
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: reduce-only full close FILLED → recovery stop CANCELED at venue",
+      "result": "PASS",
+      "detail": {
+        "willCancel": [
+          {
+            "providerOrderId": "b8cdab40-a66d-44f3-822e-1baa118a9fbf",
+            "type": "STOP_MARKET",
+            "stopPrice": "58030.5",
+            "quantity": "0.004"
+          }
+        ],
+        "status": "FILLED",
+        "side": "SELL",
+        "type": "MARKET",
+        "qty": "0.004",
+        "avg": "59813.5",
+        "providerOrderId": "…6d4686",
+        "protection": null,
+        "orphanCleanup": [
+          {
+            "side": "SELL",
+            "type": "STOP_MARKET",
+            "result": "CANCELED",
+            "quantity": "0.004",
+            "stopPrice": "58030.5",
+            "providerOrderId": "b8cdab40-a66d-44f3-822e-1baa118a9fbf"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: venue shows no position and no protective order",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Bybit Demo · Unified: recovery plan (source=recovery, no entry order) ended CANCELED",
+      "result": "PASS",
+      "detail": {
+        "state": "CANCELED",
+        "source": "recovery",
+        "history": [
+          "PLANNED",
+          "PROTECTION_SUBMITTED",
+          "PROTECTED",
+          "CANCELED"
+        ]
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: entry WITHOUT a stop FILLED (no protection attached)",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "side": "BUY",
+        "type": "MARKET",
+        "qty": "0.0041",
+        "avg": "59823.3",
+        "providerOrderId": "…505282",
+        "protection": null,
+        "orphanCleanup": null
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: Compass lists the position as UNPROTECTED",
+      "result": "PASS",
+      "detail": [
+        {
+          "accountId": "cmwufadrw000o9xgx4shdcipk",
+          "instrumentId": "binance:perp:BTC-USDT:USDT",
+          "side": "NET",
+          "notionalUsd": "245.24027"
+        }
+      ]
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: recovery preview = reduce-only STOP_MARKET SELL for the full position, stop below mark",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "kind": "protect_existing",
+        "order": {
+          "accountId": "cmwufadrw000o9xgx4shdcipk",
+          "instrument": "binance:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "STOP_MARKET",
+          "quantity": "0.0041",
+          "stopPrice": "58020.2",
+          "reduceOnly": true,
+          "clientOrderId": "helmstpea5219510fd1d57824e4"
+        },
+        "recovery": {
+          "positionQty": "0.0041",
+          "positionSide": "LONG",
+          "entryPrice": "59823.3",
+          "markPrice": "59814.7",
+          "referencePrice": "59814.7",
+          "stopOffsetPercent": "3"
+        },
+        "risk": "ALLOW",
+        "notes": [
+          "Protects the existing LONG 0.0041 BTC (no venue-listed stop found)",
+          "Reduce-only stop 58020.2 vs mark 59814.7",
+          "If triggered: P&L vs entry ≈ -7.39 USDT before fees and slippage"
+        ]
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: stop accepted and LISTED by the venue → PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "status": "ACCEPTED",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "qty": "0",
+        "avg": null,
+        "providerOrderId": "…671525",
+        "protection": {
+          "state": "PROTECTED",
+          "stopPrice": "58020.2",
+          "qty": "0.0041",
+          "providerOrderId": null
+        },
+        "orphanCleanup": null
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: venue open orders show the reduce-only stop",
+      "result": "PASS",
+      "detail": [
+        {
+          "kind": "CANCEL_ORDER",
+          "detail": "SELL STOP_MARKET 0.0041 @ 58020.2"
+        },
+        {
+          "kind": "CLOSE_POSITION",
+          "detail": "NET 0.0041 (reduce-only close, needs its own preview + confirm)"
+        }
+      ]
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: Compass no longer lists it as unprotected",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: second recovery preview refused ALREADY_PROTECTED (no duplicate stop)",
+      "result": "PASS",
+      "detail": {
+        "status": 409,
+        "code": "ALREADY_PROTECTED",
+        "message": "The venue already lists 1 reduce-only stop(s) on this position"
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: reduce-only full close FILLED → recovery stop CANCELED at venue",
+      "result": "PASS",
+      "detail": {
+        "willCancel": [
+          {
+            "providerOrderId": "algo:1000000300671525",
+            "type": "STOP_MARKET",
+            "stopPrice": "58020.2",
+            "quantity": "0.0041"
+          }
+        ],
+        "status": "FILLED",
+        "side": "SELL",
+        "type": "MARKET",
+        "qty": "0.0041",
+        "avg": "59814.7",
+        "providerOrderId": "…505579",
+        "protection": null,
+        "orphanCleanup": [
+          {
+            "side": "SELL",
+            "type": "STOP_MARKET",
+            "result": "CANCELED",
+            "quantity": "0.0041",
+            "stopPrice": "58020.2",
+            "providerOrderId": "algo:1000000300671525"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: venue shows no position and no protective order",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: recovery plan (source=recovery, no entry order) ended CANCELED",
+      "result": "PASS",
+      "detail": {
+        "state": "CANCELED",
+        "source": "recovery",
+        "history": [
+          "PLANNED",
+          "PROTECTION_SUBMITTED",
+          "PROTECTED",
+          "CANCELED"
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo spot: buy SOL with a 3% stop → FILLED + PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "side": "BUY",
+        "type": "MARKET",
+        "qty": "0.354408846044797278",
+        "avg": "70.54",
+        "providerOrderId": "…452672",
+        "protection": {
+          "state": "PROTECTED",
+          "stopPrice": "68.42",
+          "qty": "0.354",
+          "providerOrderId": null
+        },
+        "orphanCleanup": null
+      }
+    },
+    {
+      "step": "Bybit Demo spot: \"sell all\" preview itemizes the spot stop it will cancel first",
+      "result": "PASS",
+      "detail": {
+        "willCancel": [
+          {
+            "providerOrderId": "2355358598479219968",
+            "type": "STOP_MARKET",
+            "stopPrice": "68.42",
+            "quantity": "0.354"
+          }
+        ],
+        "notes": [
+          "Quantity = 100% of free SOL",
+          "Sell all: first cancels 1 spot stop(s) on SOL so the whole holding is sold and no stop is left behind",
+          "HELM estimate: walked the public book; fee assumes 0.1% taker",
+          "Sell checked against free SOL 0.35405762"
+        ],
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:spot:SOL-USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "clientOrderId": "helmenp0536c3df9e6bdc205f03",
+          "quantity": "0.354"
+        },
+        "risk": [
+          {
+            "rule": "all_checks",
+            "verdict": "ALLOW",
+            "message": "Within all Shield limits"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo spot: sale FILLED after the stop was released",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "side": "SELL",
+        "type": "MARKET",
+        "qty": "0.354",
+        "avg": "70.51",
+        "providerOrderId": "…608768",
+        "protection": null,
+        "orphanCleanup": [
+          {
+            "side": "SELL",
+            "type": "STOP_MARKET",
+            "result": "CANCELED",
+            "quantity": "0.354",
+            "stopPrice": "68.42",
+            "providerOrderId": "2355358598479219968"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo spot: no resting SOL stop left at the venue",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Bybit Demo spot: protection plan ended CANCELED",
+      "result": "PASS",
+      "detail": {
+        "state": "CANCELED",
+        "history": [
+          "ENTRY_SUBMITTED",
+          "ENTRY_FILLED",
+          "PROTECTION_SUBMITTED",
+          "PROTECTED",
+          "CANCELED"
+        ]
+      }
+    }
+  ]
+}
