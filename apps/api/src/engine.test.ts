@@ -5,6 +5,7 @@ import type { FastifyInstance } from 'fastify'
 import type { FetchLike } from '@helm/connectors'
 import { makeAdapterFactory } from './registry'
 import { buildApp } from './app'
+import { DEFAULT_POLICY } from '@helm/risk-engine'
 
 const TEST_DB = process.env.HELM_TEST_DATABASE_URL ?? 'postgresql://helm@127.0.0.1:5444/helm_test'
 const prisma = new PrismaClient({ datasources: { db: { url: TEST_DB } } })
@@ -160,6 +161,81 @@ describe('orphaned protective orders', () => {
     expect((await prisma.protectionPlan.findFirst())?.state).toBe('CANCELED')
     const em = (await app.inject({ method: 'GET', url: '/v1/emergency', headers: H(t) })).json()
     expect(em.items).toEqual([])
+  })
+})
+
+describe('Trade-to-Protect recovery (existing unprotected position)', () => {
+  const protect = (t: string, payload: Record<string, unknown>) => app.inject({ method: 'POST', url: '/v1/protection/preview', headers: H(t), payload })
+  it('protects an open perp with a reduce-only stop, PROTECTED only once listed; refuses duplicates, wrong side and stale size', async () => {
+    const t = await register('rec@helm.test'); const acct = await simAccount(t)
+    const entry = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'BUY', quantity: '0.004', leverage: '2' })).json())).json().receipt
+    expect(entry.status).toBe('FILLED'); expect(entry.protection).toBeNull()
+    const instrumentId = entry.instrumentId
+    const compass1 = (await app.inject({ url: '/v1/shield/compass', headers: H(t) })).json().compass
+    expect(compass1.unprotected).toHaveLength(1)
+    expect((await protect(t, { accountId: acct, instrumentId, stopPrice: '61000' })).statusCode).toBe(400) // long stop above price
+    const pv = (await protect(t, { accountId: acct, instrumentId, stopOffsetPercent: '3' })).json()
+    expect(pv.kind).toBe('protect_existing'); expect(pv.canConfirm).toBe(true)
+    expect(pv.order).toMatchObject({ side: 'SELL', type: 'STOP_MARKET', reduceOnly: true, quantity: '0.004' })
+    expect(Number(pv.order.stopPrice)).toBeLessThan(60000)
+    expect(pv.preview.estimateNotes.join(' ')).toMatch(/existing LONG 0.004 BTC/)
+    const r = (await confirm(t, pv)).json().receipt
+    expect(r.type).toBe('STOP_MARKET'); expect(r.status).toBe('ACCEPTED')
+    expect(r.protection.state).toBe('PROTECTED')
+    const plan = await prisma.protectionPlan.findFirst({ where: { source: 'recovery' } })
+    expect(plan?.entryOrderId).toBeNull(); expect(plan?.state).toBe('PROTECTED')
+    expect((await app.inject({ url: '/v1/shield/compass', headers: H(t) })).json().compass.unprotected).toHaveLength(0)
+    expect((await protect(t, { accountId: acct, instrumentId, stopOffsetPercent: '3' })).json().error.code).toBe('ALREADY_PROTECTED')
+    // full reduce-only close still cancels the recovered stop as an orphan
+    const full = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'SELL', fraction: '1', reduceOnly: true })).json())).json().receipt
+    expect(full.orphanCleanup).toEqual([expect.objectContaining({ type: 'STOP_MARKET', result: 'CANCELED' })])
+    expect((await prisma.protectionPlan.findFirst({ where: { source: 'recovery' } }))?.state).toBe('CANCELED')
+    expect((await protect(t, { accountId: acct, instrumentId, stopOffsetPercent: '3' })).json().error.code).toBe('NO_POSITION')
+  })
+  it('goes STALE if the position changed between preview and confirm, and never protects spot', async () => {
+    const t = await register('rec2@helm.test'); const acct = await simAccount(t)
+    const e = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'BUY', quantity: '0.004', leverage: '2' })).json())).json().receipt
+    const pv = (await protect(t, { accountId: acct, instrumentId: e.instrumentId, stopOffsetPercent: '3' })).json()
+    await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'SELL', fraction: '0.5', reduceOnly: true })).json())
+    const c = await confirm(t, pv)
+    expect(c.statusCode).toBe(409); expect(c.json().error.code).toBe('STALE_PROPOSAL')
+    expect(await prisma.order.count({ where: { type: 'STOP_MARKET' } })).toBe(0)
+    expect((await protect(t, { accountId: acct, instrumentId: e.instrumentId.replace(':perp:', ':spot:').replace(/:USDT$/, ''), stopOffsetPercent: '3' })).statusCode).toBeGreaterThanOrEqual(400)
+  })
+})
+
+describe('spot stop cleanup when a spot holding is sold', () => {
+  it('"sell all" cancels the spot stop first and sells the whole holding; nothing is left resting', async () => {
+    const t = await register('spot@helm.test'); const acct = await simAccount(t)
+    // The SIM account starts with some BTC; "sell all" sells all of it, so lift the per-order cap for this test.
+    expect((await app.inject({ method: 'PUT', url: '/v1/shield/policy', headers: H(t), payload: { ...DEFAULT_POLICY, maxSpotOrderUsd: '20000', maxAssetExposureUsd: '200000', maxExchangeExposurePct: '100' } })).statusCode).toBe(200)
+    const buy = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'BUY', notional: '120', stopOffsetPercent: '3' })).json())).json().receipt
+    expect(buy.protection.state).toBe('PROTECTED')
+    const sell = (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'SELL', fraction: '1' })).json()
+    expect(sell.preview.willCancel).toHaveLength(1)
+    expect(sell.preview.estimateNotes.join(' ')).toMatch(/Sell all: first cancels 1 spot stop/)
+    const r = (await confirm(t, sell)).json().receipt
+    expect(r.status).toBe('FILLED')
+    expect(r.orphanCleanup).toEqual([expect.objectContaining({ result: 'CANCELED' })])
+    expect((await prisma.order.findFirst({ where: { type: 'STOP_MARKET' } }))?.status).toBe('CANCELED')
+    expect((await prisma.protectionPlan.findFirst())?.state).toBe('CANCELED')
+    const port = (await app.inject({ url: '/v1/portfolio', headers: H(t) })).json().portfolio
+    expect(port.openOrders).toHaveLength(0)
+  })
+  it('a partial sale keeps a stop that still fits; a sale that leaves less than the stop cancels it', async () => {
+    const t = await register('spot2@helm.test'); const acct = await simAccount(t)
+    await app.inject({ method: 'PUT', url: '/v1/shield/policy', headers: H(t), payload: { ...DEFAULT_POLICY, maxSpotOrderUsd: '20000', maxAssetExposureUsd: '200000', maxExchangeExposurePct: '100' } })
+    await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'BUY', notional: '120', stopOffsetPercent: '3' })).json())
+    await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'BUY', notional: '120' })).json())
+    const r = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'SELL', fraction: '0.4' })).json())).json().receipt
+    expect(r.status).toBe('FILLED')
+    expect(r.orphanCleanup).toBeNull()
+    expect((await prisma.order.findFirst({ where: { type: 'STOP_MARKET' } }))?.status).toBe('ACCEPTED')
+    const r2 = (await confirm(t, (await preview(t, { accountId: acct, asset: 'BTC', product: 'spot', side: 'SELL', fraction: '0.99' })).json())).json().receipt
+    expect(r2.status).toBe('FILLED')
+    expect(r2.orphanCleanup).toEqual([expect.objectContaining({ result: 'CANCELED' })])
+    expect((await prisma.order.findFirst({ where: { type: 'STOP_MARKET' } }))?.status).toBe('CANCELED')
+    expect((await prisma.pulseEvent.findFirst({ where: { kind: 'POSITION_CLOSED' } }))?.reason).toMatch(/spot stop\(s\) canceled/)
   })
 })
 

@@ -332,7 +332,9 @@ model ProtectionPlan {
   userId                  String
   accountId               String
   instrumentId            String
-  entryOrderId            String
+  /// Null for a recovery plan that protects a position HELM did not open (source = "recovery").
+  entryOrderId            String?
+  source                  String   @default("entry")
   protectionOrderId       String?
   stopOffsetPercent       Decimal? @db.Decimal(38, 18)
   stopPrice               Decimal? @db.Decimal(38, 18)

@@ -5,7 +5,7 @@ import { Decimal, HelmError, dec, floorToStep, roundToTick, type Instrument, typ
  * protective order exists (accepted/open). Entry filled + protection failed ⇒ UNPROTECTED (never hidden).
  */
 export const PROTECTION_TRANSITIONS: Record<ProtectionState, ProtectionState[]> = {
-  PLANNED: ['ENTRY_SUBMITTED', 'CANCELED', 'FAILED'],
+  PLANNED: ['ENTRY_SUBMITTED', 'PROTECTION_SUBMITTED', 'CANCELED', 'FAILED'],
   ENTRY_SUBMITTED: ['ENTRY_PARTIAL', 'ENTRY_FILLED', 'FAILED', 'CANCELED'],
   ENTRY_PARTIAL: ['ENTRY_PARTIAL', 'ENTRY_FILLED', 'PROTECTION_SUBMITTED', 'UNPROTECTED', 'CANCELED'],
   ENTRY_FILLED: ['PROTECTION_SUBMITTED', 'UNPROTECTED'],

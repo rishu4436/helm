@@ -12,7 +12,7 @@ import type { AppCtx } from '../app'
 import { listAccounts, type LoadedAccount } from '../engine/accounts'
 import { compareVenues, instrumentIdFor, priceBook, VALUATION_ASSETS } from '../engine/market'
 import { cachedPortfolio, invalidatePortfolio } from '../engine/portfolio'
-import { cancelOrder, confirmTrade, policyFor, previewTrade, receipt, refreshOrder, simulationLabel } from '../engine/trade'
+import { cancelOrder, confirmTrade, policyFor, previewProtectExisting, previewTrade, receipt, refreshOrder, simulationLabel } from '../engine/trade'
 
 const dstr = z.string().regex(/^\d+(\.\d+)?$/).max(40)
 const Ticket = z.object({
@@ -21,6 +21,7 @@ const Ticket = z.object({
   quantity: dstr.nullish(), notional: dstr.nullish(), fraction: dstr.nullish(), limitPrice: dstr.nullish(), leverage: dstr.nullish(), stopOffsetPercent: dstr.nullish(),
   reduceOnly: z.boolean().optional(), intentId: z.string().nullish(),
 }).refine(t => t.instrumentId || t.asset, 'instrumentId or asset required')
+const ProtectReq = z.object({ accountId: z.string().min(1), instrumentId: z.string().min(3).max(80), stopOffsetPercent: dstr.nullish(), stopPrice: dstr.nullish() })
 const Confirm = z.object({ proposalId: z.string().min(1), confirmToken: z.string().min(10), idempotencyKey: z.string().min(8).max(80), via: z.enum(['glasses', 'companion', 'voice']) })
 
 const productsOf = (la: LoadedAccount) => la.account.accountType === 'futures_usdm' ? ['perp'] : la.account.accountType === 'spot' || la.account.accountType === 'portfolio' ? ['spot'] : la.account.accountType === 'brokerage' ? ['stock'] : ['spot', 'perp']
@@ -64,6 +65,14 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
     }
     const r = await previewTrade(ectx, req.userId!, { ...t, instrumentId })
     await audit(prisma, { userId: req.userId, actor: req.deviceId ? 'device' : 'user', action: 'trade.previewed', subject: r.proposalId, detail: { verdict: (r.risk as { verdict: string }).verdict } })
+    return send(r)
+  })
+
+  // Trade-to-Protect recovery: preview a reduce-only stop for a position that has none. Confirm via /v1/trade/confirm.
+  app.post('/v1/protection/preview', { preHandler: any, config: ctx.rl(60) }, async req => {
+    const t = ProtectReq.parse(req.body)
+    const r = await previewProtectExisting(ectx, req.userId!, t)
+    await audit(prisma, { userId: req.userId, actor: req.deviceId ? 'device' : 'user', action: 'protection.previewed', subject: r.proposalId, detail: { instrumentId: t.instrumentId, verdict: (r.risk as { verdict: string }).verdict } })
     return send(r)
   })
 

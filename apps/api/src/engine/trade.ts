@@ -3,7 +3,7 @@ import type { Prisma, PrismaClient } from '@prisma/client'
 import { hashToken, newOpaqueToken } from '@helm/security'
 import {
   ENVIRONMENT_LABEL, HelmError, SIMULATED_LABEL, dec, floorToStep, roundToTick, supports,
-  type Decimal, type Environment, type Instrument, type Order, type OrderBook, type OrderPreview, type OrderRequest, type OrderStatus, type OrderType, type ProtectionState, type RiskAssessment, type Side,
+  Decimal, type Environment, type Instrument, type Order, type OrderBook, type OrderPreview, type OrderRequest, type OrderStatus, type OrderType, type ProtectionState, type RiskAssessment, type Side,
 } from '@helm/shared'
 import { DEFAULT_POLICY, RiskPolicySchema, assess, tradeImpact, type RiskPolicy } from '@helm/risk-engine'
 import { toJsonSafe } from '@helm/portfolio'
@@ -174,6 +174,18 @@ export async function previewTrade(ctx: EngineCtx, userId: string, t: TicketInpu
   const proposalId = `p${randomBytes(10).toString('hex')}`
   const book = await bookFor(la, inst.id)
   const { request, notes } = await buildRequest(la, inst, t, book, proposalId)
+  let spotRelease: SpotRelease | undefined
+  if (inst.product === 'spot' && request.side === 'SELL' && t.fraction && dec(t.fraction).eq(1)) {
+    try {
+      const stops = await spotStops(la, inst.id)
+      if (stops.length) {
+        spotRelease = { stops: stops.map(o => ({ providerOrderId: o.providerOrderId, type: o.type, stopPrice: o.stopPrice?.toFixed() ?? null, quantity: o.quantity?.toFixed() ?? null })) }
+        const b = (await la.adapter.getBalances()).find(x => x.asset === inst.base)
+        if (b) request.quantity = floorToStep(b.free.plus(Decimal.min(b.locked, stops.reduce((a, o) => a.plus(o.quantity ?? 0), dec(0)))), inst.lotSize)
+        notes.push(`Sell all: first cancels ${stops.length} spot stop(s) on ${inst.base} so the whole holding is sold and no stop is left behind`)
+      }
+    } catch { /* open orders unreadable: plain sale of the free balance, cleanup runs after the fill */ }
+  }
   const preview = await estimate(la, request, book)
   preview.id = proposalId
   preview.estimateNotes.unshift(...notes)
@@ -199,11 +211,12 @@ export async function previewTrade(ctx: EngineCtx, userId: string, t: TicketInpu
       }
     } catch { /* positions unreadable: no promise made */ }
   }
+  if (spotRelease) willCancel = spotRelease.stops
   const blocked = risk.verdict === 'BLOCK'
   const token = blocked ? null : newOpaqueToken(24)
   const expiresAt = new Date(Date.now() + PREVIEW_TTL_MS)
   const reqJson = reqToJson(request)
-  const previewJson = toJsonSafe({ ...preview, request: undefined, protection, impact, willCancel, label: simulationLabel(la.account.environment) }) as Record<string, unknown>
+  const previewJson = toJsonSafe({ ...preview, request: undefined, protection, impact, willCancel, spotRelease, label: simulationLabel(la.account.environment) }) as Record<string, unknown>
   await ctx.prisma.orderProposal.create({ data: {
     id: proposalId, userId, accountId: la.account.id, intentId: t.intentId ?? null, request: reqJson as Prisma.InputJsonValue, preview: previewJson as Prisma.InputJsonValue, risk: toJsonSafe(risk) as Prisma.InputJsonValue,
     proposalHash: hashProposal({ reqJson, est: previewJson.estimatedPrice ?? null }), tokenHash: token ? hashToken(token) : null, status: blocked ? 'BLOCKED' : 'OPEN', expiresAt,
@@ -294,11 +307,32 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
   const risk: RiskAssessment = assess(policy, { request, preview: { ...fresh, id: p.id }, portfolio, reducesRisk: !!request.reduceOnly }, version)
   if (risk.verdict === 'BLOCK') await fail('BLOCKED', 'RISK_POLICY_VIOLATION', 'Blocked by HELM Shield on recheck', { risk: toJsonSafe(risk) }, 422)
 
+  const recovery = pv.recovery as RecoveryInfo | undefined
+  if (recovery) {
+    // The position must still be there, the same size, and the stop must still be on the safe side of the market.
+    const pos = await la.adapter.getPositions().then(ps => ps.find(x => x.instrumentId === inst.id && !x.quantity.isZero())).catch(() => undefined)
+    if (!pos) await fail('STALE', 'STALE_PROPOSAL', 'The position is no longer open — nothing to protect')
+    else if (!pos.quantity.abs().eq(dec(recovery.positionQty))) await fail('STALE', 'STALE_PROPOSAL', 'Position size changed since the preview — review again')
+    const bid = book?.bids[0]?.price, ask = book?.asks[0]?.price, sp = request.stopPrice!
+    if (request.side === 'SELL' ? (bid && bid.lte(sp)) : (ask && ask.gte(sp))) await fail('STALE', 'STALE_PROPOSAL', 'The market is already through this stop price — review again')
+  }
+  const spotRelease = pv.spotRelease as SpotRelease | undefined
+  let released: OrphanResult[] = []
+  if (spotRelease?.stops.length) {
+    // "Sell all" of a spot holding: release HELM-visible spot stops first, so nothing is left behind that could fire later.
+    released = await cancelSpotStops(ctx, userId, la, inst, spotRelease.stops.map(x => x.providerOrderId), `sell-all ${p.id}`)
+    if (released.some(r => r.result === 'FAILED')) await fail('FAILED', 'PROTECTION_RELEASE_FAILED', 'Could not cancel the spot stop(s) on this holding — nothing was sold', { released })
+    const free = (await la.adapter.getBalances().catch(() => [])).find(b => b.asset === inst.base)?.free ?? dec(0)
+    const q = floorToStep(Decimal.min(request.quantity ?? free, free), inst.lotSize)
+    if (q.lt(inst.minQty)) await fail('FAILED', 'INVALID_QUANTITY', `Only ${free.toFixed()} ${inst.base} is free after releasing the stop(s)`, { released })
+    request.quantity = q
+  }
+
   // Persist the order BEFORE anything leaves the process.
   const env = la.account.environment
   const order = await prisma.order.create({ data: {
     userId, accountId: la.account.id, provider: la.account.provider, environment: env as never, instrumentId: inst.id, clientOrderId: request.clientOrderId,
-    side: request.side, type: request.type, quantity: request.quantity?.toFixed() ?? null, quoteQuantity: request.quoteQuantity?.toFixed() ?? null, price: request.price?.toFixed() ?? null, reduceOnly: !!request.reduceOnly,
+    side: request.side, type: request.type, quantity: request.quantity?.toFixed() ?? null, quoteQuantity: request.quoteQuantity?.toFixed() ?? null, price: request.price?.toFixed() ?? null, stopPrice: request.stopPrice?.toFixed() ?? null, reduceOnly: !!request.reduceOnly,
     status: 'DRAFT', simulatedLocal: env === 'simulated', simulatedStatic: env === 'sandbox_static', proposalId: p.id,
     events: { create: [{ from: null, to: 'DRAFT', actor: 'system' }] },
   } })
@@ -361,6 +395,10 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
   if (prot?.stopOffsetPercent && ack && !ack.filledQuantity.isZero()) await protect(ctx, userId, la, inst, order.id, request, ack, dec(prot.stopOffsetPercent))
   // Orphan cleanup: a reduce-only close that leaves the position flat cancels that position's protective orders.
   if (request.reduceOnly && inst.product !== 'spot' && ack && !ack.filledQuantity.isZero()) await cleanupOrphans(ctx, userId, la, inst, order.id)
+  // Recovery: protection for an existing position counts only once the venue lists the stop.
+  if (recovery) await finishRecovery(ctx, userId, la, inst, order.id, request, ack, s, recovery)
+  // Spot sale: stops larger than what is left of the holding would fire on coins that are gone.
+  if (inst.product === 'spot' && request.side === 'SELL' && request.type !== 'STOP_MARKET' && ack && !ack.filledQuantity.isZero()) await cleanupSpotStops(ctx, userId, la, inst, order.id, released)
   return receipt(ctx, userId, order.id)
 }
 
@@ -452,6 +490,146 @@ async function protect(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: 
     else await transition(prisma, sOrder.id, s, 'REJECTED', 'provider', `${he.code}${he.providerCode ? ` (${he.providerCode})` : ''}`)
     await unprotected(`stop ${he.code === 'ORDER_UNKNOWN' ? 'state unknown' : 'rejected'}: ${he.code}`)
   }
+}
+
+// ---------- PROTECT AN EXISTING POSITION (Trade-to-Protect recovery) ----------
+export interface RecoveryInfo { positionQty: string; positionSide: 'LONG' | 'SHORT'; entryPrice: string | null; markPrice: string | null; referencePrice: string; stopOffsetPercent: string | null }
+export interface ProtectInput { accountId: string; instrumentId: string; stopOffsetPercent?: string | null; stopPrice?: string | null }
+
+/**
+ * Preview a reduce-only STOP_MARKET for a perp position that has no venue-listed protective order.
+ * Never submits anything; returns a normal 45 s single-use confirm token like any other preview.
+ */
+export async function previewProtectExisting(ctx: EngineCtx, userId: string, t: ProtectInput) {
+  const la = await loadAccount(ctx.prisma, ctx.key, ctx.adapters, userId, t.accountId)
+  const inst = await resolveInstrument(la.adapter, la.account.environment, t.instrumentId)
+  if (!inst) throw new HelmError('INVALID_INSTRUMENT')
+  if (inst.product === 'spot') throw httpErr(400, 'UNSUPPORTED', 'Recovery protection is for perpetual positions. Spot holdings: sell or use a new entry with Trade-to-Protect.')
+  if (!la.manifest.orderTypes.includes('STOP_MARKET') || !la.manifest.reduceOnly) throw httpErr(400, 'UNSUPPORTED', 'This account cannot place reduce-only stop orders')
+  const pos = (await la.adapter.getPositions()).find(p => p.instrumentId === inst.id && !p.quantity.isZero())
+  if (!pos) throw httpErr(404, 'NO_POSITION', 'No open position on this instrument')
+  const existing = await protectiveOrders(la, inst.id)
+  const long = pos.side === 'LONG' || (pos.side === 'NET' && pos.quantity.isPositive())
+  const covering = existing.filter(o => o.side === (long ? 'SELL' : 'BUY') && o.type.startsWith('STOP'))
+  if (covering.length) throw httpErr(409, 'ALREADY_PROTECTED', `The venue already lists ${covering.length} reduce-only stop(s) on this position`)
+  const book = await bookFor(la, inst.id)
+  const ref = pos.markPrice ?? (long ? book?.bids[0]?.price : book?.asks[0]?.price) ?? null
+  if (!ref) throw new HelmError('EXCHANGE_UNAVAILABLE', 'No price available for this position')
+  let stopPrice: Decimal, offset: Decimal | null = null
+  if (t.stopPrice) {
+    stopPrice = roundToTick(dec(t.stopPrice), inst.tickSize, long ? 'SELL' : 'BUY')
+    if (long ? stopPrice.gte(ref) : stopPrice.lte(ref)) throw httpErr(400, 'INVALID_PRICE', `A ${long ? 'long' : 'short'} needs its stop ${long ? 'below' : 'above'} the current price ${ref.toFixed()}`)
+  } else {
+    offset = dec(t.stopOffsetPercent ?? '3')
+    if (offset.lte(0) || offset.gt(50)) throw httpErr(400, 'INVALID_PRICE', 'Stop distance must be between 0 and 50%')
+    stopPrice = protectiveStopPrice(ref, long ? 'BUY' : 'SELL', offset, inst.tickSize)
+  }
+  const qty = pos.quantity.abs()
+  const proposalId = `p${randomBytes(10).toString('hex')}`
+  const request: OrderRequest = { accountId: la.account.id, instrument: inst, side: long ? 'SELL' : 'BUY', type: 'STOP_MARKET', quantity: qty, stopPrice, reduceOnly: true, clientOrderId: clientOrderIdFor(proposalId, 's') }
+  const feeRate = FEE_ASSUMPTION[`${la.account.provider}:${inst.product}`] ?? dec('0.001')
+  const notional = qty.mul(stopPrice).mul(inst.contractMultiplier ?? 1)
+  const lossAtStop = (long ? stopPrice.minus(pos.entryPrice ?? ref) : (pos.entryPrice ?? ref).minus(stopPrice)).mul(qty).mul(inst.contractMultiplier ?? 1)
+  const now = new Date(), expiresAt = new Date(now.getTime() + PREVIEW_TTL_MS)
+  const preview: OrderPreview = { id: proposalId, request, estimatedPrice: stopPrice, estimatedNotional: notional, estimatedFee: notional.mul(feeRate), estimatedSlippageBps: null, requiredMargin: null, remainingBuyingPower: null,
+    estimateNotes: [`Protects the existing ${long ? 'LONG' : 'SHORT'} ${qty.toFixed()} ${inst.base} (no venue-listed stop found)`, `Reduce-only stop ${stopPrice.toFixed()} vs ${pos.markPrice ? 'mark' : 'book'} ${ref.toFixed()}`, `If triggered: P&L vs entry ≈ ${lossAtStop.toFixed(2)} ${inst.quote} before fees and slippage`], createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() }
+  const { portfolio } = await userPortfolio(ctx.prisma, ctx.key, ctx.adapters, userId)
+  const { policy, version } = await policyFor(ctx.prisma, userId)
+  const risk = assess(policy, { request, preview, portfolio, reducesRisk: true }, version)
+  if (!la.canTrade) risk.findings.unshift({ rule: 'connection', verdict: 'BLOCK', message: `Connection is ${la.connection.state}; orders cannot be submitted` }), (risk.verdict = 'BLOCK')
+  const impact = tradeImpact({ request: { ...request, quantity: dec(0) }, preview: { ...preview, estimatedNotional: dec(0) }, portfolio, bid: book?.bids[0]?.price ?? null, ask: book?.asks[0]?.price ?? null })
+  const recovery: RecoveryInfo = { positionQty: qty.toFixed(), positionSide: long ? 'LONG' : 'SHORT', entryPrice: pos.entryPrice?.toFixed() ?? null, markPrice: pos.markPrice?.toFixed() ?? null, referencePrice: ref.toFixed(), stopOffsetPercent: offset?.toFixed() ?? null }
+  const blocked = risk.verdict === 'BLOCK'
+  const token = blocked ? null : newOpaqueToken(24)
+  const reqJson = reqToJson(request)
+  const protection = { stopOffsetPercent: offset?.toFixed() ?? null, estimatedStopPrice: stopPrice.toFixed(), supported: true, note: 'Shown PROTECTED only once the exchange lists this stop' }
+  const previewJson = toJsonSafe({ ...preview, request: undefined, kind: 'protect_existing', recovery, protectionRecovery: protection, impact, willCancel: [], label: simulationLabel(la.account.environment) }) as Record<string, unknown>
+  await ctx.prisma.orderProposal.create({ data: {
+    id: proposalId, userId, accountId: la.account.id, request: reqJson as Prisma.InputJsonValue, preview: previewJson as Prisma.InputJsonValue, risk: toJsonSafe(risk) as Prisma.InputJsonValue,
+    proposalHash: hashProposal({ reqJson, est: stopPrice.toFixed() }), tokenHash: token ? hashToken(token) : null, status: blocked ? 'BLOCKED' : 'OPEN', expiresAt,
+  } })
+  return {
+    proposalId, confirmToken: token, expiresAt: expiresAt.toISOString(), canConfirm: !blocked, kind: 'protect_existing' as const,
+    account: { id: la.account.id, alias: la.account.alias, provider: la.account.provider, environment: la.account.environment, environmentLabel: (ENVIRONMENT_LABEL as Record<string, string>)[la.account.environment], connectionState: la.connection.state },
+    label: simulationLabel(la.account.environment),
+    order: reqJson, preview: { ...previewJson, protection }, risk: toJsonSafe(risk),
+  }
+}
+
+async function finishRecovery(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: Instrument, orderId: string, request: OrderRequest, ack: Order | null, s: OrderStatus, r: RecoveryInfo) {
+  const { prisma } = ctx
+  const wf = new ProtectionWorkflow('PLANNED')
+  wf.to('PROTECTION_SUBMITTED', `recovery: stop ${request.stopPrice!.toFixed()} for existing ${r.positionSide} ${r.positionQty}`)
+  const plan = await prisma.protectionPlan.create({ data: { userId, accountId: la.account.id, instrumentId: inst.id, entryOrderId: null, source: 'recovery', protectionOrderId: orderId, stopOffsetPercent: r.stopOffsetPercent, stopPrice: request.stopPrice!.toFixed(), state: wf.state, history: toJsonSafe(wf.history) as Prisma.InputJsonValue } })
+  await prisma.order.update({ where: { id: orderId }, data: { protectionPlanId: plan.id } })
+  let live: Order | undefined
+  if (ack && s !== 'REJECTED') { try { live = (await la.adapter.getOpenOrders(inst.id)).find(o => (ack.providerOrderId && o.providerOrderId === ack.providerOrderId) || o.clientOrderId === request.clientOrderId) } catch { /* unreadable: stays unconfirmed */ } }
+  if (live && live.status === 'ACCEPTED') {
+    wf.to('PROTECTED', `venue lists stop ${live.providerOrderId}`)
+    await prisma.protectionPlan.update({ where: { id: plan.id }, data: { state: wf.state, history: toJsonSafe(wf.history) as Prisma.InputJsonValue, protectedQuantity: request.quantity!.toFixed() } })
+    await emitPulse(prisma, { userId, kind: 'PROTECTION_ACTIVE', severity: 1, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: `${inst.base} existing position now protected · stop ${request.stopPrice!.toFixed()} live at venue`, dedupeKey: `protok:${plan.id}` })
+  } else {
+    wf.to('UNPROTECTED', s === 'REJECTED' ? 'stop rejected by the venue' : 'stop not visible in the venue’s open orders')
+    await prisma.protectionPlan.update({ where: { id: plan.id }, data: { state: wf.state, history: toJsonSafe(wf.history) as Prisma.InputJsonValue } })
+    await emitPulse(prisma, { userId, kind: 'PROTECTION_FAILED', severity: 4, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: `${inst.base} position is still UNPROTECTED: ${s === 'REJECTED' ? 'stop rejected' : 'stop not listed by the venue'}`, dedupeKey: `prot:${plan.id}` })
+  }
+  await audit(prisma, { userId, actor: 'system', action: 'protection.recovery', subject: orderId, detail: { state: wf.state, stopPrice: request.stopPrice!.toFixed(), quantity: request.quantity!.toFixed() } })
+}
+
+// ---------- SPOT STOP CLEANUP ----------
+export interface SpotRelease { stops: Array<{ providerOrderId: string | null; type: string; stopPrice: string | null; quantity: string | null }> }
+
+/** Resting spot SELL stops on one instrument (spot stops are not reduce-only, so they can outlive the holding). */
+export async function spotStops(la: LoadedAccount, instrumentId: string): Promise<Order[]> {
+  const open = await la.adapter.getOpenOrders(instrumentId)
+  return open.filter(o => o.instrumentId === instrumentId && o.side === 'SELL' && PROTECTIVE_TYPES.has(o.type))
+}
+
+async function cancelSpotStops(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: Instrument, ids: Array<string | null>, why: string): Promise<OrphanResult[]> {
+  const out: OrphanResult[] = []
+  let listed: Order[] = []
+  try { listed = await spotStops(la, inst.id) } catch { return [{ providerOrderId: null, type: 'STOP', side: 'SELL', stopPrice: null, quantity: null, result: 'FAILED', error: 'open orders unreadable' }] }
+  for (const o of listed.filter(x => ids.includes(x.providerOrderId))) {
+    const base = { providerOrderId: o.providerOrderId, type: o.type, side: o.side, stopPrice: o.stopPrice?.toFixed() ?? null, quantity: o.quantity?.toFixed() ?? null }
+    try {
+      const c = await la.adapter.cancelOrder(inst.id, o.providerOrderId ? { providerOrderId: o.providerOrderId } : { clientOrderId: o.clientOrderId })
+      out.push({ ...base, result: c.status === 'CANCELED' ? 'CANCELED' : 'FAILED', error: c.status === 'CANCELED' ? undefined : c.status })
+      const row = await ctx.prisma.order.findFirst({ where: { accountId: la.account.id, OR: [{ providerOrderId: o.providerOrderId ?? '__none__' }, { clientOrderId: o.clientOrderId }] } })
+      if (row && c.status === 'CANCELED' && TRANSITIONS[row.status as OrderStatus].includes('CANCELED')) await transition(ctx.prisma, row.id, row.status as OrderStatus, 'CANCELED', 'system', why, orderData(c))
+      if (row?.protectionPlanId && c.status === 'CANCELED') {
+        const plan = await ctx.prisma.protectionPlan.findUnique({ where: { id: row.protectionPlanId } })
+        if (plan && ['PROTECTED', 'UNPROTECTED'].includes(plan.state)) { const wf = new ProtectionWorkflow(plan.state as ProtectionState, plan.history as never); wf.to('CANCELED', why); await ctx.prisma.protectionPlan.update({ where: { id: plan.id }, data: { state: wf.state, history: toJsonSafe(wf.history) as Prisma.InputJsonValue } }) }
+      }
+    } catch (e) { out.push({ ...base, result: 'FAILED', error: (e as { code?: string }).code ?? 'ERROR' }) }
+  }
+  return out
+}
+
+/**
+ * After a spot SELL fills: any resting spot SELL stop that is larger than what remains of the holding
+ * would later fire on coins that are gone (or on coins bought for another reason). Cancel stops,
+ * newest first, until the remaining stops fit inside the remaining holding. Never re-places a smaller
+ * stop on its own — that needs a new preview and confirmation.
+ */
+export async function cleanupSpotStops(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: Instrument, saleOrderId: string, alreadyReleased: OrphanResult[] = []): Promise<OrphanResult[]> {
+  const { prisma } = ctx
+  let stops: Order[], held: Decimal
+  try {
+    stops = await spotStops(la, inst.id)
+    const b = (await la.adapter.getBalances()).find(x => x.asset === inst.base)
+    held = b ? b.free.plus(b.locked) : dec(0)
+  } catch { return alreadyReleased }
+  const sorted = [...stops].sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')))
+  let total = sorted.reduce((a, o) => a.plus(o.quantity ?? 0), dec(0))
+  const cancel: Array<string | null> = []
+  for (const o of sorted) { if (total.lte(held) && held.gte(inst.minQty)) break; cancel.push(o.providerOrderId); total = total.minus(o.quantity ?? 0) }
+  const out = [...alreadyReleased, ...(cancel.length ? await cancelSpotStops(ctx, userId, la, inst, cancel, `orphaned: ${inst.base} holding sold by ${saleOrderId}`) : [])]
+  if (out.length) {
+    await audit(prisma, { userId, actor: 'system', action: 'protection.orphans_canceled', subject: saleOrderId, detail: { orphans: out, spot: true, remainingHolding: held.toFixed() } })
+    const failed = out.filter(x => x.result === 'FAILED').length
+    await emitPulse(prisma, { userId, kind: failed ? 'PROTECTION_FAILED' : 'POSITION_CLOSED', severity: failed ? 3 : 1, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: failed ? `${inst.base} sold but ${failed} spot stop(s) could not be canceled — check the venue` : `${inst.base} sold · ${out.length} spot stop(s) canceled (no longer backed by a holding)`, dedupeKey: `spotorphan:${saleOrderId}` })
+  }
+  return out
 }
 
 // ---------- RECEIPT / ORDERS ----------
