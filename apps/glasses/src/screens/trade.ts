@@ -50,9 +50,17 @@ ${top}`
 
 export function holdingsScreen(p: any): ScreenSpec {
   const pos = (p.positions as Array<{ instrumentId: string; side: string; quantity: string; unrealizedPnl: string | null; accountId: string }>).map(x => { const s = sym(x.instrumentId); const long = x.side === 'LONG' || (x.side === 'NET' && Number(x.quantity) > 0); return `${long ? 'LONG' : 'SHORT'} ${s.base} ${qty(String(Math.abs(Number(x.quantity))))} · ${x.instrumentId.split(':')[0]} · ${usd(x.unrealizedPnl)}` })
-  const hold = (p.exposures as Array<{ asset: string; spotUsd: string }>).filter(e => Number(e.spotUsd) > 1).slice(0, 12).map(e => `${e.asset.padEnd(6)} spot ${usd(e.spotUsd, 0)}`)
-  const items = [...pos, ...hold]
-  return listScreen('holdings', 'POSITIONS · HOLDINGS', `${pos.length} pos`, items.length ? items : ['No positions or holdings'], 'swipe · double-tap: back')
+  // Cross-exchange summary: each asset's total, then where it sits (largest first).
+  const ex = (p.exposures as Array<{ asset: string; spotUsd: string; byAccount?: Array<{ alias: string; kind: string; usd: string }> }>).filter(e => Number(e.spotUsd) > 1)
+  const hold: string[] = []
+  for (const e of ex) {
+    const by = (e.byAccount ?? []).filter(b => b.kind === 'spot' && Number(b.usd) >= 1).sort((a, b) => Number(b.usd) - Number(a.usd))
+    hold.push(`${e.asset} spot ${usd(e.spotUsd, 0)} · ${by.length} account${by.length === 1 ? '' : 's'}`)
+    for (const b of by.slice(0, 4)) hold.push(`  ${b.alias} ${usd(b.usd, 0)}`)
+  }
+  const venues = new Set((p.accounts as Array<{ alias: string }> | undefined ?? []).map(a => a.alias)).size
+  const items = [...pos, ...hold].slice(0, 20)
+  return listScreen('holdings', 'POSITIONS · HOLDINGS', `${pos.length} pos · ${venues} accts`, items.length ? items : ['No positions or holdings'], 'swipe · double-tap: back')
 }
 
 // ---------- markets ----------
