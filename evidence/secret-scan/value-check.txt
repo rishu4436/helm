@@ -1,0 +1,10 @@
+binance.apiKey               history:clean tree:clean
+binance.apiSecret            history:clean tree:clean
+bybit.apiKey                 history:clean tree:clean
+bybit.apiSecret              history:clean tree:clean
+binance.apiKey               history:clean tree:clean
+binance.apiSecret            history:clean tree:clean
+HELM_CREDENTIAL_KEY          history:clean tree:clean
+HELM_DEMO_PASSWORD           history:clean tree:clean
+
+8 secret values checked; 0 found; tree files indexed: 229
