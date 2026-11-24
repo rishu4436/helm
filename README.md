@@ -1,79 +1,95 @@
-# HELM — trading command center for Even Realities G2
+# HELM G2: a trading command center for Even Realities G2
 
-HELM puts your exchange and broker accounts on the G2 display: pick an account and glance at balances and positions. Every order goes through a preview and an explicit confirmation. Exchange keys stay on the HELM backend, encrypted, and never reach the glasses.
+HELM puts every demo and paper trading account you hold (Binance, Bybit, OKX, Coinbase sandbox, IBKR paper) on the G2 display.
+
+- **Glance** at the whole book and **ask by voice** ("buy 100 dollars of BTC" gets "Which exchange?").
+- **Trade with the ring.** Nothing is sent until you've seen the **Trade Impact** and **Risk check** and confirmed. Cancel is selected by default.
+- **Trade-to-Protect** sizes a reduce-only stop from the actual fill. It can also add a stop to a position that has none, and it only says PROTECTED once the exchange lists the stop.
 
 Built for the **Heads Up: Even Realities Hackathon** (TVM Ventures × Daos Hub, DoraHacks), **Exchanges & Stocks** track.
 
-> **Safety:** HELM runs against **demo, paper and sandbox environments only**.
-> - Live trading is hard-disabled: the API refuses to start unless `HELM_LIVE_TRADING=false`.
-> - An environment guard blocks every production signed endpoint before any network call.
-> - HELM never asks for exchange passwords, 2FA codes, recovery phrases or withdrawal permissions. Keys with withdrawal permission are downgraded to LIMITED.
+> ### Safety
+> - **Demo, paper and sandbox only.** Live trading is hard-disabled: `HELM_LIVE_TRADING` must be `false`, or the guard throws.
+> - An **environment guard** allow-lists demo/paper/sandbox hosts and blocks production signed endpoints before any network call.
+> - HELM **never asks for exchange passwords, 2FA codes, recovery phrases or withdrawal permission**, and it has no withdraw/transfer code path. Keys with withdraw scope are downgraded to LIMITED.
+> - Keys are validated before storage, encrypted with AES-256-GCM on the backend, and **never reach the glasses or the browser**.
+> - Every order needs a **preview plus a single-use 45 s confirmation**. Timeouts are **reconciled, never retried**. "Close everything" is an **itemized, reduce-only** review, never a broadcast. Coinbase static-sandbox responses are labelled and never shown as fills.
 > - Nothing here is financial advice.
 
-## Providers
+## Setup in minutes
 
-| Provider | Environment | Track-eligible | Status |
-|---|---|---|---|
-| Binance | Demo Trading (spot + USDⓈ-M) | ✅ | Adapter + tests. Public demo endpoints verified live; authenticated calls need demo keys |
-| OKX | Demo trading (`x-simulated-trading: 1`) | ✅ | Adapter + tests. Public endpoints verified live |
-| Bybit | Demo Trading (`api-demo.bybit.com`) | ✅ | Adapter + tests. Public demo endpoints verified live |
-| Coinbase | Advanced Trade **static sandbox** | ✅ | Works with no keys. Static mock data, so it is shown as LIMITED and orders are labelled simulated |
-| Interactive Brokers | Paper account via local Client Portal Gateway | ✅ | Adapter + tests. Needs a paper login and a running gateway |
-| Alpaca | Paper | ❌ not in track list | Off by default (`HELM_ENABLE_ALPACA=true` to enable) |
-
-## Repo layout
-
-```
-apps/api         Fastify 5 + Prisma API: auth, G2 pairing, encrypted connections, capability matrix, audit
-apps/glasses     Even Hub plugin (SDK 0.0.16): splash, pairing, account selector — packs to .ehpk
-apps/companion   Next.js 15 companion: sign in, connect exchanges, approve glasses, capability matrix
-packages/shared        domain models, Decimal money maths, instruments, capabilities, errors, env guard
-packages/connectors    guarded HTTP + Binance / OKX / Bybit / Coinbase / Alpaca / IBKR adapters
-packages/trading-core  order lifecycle state machine, single-use confirmation tokens
-packages/security      AES-256-GCM credential vault, pairing codes, token hashing
-prisma/                schema + migrations
-evidence/              real run outputs (public-endpoint check, simulator screenshots)
-docs/                  RESEARCH.md (sources), PROGRESS.md (log)
-```
-
-## Setup
-
-You need Node 24+, pnpm 10 and PostgreSQL 16/17.
+Requirements: Node 24+, pnpm 10, PostgreSQL 16/17, and Python 3.11+ (for local STT). Linux simulator only: `libwebkit2gtk-4.1-0`.
 
 ```bash
 pnpm install
-cp .env.example .env && cp .env.example apps/api/.env   # then set HELM_CREDENTIAL_KEY=$(openssl rand -base64 32)
+cp .env.example .env && cp .env.example apps/api/.env
+# set HELM_CREDENTIAL_KEY=$(openssl rand -base64 32) and HELM_DEMO_PASSWORD in both files (never commit them)
 
-# Postgres (any instance works; the dev setup used a throwaway cluster on port 5444)
+# databases (any Postgres; dev used a throwaway cluster on :5444)
 createdb -h 127.0.0.1 -p 5444 -U helm helm_dev && createdb -h 127.0.0.1 -p 5444 -U helm helm_test
 pnpm --filter @helm/api db:deploy
 DATABASE_URL=postgresql://helm@127.0.0.1:5444/helm_test pnpm --filter @helm/api db:deploy
 
-pnpm dev:api        # http://localhost:4000
-pnpm dev:companion  # http://localhost:3000
-pnpm dev:glasses    # http://localhost:5173
-npx evenhub-simulator --automation-port 9898 http://localhost:5173   # from apps/glasses (Linux needs libwebkit2gtk-4.1-0)
+pnpm stt:setup && pnpm stt:serve &    # local faster-whisper on 127.0.0.1:8178 (optional; typed input works without it)
+pnpm dev:api                          # http://localhost:4000
+pnpm dev:companion                    # http://localhost:3000
+pnpm dev:glasses                      # http://localhost:5173
+cd apps/glasses && npx evenhub-simulator --automation-port 9898 http://localhost:5173
 ```
 
-**Pairing flow:**
-1. Tap the splash on the glasses. A 6-character code appears.
-2. In the companion, go to **Devices** and enter the code.
-3. The glasses switch to your account list.
-4. Tap an account to make it active.
+After a machine restart, `bash scripts/dev-up.sh` brings Postgres, STT, API and companion back.
 
-## Tests
+**First run:**
 
-```bash
-pnpm test                 # Vitest: 126 tests (API suite uses HELM_TEST_DATABASE_URL, default helm_test on :5444)
-pnpm typecheck
-pnpm check:live-public    # real, unauthenticated calls to demo/public/sandbox endpoints → evidence/live-public-check.json
-scripts/sim-shot.sh out   # capture the simulator's glasses display to out.png
-pnpm --filter @helm/glasses pack   # builds helm.ehpk (gitignored)
+1. Register in the companion.
+2. Go to **Exchanges** and connect a Binance Demo or Bybit Demo API key (trade permission, **no withdrawal**). You can also add a HELM simulator account, which needs no keys.
+3. Tap the splash on the glasses and enter the 6-character code under **Devices**.
+4. Pick an account.
+
+**Package the plugin:** `cd apps/glasses && pnpm run pack` produces `helm.ehpk`.
+
+## Docs
+
+| | |
+|---|---|
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | Components, request path, data model, renderer |
+| [PRODUCT-SPEC](docs/PRODUCT-SPEC.md) | What HELM does, principles, features per surface |
+| [EXCHANGE-ADAPTERS](docs/EXCHANGE-ADAPTERS.md) · [PROVIDER-CAPABILITIES](docs/PROVIDER-CAPABILITIES.md) · [CONNECTION-FLOWS](docs/CONNECTION-FLOWS.md) | Providers, capabilities, pairing and key handling |
+| [ORDER-LIFECYCLE](docs/ORDER-LIFECYCLE.md) · [RISK-ENGINE](docs/RISK-ENGINE.md) · [TRADE-TO-PROTECT](docs/TRADE-TO-PROTECT.md) | How an order moves, Shield, protection and cleanup |
+| [GLASSES-UX](docs/GLASSES-UX.md) · [VOICE-COMMANDS](docs/VOICE-COMMANDS.md) | Screens, gestures, G2 limits, voice grammar |
+| [SECURITY](docs/SECURITY.md) · [DEPLOYMENT](docs/DEPLOYMENT.md) | Safety rails, secrets, secret scan; local stack and packaging |
+| [TEST-REPORT](docs/TEST-REPORT.md) · [DEMO-RUNBOOK](docs/DEMO-RUNBOOK.md) · [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md) | Exact commands with PASS/FAIL/BLOCKED/NOT RUN and evidence; how to run the demo; honest gaps |
+| [HACKATHON-SUBMISSION](docs/HACKATHON-SUBMISSION.md) · [DEMO-VIDEO-PLAN](docs/DEMO-VIDEO-PLAN.md) · [LICENSE-DECISION](docs/LICENSE-DECISION.md) | Submission text, video plan, license (pending) |
+| [PROGRESS](docs/PROGRESS.md) · [RESEARCH](docs/RESEARCH.md) · [STT](docs/STT.md) | Build log, sources, speech-to-text notes |
+
+## Repo layout
+
 ```
+apps/api         Fastify 5 + Prisma: auth, pairing, connections, trade engine, Shield, Pulse, voice, recipes, audit
+apps/glasses     Even Hub plugin (SDK 0.0.16) → helm.ehpk
+apps/companion   Next.js 15 companion website (+ Playwright e2e)
+packages/        shared · connectors · trading-core · risk-engine · portfolio · pulse · voice-engine · security
+services/stt     local faster-whisper sidecar
+scripts/         dev-up, live demo runs (redacted evidence), simulator driver, cleanup, secret checks
+evidence/        real run outputs and screenshots
+```
+
+## Status at a glance
+
+The full table is in [TEST-REPORT](docs/TEST-REPORT.md).
+
+- **PASS:** 276 tests; 46 Playwright tests; real Binance Demo and Bybit Demo runs, including Trade-to-Protect recovery (25/25); scripted simulator flows; secret scan (0 leaks).
+- **BLOCKED:** OKX logged in (region).
+- **NOT RUN:** IBKR paper, real G2 hardware, a human voice.
 
 ## What existed before Nov 23, 2026
 
-- The Even Realities **minimal template** (`index.html`, `vite.config.ts`, `tsconfig.json` in `apps/glasses`) and Even Realities' published SDK, simulator, CLI and pretext packages.
-- Open-source libraries listed in the `package.json` files: Fastify, Prisma, Next.js, React, Tailwind, Zod, decimal.js, Vitest and Vite.
+- The Even Realities **minimal template** (`apps/glasses/index.html`, `vite.config.ts`, `tsconfig.json`), plus Even Realities' published SDK, simulator, CLI and pretext packages.
+- Open-source libraries and models listed in the `package.json` and `services/stt` requirements: Fastify, Prisma, Next.js, React, Tailwind, Zod, decimal.js, Vitest, Vite, Playwright, faster-whisper and the Whisper `base.en` weights. Kokoro TTS was used only to generate the test voice fixtures.
+- Public exchange API documentation (sources in `docs/RESEARCH.md`).
 
 Everything else in this repo was written during the build week, starting Nov 23, 2026.
+
+## License
+
+Not chosen yet; see [LICENSE-DECISION](docs/LICENSE-DECISION.md). The repository is private.
