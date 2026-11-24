@@ -135,3 +135,30 @@ describe('trade engine: preview → confirm → simulated submit → receipt', (
     expect(v2.resolution.account.provider).toBe('bybit')
   })
 })
+
+describe('orphaned protective orders', () => {
+  it('a partial reduce-only close keeps the stop; a full close cancels it at the venue and closes the plan', async () => {
+    const t = await register('o@helm.test'); const acct = await simAccount(t)
+    const pv = (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'BUY', quantity: '0.004', leverage: '2', stopOffsetPercent: '3' })).json()
+    const entry = (await confirm(t, pv)).json().receipt
+    expect(entry.protection.state).toBe('PROTECTED')
+    const half = (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'SELL', fraction: '0.5', reduceOnly: true })).json()
+    expect(half.preview.willCancel).toEqual([])
+    const r1 = (await confirm(t, half)).json().receipt
+    expect(r1.status).toBe('FILLED')
+    expect(r1.orphanCleanup).toBeNull()
+    expect((await prisma.order.findFirst({ where: { type: 'STOP_MARKET' } }))?.status).toBe('ACCEPTED')
+    const full = (await preview(t, { accountId: acct, asset: 'BTC', product: 'perp', side: 'SELL', fraction: '1', reduceOnly: true })).json()
+    expect(full.preview.willCancel).toHaveLength(1)
+    expect(full.preview.estimateNotes.join(' ')).toMatch(/will also cancel 1 protective order/)
+    const r2 = (await confirm(t, full)).json().receipt
+    expect(r2.status).toBe('FILLED')
+    expect(r2.orphanCleanup).toEqual([expect.objectContaining({ type: 'STOP_MARKET', result: 'CANCELED' })])
+    const stop = await prisma.order.findFirst({ where: { type: 'STOP_MARKET' }, include: { events: true } })
+    expect(stop?.status).toBe('CANCELED')
+    expect(stop?.events.some(e => e.reason?.startsWith('orphaned: position flat'))).toBe(true)
+    expect((await prisma.protectionPlan.findFirst())?.state).toBe('CANCELED')
+    const em = (await app.inject({ method: 'GET', url: '/v1/emergency', headers: H(t) })).json()
+    expect(em.items).toEqual([])
+  })
+})

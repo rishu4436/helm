@@ -123,7 +123,8 @@ export function receiptScreen(r: Receipt): ScreenSpec {
   const s = sym(r.instrumentId)
   const fee = r.fills.reduce((a, f) => a + Number(f.fee ?? 0), 0)
   const feeAsset = r.fills.find(f => f.feeAsset)?.feeAsset ?? ''
-  const prot = r.protection ? `Protection: ${r.protection.state}${r.protection.stopPrice ? ` · stop ${n(r.protection.stopPrice, 1)}` : ''}` : 'No protection requested'
+  const orph = r.orphanCleanup?.length ? `Position flat · ${r.orphanCleanup.filter(o => o.result === 'CANCELED').length}/${r.orphanCleanup.length} orphan stop(s) canceled` : null
+  const prot = orph ?? (r.protection ? `Protection: ${r.protection.state}${r.protection.stopPrice ? ` · stop ${n(r.protection.stopPrice, 1)}` : ''}` : 'No protection requested')
   const reason = r.status === 'REJECTED' ? (r.events.slice().reverse().find(e => e.to === 'REJECTED')?.reason ?? '').slice(0, 56) : ''
   const body = [
     `${r.status} · ${r.side} ${qty(r.filledQuantity)} ${s.base}${r.avgFillPrice ? ` @ ${n(r.avgFillPrice, 2)}` : ''}`,

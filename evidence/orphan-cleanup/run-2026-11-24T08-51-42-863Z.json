@@ -1,0 +1,140 @@
+{
+  "ranAt": "2026-11-24T08:51:42.863Z",
+  "what": "Orphaned protective order cleanup on real Bybit Demo + Binance Demo",
+  "rows": [
+    {
+      "step": "Bybit Demo · Unified: entry FILLED + PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "filled": "0.004",
+        "avg": "60349.8",
+        "protection": {
+          "state": "PROTECTED",
+          "stop": "58539.3",
+          "qty": "0.004"
+        },
+        "risk": "ALLOW"
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: partial close FILLED, preview promised no cancel, stop still live at venue",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "qty": "0.002",
+        "willCancel": [],
+        "venueStops": [
+          "SELL STOP_MARKET 0.004 @ 58539.3"
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: full-close preview itemizes the orphan to cancel",
+      "result": "PASS",
+      "detail": [
+        {
+          "providerOrderId": "f25374c6-99c4-4eaa-aee0-f8da5435bce5",
+          "type": "STOP_MARKET",
+          "stopPrice": "58539.3",
+          "quantity": "0.004"
+        }
+      ]
+    },
+    {
+      "step": "Bybit Demo · Unified: full close FILLED → orphan stop CANCELED at venue",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "qty": "0.002",
+        "orphanCleanup": [
+          {
+            "side": "SELL",
+            "type": "STOP_MARKET",
+            "result": "CANCELED",
+            "quantity": "0.004",
+            "stopPrice": "58539.3",
+            "providerOrderId": "f25374c6-99c4-4eaa-aee0-f8da5435bce5"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Bybit Demo · Unified: venue shows no position and no protective order",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Bybit Demo · Unified: protection plan CANCELED (position closed)",
+      "result": "PASS",
+      "detail": "CANCELED"
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: entry FILLED + PROTECTED",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "filled": "0.0041",
+        "avg": "60399.7",
+        "protection": {
+          "state": "PROTECTED",
+          "stop": "58587.7",
+          "qty": "0.0041"
+        },
+        "risk": "ALLOW"
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: partial close FILLED, preview promised no cancel, stop still live at venue",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "qty": "0.002",
+        "willCancel": [],
+        "venueStops": [
+          "SELL STOP_MARKET 0.0041 @ 58587.7"
+        ]
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: full-close preview itemizes the orphan to cancel",
+      "result": "PASS",
+      "detail": [
+        {
+          "providerOrderId": "algo:1000000300546486",
+          "type": "STOP_MARKET",
+          "stopPrice": "58587.7",
+          "quantity": "0.0041"
+        }
+      ]
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: full close FILLED → orphan stop CANCELED at venue",
+      "result": "PASS",
+      "detail": {
+        "status": "FILLED",
+        "qty": "0.0021",
+        "orphanCleanup": [
+          {
+            "side": "SELL",
+            "type": "STOP_MARKET",
+            "result": "CANCELED",
+            "quantity": "0.0041",
+            "stopPrice": "58587.7",
+            "providerOrderId": "algo:1000000300546486"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: venue shows no position and no protective order",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "Binance Demo · USDⓈ-M: protection plan CANCELED (position closed)",
+      "result": "PASS",
+      "detail": "CANCELED"
+    }
+  ]
+}

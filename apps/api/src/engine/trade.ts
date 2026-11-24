@@ -13,6 +13,7 @@ import { loadAccount, refreshHealth, type LoadedAccount } from './accounts'
 import { FEE_ASSUMPTION, legsNotional, legsQty, resolveInstrument, walkBook } from './market'
 import { userPortfolio } from './portfolio'
 import { emitPulse } from './pulse'
+import { audit } from '../audit'
 
 export const PREVIEW_TTL_MS = 45_000
 export const MAX_PRICE_MOVE_BPS = dec(50)
@@ -188,11 +189,21 @@ export async function previewTrade(ctx: EngineCtx, userId: string, t: TicketInpu
     protection = { stopOffsetPercent: off.toFixed(), estimatedStopPrice: preview.estimatedPrice ? protectiveStopPrice(preview.estimatedPrice, request.side, off, inst.tickSize).toFixed() : null, supported, note: supported ? 'Stop is sized from ACTUAL fills after entry, and only shown PROTECTED once the exchange lists it' : 'This account cannot place stop orders — position would stay UNPROTECTED' }
     if (!supported) risk.findings.push({ rule: 'protection', verdict: 'WARN', message: 'Protective stop not supported on this account' }), risk.verdict === 'ALLOW' && (risk.verdict = 'WARN')
   }
+  let willCancel: Array<{ providerOrderId: string | null; type: string; stopPrice: string | null; quantity: string | null }> = []
+  if (request.reduceOnly && inst.product !== 'spot') {
+    try {
+      const pos = (await la.adapter.getPositions()).find(p => p.instrumentId === inst.id && !p.quantity.isZero())
+      if (pos && request.quantity && request.quantity.gte(pos.quantity.abs())) {
+        willCancel = (await protectiveOrders(la, inst.id)).map(o => ({ providerOrderId: o.providerOrderId, type: o.type, stopPrice: o.stopPrice?.toFixed() ?? null, quantity: o.quantity?.toFixed() ?? null }))
+        if (willCancel.length) preview.estimateNotes.push(`Full close: will also cancel ${willCancel.length} protective order(s) on this position once the venue reports it flat`)
+      }
+    } catch { /* positions unreadable: no promise made */ }
+  }
   const blocked = risk.verdict === 'BLOCK'
   const token = blocked ? null : newOpaqueToken(24)
   const expiresAt = new Date(Date.now() + PREVIEW_TTL_MS)
   const reqJson = reqToJson(request)
-  const previewJson = toJsonSafe({ ...preview, request: undefined, protection, impact, label: simulationLabel(la.account.environment) }) as Record<string, unknown>
+  const previewJson = toJsonSafe({ ...preview, request: undefined, protection, impact, willCancel, label: simulationLabel(la.account.environment) }) as Record<string, unknown>
   await ctx.prisma.orderProposal.create({ data: {
     id: proposalId, userId, accountId: la.account.id, intentId: t.intentId ?? null, request: reqJson as Prisma.InputJsonValue, preview: previewJson as Prisma.InputJsonValue, risk: toJsonSafe(risk) as Prisma.InputJsonValue,
     proposalHash: hashProposal({ reqJson, est: previewJson.estimatedPrice ?? null }), tokenHash: token ? hashToken(token) : null, status: blocked ? 'BLOCKED' : 'OPEN', expiresAt,
@@ -348,7 +359,56 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
   // Trade-to-Protect.
   const prot = pv.protection as { stopOffsetPercent?: string; supported?: boolean } | null
   if (prot?.stopOffsetPercent && ack && !ack.filledQuantity.isZero()) await protect(ctx, userId, la, inst, order.id, request, ack, dec(prot.stopOffsetPercent))
+  // Orphan cleanup: a reduce-only close that leaves the position flat cancels that position's protective orders.
+  if (request.reduceOnly && inst.product !== 'spot' && ack && !ack.filledQuantity.isZero()) await cleanupOrphans(ctx, userId, la, inst, order.id)
   return receipt(ctx, userId, order.id)
+}
+
+const PROTECTIVE_TYPES = new Set(['STOP_MARKET', 'STOP_LIMIT', 'TAKE_PROFIT_MARKET', 'TAKE_PROFIT_LIMIT'])
+
+/** Venue-listed protective (reduce-only stop/TP) orders on one instrument. */
+export async function protectiveOrders(la: LoadedAccount, instrumentId: string): Promise<Order[]> {
+  const open = await la.adapter.getOpenOrders(instrumentId)
+  return open.filter(o => o.instrumentId === instrumentId && PROTECTIVE_TYPES.has(o.type) && o.reduceOnly)
+}
+
+export interface OrphanResult { providerOrderId: string | null; type: string; side: string; stopPrice: string | null; quantity: string | null; result: 'CANCELED' | 'FAILED'; error?: string }
+
+/**
+ * After a confirmed reduce-only close: if the venue reports the position flat, cancel the reduce-only
+ * protective orders still resting on that instrument (they can no longer protect anything) and close
+ * HELM's protection plans. If the position read fails, nothing is canceled (never guess).
+ */
+export async function cleanupOrphans(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: Instrument, closingOrderId: string): Promise<OrphanResult[]> {
+  const { prisma } = ctx
+  let positions
+  try { positions = await la.adapter.getPositions() } catch { return [] }
+  if (positions.some(p => p.instrumentId === inst.id && !p.quantity.isZero())) return []
+  const out: OrphanResult[] = []
+  let orphans: Order[] = []
+  try { orphans = await protectiveOrders(la, inst.id) } catch { /* nothing listed / unreadable */ }
+  for (const o of orphans) {
+    const base = { providerOrderId: o.providerOrderId, type: o.type, side: o.side, stopPrice: o.stopPrice?.toFixed() ?? null, quantity: o.quantity?.toFixed() ?? null }
+    try {
+      const c = await la.adapter.cancelOrder(inst.id, o.providerOrderId ? { providerOrderId: o.providerOrderId } : { clientOrderId: o.clientOrderId })
+      out.push({ ...base, result: c.status === 'CANCELED' ? 'CANCELED' : 'FAILED', error: c.status === 'CANCELED' ? undefined : c.status })
+      const row = await prisma.order.findFirst({ where: { accountId: la.account.id, OR: [{ providerOrderId: o.providerOrderId ?? '__none__' }, { clientOrderId: o.clientOrderId }] } })
+      if (row && c.status === 'CANCELED' && TRANSITIONS[row.status as OrderStatus].includes('CANCELED')) await transition(prisma, row.id, row.status as OrderStatus, 'CANCELED', 'system', `orphaned: position flat after close ${closingOrderId}`, orderData(c))
+    } catch (e) { out.push({ ...base, result: 'FAILED', error: (e as { code?: string }).code ?? 'ERROR' }) }
+  }
+  // HELM plans on this instrument: the position they guarded is gone.
+  const plans = await prisma.protectionPlan.findMany({ where: { userId, accountId: la.account.id, instrumentId: inst.id, state: { in: ['PROTECTED', 'UNPROTECTED'] } } })
+  for (const p of plans) {
+    const wf = new ProtectionWorkflow(p.state as ProtectionState, p.history as never)
+    wf.to('CANCELED', `position closed by ${closingOrderId}; ${out.filter(x => x.result === 'CANCELED').length} protective order(s) canceled`)
+    await prisma.protectionPlan.update({ where: { id: p.id }, data: { state: wf.state, history: toJsonSafe(wf.history) as Prisma.InputJsonValue } })
+  }
+  if (out.length || plans.length) {
+    await audit(prisma, { userId, actor: 'system', action: 'protection.orphans_canceled', subject: closingOrderId, detail: { orphans: out, plansClosed: plans.length } })
+    const failed = out.filter(x => x.result === 'FAILED').length
+    await emitPulse(prisma, { userId, kind: failed ? 'PROTECTION_FAILED' : 'POSITION_CLOSED', severity: failed ? 3 : 1, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: failed ? `${inst.base} closed but ${failed} protective order(s) could not be canceled — check the venue` : `${inst.base} position closed · ${out.length} orphaned protective order(s) canceled`, dedupeKey: `orphan:${closingOrderId}` })
+  }
+  return out
 }
 
 async function protect(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: Instrument, orderId: string, entry: OrderRequest, filled: Order, offset: Decimal) {
@@ -399,6 +459,7 @@ export async function receipt(ctx: EngineCtx, userId: string, orderId: string) {
   const o = await ctx.prisma.order.findFirst({ where: { id: orderId, userId }, include: { fills: true, events: { orderBy: { at: 'asc' } }, account: { select: { alias: true } }, confirmation: { select: { confirmedVia: true } } } })
   if (!o) throw httpErr(404, 'NOT_FOUND', 'Order not found')
   const plan = o.protectionPlanId ? await ctx.prisma.protectionPlan.findUnique({ where: { id: o.protectionPlanId } }) : null
+  const orphanAudit = await ctx.prisma.auditEvent.findFirst({ where: { subject: o.id, action: 'protection.orphans_canceled' } })
   const label = o.simulatedLocal ? SIMULATED_LABEL : o.simulatedStatic ? simulationLabel('sandbox_static') : null
   return {
     receipt: {
@@ -410,6 +471,7 @@ export async function receipt(ctx: EngineCtx, userId: string, orderId: string) {
       events: o.events.map(e => ({ from: e.from, to: e.to, actor: e.actor, reason: e.reason, at: e.at })),
       confirmedVia: o.confirmation?.confirmedVia ?? null, createdAt: o.createdAt, updatedAt: o.updatedAt,
       protection: plan ? { state: plan.state as ProtectionState, stopPrice: plan.stopPrice?.toString() ?? null, protectedQuantity: plan.protectedQuantity.toString(), history: plan.history } : null,
+      orphanCleanup: orphanAudit ? (orphanAudit.detail as unknown as { orphans: OrphanResult[] }).orphans : null,
       fillTruth: o.simulatedLocal ? 'Fill computed locally by the HELM simulator from live public prices' : o.simulatedStatic ? 'Static sandbox response — not a fill' : 'Reported by the exchange demo environment',
     },
   }
