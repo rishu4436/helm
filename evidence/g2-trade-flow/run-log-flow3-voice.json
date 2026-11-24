@@ -1,0 +1,101 @@
+{
+ "steps": [
+  {
+   "do": "click",
+   "expect": "acct-pick",
+   "reached": true,
+   "shot": "52-voice-which-exchange"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": null,
+   "expect": null,
+   "reached": true,
+   "shot": "53-voice-pick-binance-sim"
+  },
+  {
+   "do": "click",
+   "expect": "impact",
+   "reached": true,
+   "shot": "54-voice-sim-impact"
+  },
+  {
+   "do": "click",
+   "expect": "risk",
+   "reached": true,
+   "shot": "55-voice-sim-risk"
+  },
+  {
+   "do": "click",
+   "expect": "confirm",
+   "reached": true,
+   "shot": "56-voice-sim-confirm"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": "57-voice-sim-confirm-selected"
+  },
+  {
+   "do": "click",
+   "expect": "submitting",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": null,
+   "expect": "receipt",
+   "reached": true,
+   "shot": "58-voice-sim-receipt"
+  },
+  {
+   "do": "click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen home",
+  "[HELM] mic open",
+  "[HELM] screen listening",
+  "[HELM] heard \"Buy $100 of BTC.\" via local:faster-whisper:base.en \u2192 clarify_account",
+  "[HELM] screen heard",
+  "[HELM] screen acct-pick",
+  "[HELM] preview pe4b93e344528f94bcb5f ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwulhikf00cj9xnecf4w36zh FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home"
+ ]
+}

@@ -4,6 +4,150 @@
    "do": "click",
    "expect": "home",
    "reached": true,
+   "shot": "01-home"
+  },
+  {
+   "do": "click",
+   "expect": "overview",
+   "reached": true,
+   "shot": "02-overview"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "holdings",
+   "reached": true,
+   "shot": "03-holdings"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "watchlist",
+   "reached": true,
+   "shot": "04-watchlist"
+  },
+  {
+   "do": "click",
+   "expect": "market",
+   "reached": true,
+   "shot": "05-market-btc"
+  },
+  {
+   "do": "click",
+   "expect": "acct-pick",
+   "reached": true,
+   "shot": "06-which-exchange"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "ticket",
+   "reached": true,
+   "shot": "07-ticket"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": null,
+   "expect": null,
+   "reached": true,
+   "shot": "08-ticket-long-stop-selected"
+  },
+  {
+   "do": "click",
+   "expect": "impact",
+   "reached": true,
+   "shot": "09-impact"
+  },
+  {
+   "do": "click",
+   "expect": "risk",
+   "reached": true,
+   "shot": "10-risk"
+  },
+  {
+   "do": "click",
+   "expect": "confirm",
+   "reached": true,
+   "shot": "11-confirm-default-cancel"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": "12-confirm-selected"
+  },
+  {
+   "do": "click",
+   "expect": "submitting",
+   "reached": true,
+   "shot": "13-submitting"
+  },
+  {
+   "do": null,
+   "expect": "receipt",
+   "reached": true,
+   "shot": "14-receipt"
+  },
+  {
+   "do": "click",
+   "expect": "home",
+   "reached": true,
    "shot": null
   },
   {
@@ -361,26 +505,14 @@
   "[HELM] screen market-BTC",
   "[HELM] screen acct-pick",
   "[HELM] screen ticket",
-  "[HELM] preview p61f55caed60891038987 ALLOW",
+  "[HELM] preview pe60a0d786fe1f6779597 ALLOW",
   "[HELM] screen impact",
   "[HELM] screen risk",
   "[HELM] screen confirm",
   "[HELM] user confirmed",
   "[HELM] screen submitting",
-  "[HELM] receipt cmwul18ln00539xnedwh957et FILLED",
+  "[HELM] receipt cmwulaxie008s9xnet73zgqqr FILLED",
   "[HELM] screen receipt",
-  "[HELM] screen home",
-  "[HELM] rebuildPageContainer failed pulse",
-  "[HELM] screen splash",
-  "[HELM] APP_READY",
-  "[HELM] screen home",
-  "[HELM] screen pulse",
-  "[HELM] screen splash",
-  "[HELM] APP_READY",
-  "[HELM] screen splash",
-  "[HELM] APP_READY",
-  "[HELM] screen splash",
-  "[HELM] APP_READY",
   "[HELM] screen home",
   "[HELM] screen pulse",
   "[HELM] screen home",
@@ -392,13 +524,13 @@
   "[HELM] screen home",
   "[HELM] screen acct-pick",
   "[HELM] screen ticket",
-  "[HELM] preview p6e0fff8feae67a0854d8 ALLOW",
+  "[HELM] preview pae5afc7a1b358316f71d ALLOW",
   "[HELM] screen impact",
   "[HELM] screen risk",
   "[HELM] screen confirm",
   "[HELM] user confirmed",
   "[HELM] screen submitting",
-  "[HELM] receipt cmwul5ubb00649xne6sgnrah1 FILLED",
+  "[HELM] receipt cmwulcduw009t9xnepmm285aj FILLED",
   "[HELM] screen receipt",
   "[HELM] screen home"
  ]

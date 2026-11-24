@@ -1,0 +1,4 @@
+[{"do":"down","settle":0.4},{"do":"down","settle":0.4},{"do":"down","settle":0.4},
+ {"do":"click","expect":"listening","shot":"50-voice-listening","timeout":20,"settle":2.5},
+ {"do":"click","expect":null,"shot":null,"settle":0.1},
+ {"do":null,"expect":"heard","shot":"51-voice-heard","timeout":40,"settle":1.2}]

@@ -1,0 +1,19 @@
+{
+ "steps": [
+  {
+   "do": "click",
+   "expect": "heard",
+   "reached": true,
+   "shot": "51-voice-heard"
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen home",
+  "[HELM] mic open",
+  "[HELM] screen listening",
+  "[HELM] heard \"Buy $100 of BTC.\" via local:faster-whisper:base.en \u2192 clarify_account",
+  "[HELM] screen heard"
+ ]
+}
