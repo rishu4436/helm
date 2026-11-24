@@ -5,7 +5,7 @@ import type { Acct, PreviewResp, Receipt, VoiceResp } from '../api'
 const n = (s: string | null | undefined, dp = 2) => (s === null || s === undefined || s === '' ? '—' : Number(s).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }))
 const usd = (s: string | null | undefined, dp = 2) => (s === null || s === undefined ? '—' : `${Number(s) < 0 ? '-' : ''}$${n(String(Math.abs(Number(s))), dp)}`)
 const qty = (s: string | null | undefined) => (s ? String(Number(s)) : '—')
-const sym = (id: string) => { const p = id.split(':'); const [b, q] = (p[2] ?? '').split('-'); return { base: b ?? '', quote: q ?? '', product: p[1] ?? '' } }
+export const sym = (id: string) => { const p = id.split(':'); const [b, q] = (p[2] ?? '').split('-'); return { base: b ?? '', quote: q ?? '', product: p[1] ?? '' } }
 const prodLabel = (p: string) => (p === 'perp' ? 'PERP' : p.toUpperCase())
 const dot = (state: string) => (state === 'CONNECTED' ? '●' : state === 'LIMITED' || state === 'READ_ONLY' ? '◐' : '○')
 export const envTag = (label: string) => label.slice(0, 10)

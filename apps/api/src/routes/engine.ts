@@ -165,6 +165,6 @@ export function nextScreen(i: TradeIntent, r: ReturnType<typeof resolveAccount>)
   if (trading && r.status === 'clarify') return { screen: 'clarify_account', message: r.question }
   if (r.status === 'none' && trading) return { screen: 'no_account', message: r.message }
   if (trading && i.clarificationNeeded.length) return { screen: 'clarify', message: `Missing: ${i.clarificationNeeded.join(', ')}` }
-  const map: Record<string, string> = { PLACE_ORDER: 'ticket', CLOSE_POSITION: 'ticket', REDUCE_POSITION: 'ticket', CANCEL_ORDER: 'orders', PREPARE_PROTECTION: 'ticket', QUERY_POSITIONS: 'positions', QUERY_BALANCE: 'overview', QUERY_PORTFOLIO: 'overview', QUERY_EXPOSURE: 'compass', QUERY_UNPROTECTED: 'compass', QUERY_ORDERS: 'orders', STRESS_TEST: 'scenario', COMPARE_VENUES: 'market', EMERGENCY_REVIEW: 'emergency' }
+  const map: Record<string, string> = { PLACE_ORDER: 'ticket', CLOSE_POSITION: 'ticket', REDUCE_POSITION: 'ticket', CANCEL_ORDER: 'orders', PREPARE_PROTECTION: 'protect', QUERY_POSITIONS: 'positions', QUERY_BALANCE: 'overview', QUERY_PORTFOLIO: 'overview', QUERY_EXPOSURE: 'compass', QUERY_UNPROTECTED: 'protect', QUERY_ORDERS: 'orders', STRESS_TEST: 'scenario', COMPARE_VENUES: 'market', EMERGENCY_REVIEW: 'emergency' }
   return { screen: map[i.intent] ?? 'overview' }
 }

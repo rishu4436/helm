@@ -145,9 +145,14 @@ async function openHome(idx: number) {
   } catch (e) { return fail('UNAVAILABLE', e) }
 }
 
-async function openUnprotected() {
+/** Unprotected perp positions, optionally narrowed by voice (asset / account). A spoken stop distance with exactly one match
+ *  goes straight to the preview — which still needs the Impact → Risk → Confirm taps. */
+async function openUnprotected(f: { asset?: string | null; accountId?: string | null; stopOffsetPercent?: string | null } = {}) {
   const r = (await trade.compass(token)).data
-  const items: T.UnprotectedItem[] = (r.compass.unprotected as Array<{ accountId: string; instrumentId: string; side: string; notionalUsd: string | null }>).map(u => ({ ...u, alias: accts.find(a => a.id === u.accountId)?.alias ?? 'account' }))
+  const items: T.UnprotectedItem[] = (r.compass.unprotected as Array<{ accountId: string; instrumentId: string; side: string; notionalUsd: string | null }>)
+    .filter(u => (!f.asset || T.sym(u.instrumentId).base === f.asset) && (!f.accountId || u.accountId === f.accountId))
+    .map(u => ({ ...u, alias: accts.find(a => a.id === u.accountId)?.alias ?? 'account' }))
+  if (items.length === 1 && f.stopOffsetPercent) return runProtectPreview(items[0]!, f.stopOffsetPercent)
   return nav({ name: 'unprotected', items })
 }
 
@@ -208,6 +213,7 @@ function ticketFromVoice(v: VoiceResp, accountId: string): Ticket | null {
 }
 async function continueVoice(v: VoiceResp) {
   const sc = v.next.screen
+  if (sc === 'protect') return openUnprotected(v.intent.intent === 'PREPARE_PROTECTION' ? { asset: v.intent.asset, accountId: v.resolution.account?.id, stopOffsetPercent: v.intent.stopOffsetPercent } : {})
   if (sc === 'clarify_account') return nav({ name: 'acct-pick', asset: v.intent.asset ?? 'BTC', accts: accts.filter(a => v.resolution.options?.some(o => o.id === a.id)), question: v.resolution.question ?? 'Which exchange?', voice: v })
   if (sc === 'ticket' && v.resolution.account) { const tk = ticketFromVoice(v, v.resolution.account.id); return tk ? runPreview(tk, 'voice') : fail('VOICE', new ApiError(400, 'INCOMPLETE', 'Say asset, side and size')) }
   const map: Record<string, number> = { positions: 1, overview: 0, compass: 6, orders: 7, emergency: 8, market: 2 }
@@ -249,6 +255,7 @@ bridge.onEvenHubEvent((event: EvenHubEvent) => {
     case 'market': return void nav({ name: 'acct-pick', asset: s.asset, accts: accts.filter(a => a.canTrade), question: `Which exchange? (${s.asset})` })
     case 'acct-pick': {
       const a = s.accts[idx]; if (!event.listEvent || !a) return
+      if (s.voice?.intent.intent === 'PREPARE_PROTECTION') { const i = s.voice.intent; void openUnprotected({ asset: i.asset, accountId: a.id, stopOffsetPercent: i.stopOffsetPercent }).catch(e => fail('UNAVAILABLE', e)); return }
       if (s.voice) { const tk = ticketFromVoice(s.voice, a.id); if (tk) void runPreview(tk, 'voice'); return }
       return void nav({ name: 'ticket', acct: a, asset: s.asset })
     }
