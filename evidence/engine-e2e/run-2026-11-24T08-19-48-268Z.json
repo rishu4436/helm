@@ -1,0 +1,186 @@
+{
+  "ranAt": "2026-11-24T08:19:48.268Z",
+  "what": "HELM API end-to-end on real Binance Demo + Bybit Demo accounts",
+  "rows": [
+    {
+      "step": "accounts listed (Binance Demo + Bybit Demo real; OKX BLOCKED region)",
+      "result": "PASS",
+      "detail": [
+        "Binance Demo · Spot demo CONNECTED canTrade=true",
+        "Binance Demo · USDⓈ-M demo CONNECTED canTrade=true",
+        "Bybit Demo · Unified demo CONNECTED canTrade=true",
+        "Coinbase Sandbox sandbox_static LIMITED canTrade=true",
+        "Binance · SIM simulated LIMITED canTrade=true",
+        "Bybit · SIM simulated LIMITED canTrade=true"
+      ]
+    },
+    {
+      "step": "OKX Demo logged-in tests",
+      "result": "BLOCKED",
+      "detail": "OKX unavailable in the user’s region (India); adapter covered by mocks + public endpoints"
+    },
+    {
+      "step": "portfolio aggregates real demo balances across venues",
+      "result": "PASS",
+      "detail": {
+        "netLiquidationUsd": "243477.4232986502",
+        "accounts": [
+          "Binance Demo · Spot: 9999.9315382573",
+          "Binance Demo · USDⓈ-M: 10602.97700574",
+          "Bybit Demo · Unified: 162049.4607546529",
+          "Coinbase Sandbox: 32073.6375",
+          "Binance · SIM: 14375.70825",
+          "Bybit · SIM: 14375.70825"
+        ],
+        "unvalued": [],
+        "errors": []
+      }
+    },
+    {
+      "step": "Bybit spot BUY $15 BTC: preview",
+      "result": "FAIL",
+      "detail": {
+        "status": 200,
+        "risk": {
+          "verdict": "BLOCK",
+          "findings": [
+            {
+              "rule": "max_asset_exposure",
+              "verdict": "BLOCK",
+              "message": "BTC exposure would exceed $15000",
+              "limit": "15000",
+              "actual": "97193.77"
+            },
+            {
+              "rule": "buying_power",
+              "verdict": "WARN",
+              "message": "Provider did not report buying power; cannot verify reserve"
+            }
+          ],
+          "policyVersion": 0,
+          "assessedAt": "2026-11-24T08:19:30.758Z"
+        }
+      }
+    },
+    {
+      "step": "Bybit linear BUY $150 BTC 2x + 3% Trade-to-Protect: preview",
+      "result": "FAIL",
+      "detail": {
+        "status": 200,
+        "risk": {
+          "verdict": "BLOCK",
+          "findings": [
+            {
+              "rule": "max_asset_exposure",
+              "verdict": "BLOCK",
+              "message": "BTC exposure would exceed $15000",
+              "limit": "15000",
+              "actual": "97296.23"
+            },
+            {
+              "rule": "buying_power",
+              "verdict": "WARN",
+              "message": "Provider did not report buying power; cannot verify reserve"
+            }
+          ],
+          "policyVersion": 0,
+          "assessedAt": "2026-11-24T08:19:36.897Z"
+        }
+      }
+    },
+    {
+      "step": "Binance spot BUY $15 BTC: preview",
+      "result": "FAIL",
+      "detail": {
+        "status": 200,
+        "risk": {
+          "verdict": "BLOCK",
+          "findings": [
+            {
+              "rule": "max_asset_exposure",
+              "verdict": "BLOCK",
+              "message": "BTC exposure would exceed $15000",
+              "limit": "15000",
+              "actual": "97190.07"
+            },
+            {
+              "rule": "buying_power",
+              "verdict": "WARN",
+              "message": "Provider did not report buying power; cannot verify reserve"
+            }
+          ],
+          "policyVersion": 0,
+          "assessedAt": "2026-11-24T08:19:41.079Z"
+        }
+      }
+    },
+    {
+      "step": "Binance USDⓈ-M BUY $150 BTC 2x + 3% Trade-to-Protect: preview",
+      "result": "FAIL",
+      "detail": {
+        "status": 200,
+        "risk": {
+          "verdict": "BLOCK",
+          "findings": [
+            {
+              "rule": "max_asset_exposure",
+              "verdict": "BLOCK",
+              "message": "BTC exposure would exceed $15000",
+              "limit": "15000",
+              "actual": "97320.34"
+            },
+            {
+              "rule": "buying_power",
+              "verdict": "WARN",
+              "message": "Provider did not report buying power; cannot verify reserve"
+            }
+          ],
+          "policyVersion": 0,
+          "assessedAt": "2026-11-24T08:19:44.472Z"
+        }
+      }
+    },
+    {
+      "step": "Shield BLOCKs $5000 spot (> max 1000), no confirm token issued",
+      "result": "PASS",
+      "detail": [
+        {
+          "rule": "max_spot_order",
+          "verdict": "BLOCK",
+          "message": "Order $4999.97 exceeds your spot limit",
+          "limit": "1000",
+          "actual": "4999.97"
+        },
+        {
+          "rule": "max_asset_exposure",
+          "verdict": "BLOCK",
+          "message": "BTC exposure would exceed $15000",
+          "limit": "15000",
+          "actual": "102210.98"
+        }
+      ]
+    },
+    {
+      "step": "voice: ambiguous buy asks \"Which exchange?\"",
+      "result": "PASS",
+      "detail": {
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        },
+        "options": [
+          "Binance Demo · Spot",
+          "Bybit Demo · Unified",
+          "Coinbase Sandbox",
+          "Binance · SIM",
+          "Bybit · SIM"
+        ]
+      }
+    },
+    {
+      "step": "Pulse has ranked real events (fills, protection)",
+      "result": "FAIL",
+      "detail": []
+    }
+  ]
+}

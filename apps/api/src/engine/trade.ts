@@ -74,9 +74,11 @@ async function buildRequest(la: LoadedAccount, inst: Instrument, t: TicketInput,
       const p = (await la.adapter.getPositions()).find(x => x.instrumentId === inst.id && !x.quantity.isZero())
       if (!p) throw new HelmError('INVALID_QUANTITY', 'No open position on this instrument')
       req.quantity = floorToStep(p.quantity.abs().mul(f), inst.lotSize)
-      req.side = p.side === 'LONG' ? 'SELL' : 'BUY'
+      // NET (one-way) positions carry the direction in the sign of quantity.
+      const long = p.side === 'LONG' || (p.side === 'NET' && p.quantity.isPositive())
+      req.side = long ? 'SELL' : 'BUY'
       req.reduceOnly = true
-      notes.push(`Closes ${f.mul(100).toFixed()}% of the ${p.side} position (reduce-only)`)
+      notes.push(`Closes ${f.mul(100).toFixed()}% of the ${long ? 'LONG' : 'SHORT'} position (reduce-only)`)
     }
   } else if (t.quantity) {
     req.quantity = floorToStep(dec(t.quantity), inst.lotSize)
@@ -110,7 +112,7 @@ function engineEstimate(req: OrderRequest, book: OrderBook | null, provider: str
     if (q.isZero()) { base.estimateNotes.push('Book too thin for an estimate'); return base }
     const n = legsNotional(legs)
     const top = req.side === 'BUY' ? book.asks[0]!.price : book.bids[0]!.price
-    base.estimatedPrice = n.div(q); base.estimatedNotional = n; base.estimatedFee = n.mul(feeRate)
+    base.estimatedPrice = n.div(q).toDecimalPlaces(8); base.estimatedNotional = n; base.estimatedFee = n.mul(feeRate)
     base.estimatedSlippageBps = base.estimatedPrice.minus(top).abs().div(top).mul(10000)
   }
   if (req.instrument.product !== 'spot' && base.estimatedNotional) base.requiredMargin = base.estimatedNotional.div(req.leverage ?? 1)
@@ -123,7 +125,32 @@ async function bookFor(la: LoadedAccount, id: string): Promise<OrderBook | null>
   try { return await la.adapter.getOrderBook(id, 50) } catch { return null }
 }
 
+/** Buying power from the account's own balances/equity (provider-reported), never assumed. */
+async function withBuyingPower(la: LoadedAccount, p: OrderPreview): Promise<OrderPreview> {
+  if (p.remainingBuyingPower !== null) return p
+  const r = p.request
+  try {
+    if (r.instrument.product === 'spot') {
+      const bals = await la.adapter.getBalances()
+      const quote = bals.find(b => b.asset === r.instrument.quote)?.free ?? dec(0)
+      if (r.side === 'BUY') { p.remainingBuyingPower = quote.minus((p.estimatedNotional ?? dec(0)).plus(p.estimatedFee ?? 0)); p.estimateNotes.push(`Buying power: free ${r.instrument.quote} reported by the account`) }
+      else {
+        const base = bals.find(b => b.asset === r.instrument.base)?.free ?? dec(0)
+        p.remainingBuyingPower = r.quantity && base.lt(r.quantity) ? dec(-1) : quote
+        p.estimateNotes.push(`Sell checked against free ${r.instrument.base} ${base.toFixed()}`)
+      }
+    } else if (supports(la.manifest, 'getEquity')) {
+      const e = await la.adapter.getEquity()
+      if (e.availableBalance) { p.remainingBuyingPower = r.reduceOnly ? e.availableBalance : e.availableBalance.minus(p.requiredMargin ?? 0).minus(p.estimatedFee ?? 0); p.estimateNotes.push('Buying power: available margin reported by the account') }
+    }
+  } catch { p.estimateNotes.push('Buying power unavailable from the account') }
+  return p
+}
+
 async function estimate(la: LoadedAccount, req: OrderRequest, book: OrderBook | null): Promise<OrderPreview> {
+  return withBuyingPower(la, await estimateRaw(la, req, book))
+}
+async function estimateRaw(la: LoadedAccount, req: OrderRequest, book: OrderBook | null): Promise<OrderPreview> {
   const eng = engineEstimate(req, book, la.account.provider)
   if (!supports(la.manifest, 'previewOrder')) return eng
   try {
@@ -245,7 +272,7 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
   const request = reqFromJson(rj, inst)
   const pv = p.preview as Record<string, unknown>
   const book = await bookFor(la, inst.id)
-  const fresh = engineEstimate(request, book, la.account.provider)
+  const fresh = await withBuyingPower(la, engineEstimate(request, book, la.account.provider))
   const prevPx = pv.estimatedPrice ? dec(pv.estimatedPrice as string) : null
   if (prevPx && request.type === 'MARKET') {
     const mc = materialChange(prevPx, fresh.estimatedPrice, MAX_PRICE_MOVE_BPS)
@@ -304,7 +331,16 @@ export async function confirmTrade(ctx: EngineCtx, userId: string, c: ConfirmInp
     } catch { /* keep state; never resubmit */ }
     if (!TERMINAL.has(s)) await sleep(400)
   }
-  if (ack) await storeFills(prisma, la, order.id, ack)
+  if (ack) {
+    const fills = await storeFills(prisma, la, order.id, ack)
+    // Some venues ack FILLED with avgPrice 0 — fetch provider truth again, else use the venue's own trade list.
+    if (!ack.filledQuantity.isZero() && (!ack.avgFillPrice || ack.avgFillPrice.isZero())) {
+      const r = await la.adapter.reconcileOrder(inst.id, ack.providerOrderId ? { providerOrderId: ack.providerOrderId } : { clientOrderId: request.clientOrderId }).catch(() => null)
+      if (r?.avgFillPrice && !r.avgFillPrice.isZero()) ack = { ...ack, avgFillPrice: r.avgFillPrice }
+      else if (fills.length) { const q = fills.reduce((a, f) => a.plus(f.quantity), dec(0)); if (!q.isZero()) ack = { ...ack, avgFillPrice: fills.reduce((a, f) => a.plus(f.price.mul(f.quantity)), dec(0)).div(q) } }
+      if (ack.avgFillPrice && !ack.avgFillPrice.isZero()) await prisma.order.update({ where: { id: order.id }, data: { avgFillPrice: ack.avgFillPrice.toFixed() } })
+    }
+  }
   if (s === 'FILLED' || s === 'PARTIALLY_FILLED') await emitPulse(prisma, { userId, kind: s === 'FILLED' ? 'ORDER_FILLED' : 'ORDER_PARTIALLY_FILLED', severity: 1, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: `${request.side} ${ack?.filledQuantity.toFixed()} ${inst.base} @ ${ack?.avgFillPrice?.toFixed() ?? '—'}${env === 'simulated' ? ' (SIMULATED)' : ''}`, dedupeKey: `fill:${order.id}` })
 
   // Trade-to-Protect.
@@ -325,7 +361,7 @@ async function protect(ctx: EngineCtx, userId: string, la: LoadedAccount, inst: 
     await emitPulse(prisma, { userId, kind: 'PROTECTION_FAILED', severity: 4, provider: la.account.provider, accountId: la.account.id, instrumentId: inst.id, reason: `${inst.base} position is UNPROTECTED: ${why}`, dedupeKey: `prot:${plan.id}` })
   }
   if (!la.manifest.orderTypes.includes('STOP_MARKET')) return unprotected('stop orders not supported on this account')
-  if (!filled.avgFillPrice) return unprotected('no fill price reported')
+  if (!filled.avgFillPrice || filled.avgFillPrice.isZero()) return unprotected('no fill price reported')
   let baseFee = dec(0), free: Decimal | null = null
   if (inst.product === 'spot') {
     const fills = await prisma.fill.findMany({ where: { orderId } })

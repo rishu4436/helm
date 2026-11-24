@@ -1,0 +1,960 @@
+{
+  "ranAt": "2026-11-24T08:25:42.675Z",
+  "what": "HELM API end-to-end on real Binance Demo + Bybit Demo accounts",
+  "rows": [
+    {
+      "step": "accounts listed (Binance Demo + Bybit Demo real; OKX BLOCKED region)",
+      "result": "PASS",
+      "detail": [
+        "Binance Demo · Spot demo CONNECTED canTrade=true",
+        "Binance Demo · USDⓈ-M demo CONNECTED canTrade=true",
+        "Bybit Demo · Unified demo CONNECTED canTrade=true",
+        "Coinbase Sandbox sandbox_static LIMITED canTrade=true",
+        "Binance · SIM simulated LIMITED canTrade=true",
+        "Bybit · SIM simulated LIMITED canTrade=true"
+      ]
+    },
+    {
+      "step": "OKX Demo logged-in tests",
+      "result": "BLOCKED",
+      "detail": "OKX unavailable in the user’s region (India); adapter covered by mocks + public endpoints"
+    },
+    {
+      "step": "Shield policy",
+      "result": "PASS",
+      "detail": {
+        "version": 1,
+        "policy": {
+          "maxSpotOrderUsd": "1000",
+          "maxFuturesOrderUsd": "2000",
+          "maxLeverage": "5",
+          "maxTotalNotionalUsd": "25000",
+          "maxAssetExposureUsd": "400000",
+          "maxExchangeExposurePct": "100",
+          "maxMarginUtilizationPct": "50",
+          "minReserveUsd": "100",
+          "maxSlippageBps": "50",
+          "allowedInstruments": [],
+          "blockedInstruments": [],
+          "maxOpenOrders": 20,
+          "sessionBudgetUsd": null,
+          "nearLiquidationPct": "10"
+        }
+      }
+    },
+    {
+      "step": "portfolio aggregates real demo balances across venues",
+      "result": "PASS",
+      "detail": {
+        "netLiquidationUsd": "243432.98931756015",
+        "accounts": [
+          "Binance Demo · Spot: 9999.8964433861",
+          "Binance Demo · USDⓈ-M: 10602.61391211",
+          "Bybit Demo · Unified: 162022.66296206405",
+          "Coinbase Sandbox: 32060.0075",
+          "Binance · SIM: 14373.90425",
+          "Bybit · SIM: 14373.90425"
+        ],
+        "unvalued": [],
+        "errors": []
+      }
+    },
+    {
+      "step": "Bybit spot BUY $15 BTC: preview (risk ALLOW, est 60323.7, expires 2026-11-24T08:24:28.420Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:spot:BTC-USDT",
+          "side": "BUY",
+          "type": "MARKET",
+          "clientOrderId": "helmenp958a8ad7770fd46d9818",
+          "quoteQuantity": "15"
+        },
+        "est": {
+          "price": "60323.7",
+          "notional": "14.9602776",
+          "fee": "0.0149602776",
+          "slippageBps": "0",
+          "notes": [
+            "Spends 15 USDT (quote-sized market order)",
+            "HELM estimate: walked the public book; fee assumes 0.1% taker",
+            "Buying power: free USDT reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:23:43.420Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Bybit spot BUY $15 BTC: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufh9or00099xeybmlxa2ck",
+        "account": "Bybit Demo · Unified",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "2355291537631612160",
+        "filled": "0.000248742606126032",
+        "avg": "60303.3",
+        "fills": [],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Bybit idempotent replay returns the same order (no second submission)",
+      "result": "PASS",
+      "detail": {
+        "replayed": true,
+        "orderId": "cmwufh9or00099xeybmlxa2ck"
+      }
+    },
+    {
+      "step": "used confirmation token cannot submit again",
+      "result": "PASS",
+      "detail": {
+        "code": "ALREADY_USED",
+        "message": "This preview was already confirmed or closed"
+      }
+    },
+    {
+      "step": "Bybit spot SELL back: preview (risk ALLOW, est 60298.4, expires 2026-11-24T08:24:43.370Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:spot:BTC-USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "clientOrderId": "helmenp4f523ef5038de92ecb35",
+          "quantity": "0.000248"
+        },
+        "est": {
+          "price": "60298.4",
+          "notional": "14.9540032",
+          "fee": "0.0149540032",
+          "slippageBps": "0",
+          "notes": [
+            "HELM estimate: walked the public book; fee assumes 0.1% taker",
+            "Sell checked against free BTC 1.00024931"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:23:58.370Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Bybit spot SELL back: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufhlmz00109xey6gwx8hdn",
+        "account": "Bybit Demo · Unified",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "bybit:spot:BTC-USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "2355291663972437248",
+        "filled": "0.000248",
+        "avg": "60294.5",
+        "fills": [
+          {
+            "id": "1794883258196346537",
+            "price": "60294.5",
+            "qty": "0.000248",
+            "fee": "0.014953036",
+            "feeAsset": "USDT"
+          }
+        ],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Bybit linear BUY $150 BTC 2x + 3% Trade-to-Protect: preview (risk ALLOW, est 60276.1, expires 2026-11-24T08:25:01.520Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "BUY",
+          "type": "MARKET",
+          "clientOrderId": "helmenp9c59535dbc7eef6a66c7",
+          "leverage": "2",
+          "quantity": "0.002"
+        },
+        "est": {
+          "price": "60276.1",
+          "notional": "120.5522",
+          "fee": "0.06630371",
+          "slippageBps": "0",
+          "notes": [
+            "Quantity = 150 / 60276.1 floored to lot 0.001",
+            "HELM estimate: walked the public book; fee assumes 0.055% taker",
+            "Buying power: available margin reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:24:16.520Z"
+        },
+        "protection": {
+          "stopOffsetPercent": "3",
+          "estimatedStopPrice": "58467.8",
+          "supported": true,
+          "note": "Stop is sized from ACTUAL fills after entry, and only shown PROTECTED once the exchange lists it"
+        }
+      }
+    },
+    {
+      "step": "Bybit linear BUY $150 BTC 2x + 3% Trade-to-Protect: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufhzl3001r9xey77cow5n3",
+        "account": "Bybit Demo · Unified",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "4643f15e-e80f-43ca-8f96-e010f58649e8",
+        "filled": "0.002",
+        "avg": "60280",
+        "fills": [],
+        "protection": {
+          "state": "PROTECTED",
+          "stopPrice": "58471.6",
+          "qty": "0.002",
+          "history": [
+            {
+              "at": "2026-11-24T08:24:27.325Z",
+              "to": "ENTRY_SUBMITTED",
+              "from": null
+            },
+            {
+              "at": "2026-11-24T08:24:27.325Z",
+              "to": "ENTRY_FILLED",
+              "from": "ENTRY_SUBMITTED",
+              "note": "filled 0.002"
+            },
+            {
+              "at": "2026-11-24T08:24:27.329Z",
+              "to": "PROTECTION_SUBMITTED",
+              "from": "ENTRY_FILLED",
+              "note": "stop 58471.6 for 0.002"
+            },
+            {
+              "at": "2026-11-24T08:24:29.417Z",
+              "to": "PROTECTED",
+              "from": "PROTECTION_SUBMITTED",
+              "note": "venue lists stop ecbabcb1-3263-43d6-a00c-05ca0fd0787c"
+            }
+          ]
+        },
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "T2P: protection PROTECTED (venue lists the stop), qty = actual fill",
+      "result": "PASS",
+      "detail": {
+        "state": "PROTECTED",
+        "stopPrice": "58471.6",
+        "protectedQuantity": "0.002",
+        "history": [
+          {
+            "at": "2026-11-24T08:24:27.325Z",
+            "to": "ENTRY_SUBMITTED",
+            "from": null
+          },
+          {
+            "at": "2026-11-24T08:24:27.325Z",
+            "to": "ENTRY_FILLED",
+            "from": "ENTRY_SUBMITTED",
+            "note": "filled 0.002"
+          },
+          {
+            "at": "2026-11-24T08:24:27.329Z",
+            "to": "PROTECTION_SUBMITTED",
+            "from": "ENTRY_FILLED",
+            "note": "stop 58471.6 for 0.002"
+          },
+          {
+            "at": "2026-11-24T08:24:29.417Z",
+            "to": "PROTECTED",
+            "from": "PROTECTION_SUBMITTED",
+            "note": "venue lists stop ecbabcb1-3263-43d6-a00c-05ca0fd0787c"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Compass does not list the protected BTC perp as unprotected",
+      "result": "PASS",
+      "detail": []
+    },
+    {
+      "step": "cancel the protective stop (explicit confirm) → CANCELED at venue",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufi2f8002b9xeyintkiepz",
+        "account": "Bybit Demo · Unified",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "CANCELED",
+        "providerOrderId": "ecbabcb1-3263-43d6-a00c-05ca0fd0787c",
+        "filled": "0",
+        "avg": null,
+        "fills": [],
+        "protection": {
+          "state": "UNPROTECTED",
+          "stopPrice": "58471.6",
+          "qty": "0.002",
+          "history": [
+            {
+              "at": "2026-11-24T08:24:27.325Z",
+              "to": "ENTRY_SUBMITTED",
+              "from": null
+            },
+            {
+              "at": "2026-11-24T08:24:27.325Z",
+              "to": "ENTRY_FILLED",
+              "from": "ENTRY_SUBMITTED",
+              "note": "filled 0.002"
+            },
+            {
+              "at": "2026-11-24T08:24:27.329Z",
+              "to": "PROTECTION_SUBMITTED",
+              "from": "ENTRY_FILLED",
+              "note": "stop 58471.6 for 0.002"
+            },
+            {
+              "at": "2026-11-24T08:24:29.417Z",
+              "to": "PROTECTED",
+              "from": "PROTECTION_SUBMITTED",
+              "note": "venue lists stop ecbabcb1-3263-43d6-a00c-05ca0fd0787c"
+            },
+            {
+              "at": "2026-11-24T08:24:34.723Z",
+              "to": "UNPROTECTED",
+              "from": "PROTECTED",
+              "note": "protective stop canceled by user"
+            }
+          ]
+        },
+        "events": [
+          "∅→CONFIRMED (user: part of the confirmed Trade-to-Protect plan)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→ACCEPTED (provider: provider state)",
+          "ACCEPTED→CANCELED (user: cancel confirmed by venue)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "protection state honestly flips to UNPROTECTED after stop cancel",
+      "result": "PASS",
+      "detail": "UNPROTECTED"
+    },
+    {
+      "step": "Bybit linear reduce-only close: preview (risk ALLOW, est 60278.7, expires 2026-11-24T08:25:25.544Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufah7k00109xgxmxxex5zi",
+          "instrument": "bybit:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "clientOrderId": "helmenpa02a3f0bf70938efcf68",
+          "reduceOnly": true,
+          "quantity": "0.002"
+        },
+        "est": {
+          "price": "60278.7",
+          "notional": "120.5574",
+          "fee": "0.06630657",
+          "slippageBps": "0",
+          "notes": [
+            "HELM estimate: walked the public book; fee assumes 0.055% taker",
+            "Buying power: available margin reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:24:40.544Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Bybit linear reduce-only close: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufii72002s9xey6xkeber2",
+        "account": "Bybit Demo · Unified",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "bybit:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "7958c3e2-5a3f-4b17-8445-4aa6a0057a80",
+        "filled": "0.002",
+        "avg": "60276",
+        "fills": [],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Binance spot BUY $15 BTC: preview (risk ALLOW, est 60312.01, expires 2026-11-24T08:25:40.449Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufac99000c9xgxughs0r4a",
+          "instrument": "binance:spot:BTC-USDT",
+          "side": "BUY",
+          "type": "MARKET",
+          "clientOrderId": "helmenp97c09b1e5dc452fcc9d0",
+          "quoteQuantity": "15"
+        },
+        "est": {
+          "price": "60312.01",
+          "notional": "14.4748824",
+          "fee": "0.0144748824",
+          "slippageBps": "0",
+          "notes": [
+            "Spends 15 USDT (quote-sized market order)",
+            "HELM estimate: walked the public book; fee assumes 0.1% taker",
+            "Buying power: free USDT reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:24:55.449Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Binance spot BUY $15 BTC: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufirtw003h9xeyk3kn0oaa",
+        "account": "Binance Demo · Spot",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "85848245710",
+        "filled": "0.00024",
+        "avg": "60300.01",
+        "fills": [
+          {
+            "id": "353877110",
+            "price": "60300.01",
+            "qty": "0.00024",
+            "fee": "2.4e-7",
+            "feeAsset": "BTC"
+          }
+        ],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Binance spot SELL back: preview (risk ALLOW, est 60300, expires 2026-11-24T08:25:49.775Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufac99000c9xgxughs0r4a",
+          "instrument": "binance:spot:BTC-USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "clientOrderId": "helmenpb9caea7cc46a59850645",
+          "quantity": "0.00023"
+        },
+        "est": {
+          "price": "60300",
+          "notional": "13.869",
+          "fee": "0.013869",
+          "slippageBps": "0",
+          "notes": [
+            "HELM estimate: walked the public book; fee assumes 0.1% taker",
+            "Sell checked against free BTC 0.00044898"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:25:04.775Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Binance spot SELL back: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufiz5600489xeydww5gefo",
+        "account": "Binance Demo · Spot",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "binance:spot:BTC-USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "85848273048",
+        "filled": "0.00023",
+        "avg": "60314",
+        "fills": [
+          {
+            "id": "353877163",
+            "price": "60314",
+            "qty": "0.00023",
+            "fee": "0.01387222",
+            "feeAsset": "USDT"
+          }
+        ],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Binance USDⓈ-M BUY $150 BTC 2x + 3% Trade-to-Protect: preview (risk ALLOW, est 60360, expires 2026-11-24T08:25:59.743Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufadrw000o9xgx4shdcipk",
+          "instrument": "binance:perp:BTC-USDT:USDT",
+          "side": "BUY",
+          "type": "MARKET",
+          "clientOrderId": "helmenp328ac68710a85a8246b6",
+          "leverage": "2",
+          "quantity": "0.0024"
+        },
+        "est": {
+          "price": "60360",
+          "notional": "144.864",
+          "fee": "0.072432",
+          "slippageBps": "0",
+          "notes": [
+            "Quantity = 150 / 60360 floored to lot 0.0001",
+            "HELM estimate: walked the public book; fee assumes 0.05% taker",
+            "Buying power: available margin reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:25:14.743Z"
+        },
+        "protection": {
+          "stopOffsetPercent": "3",
+          "estimatedStopPrice": "58549.2",
+          "supported": true,
+          "note": "Stop is sized from ACTUAL fills after entry, and only shown PROTECTED once the exchange lists it"
+        }
+      }
+    },
+    {
+      "step": "Binance USDⓈ-M BUY $150 BTC 2x + 3% Trade-to-Protect: confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufj6c3004z9xeysr4x5t96",
+        "account": "Binance Demo · USDⓈ-M",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "BUY",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "28693388754",
+        "filled": "0.0024",
+        "avg": "60360",
+        "fills": [
+          {
+            "id": "561114808",
+            "price": "60360",
+            "qty": "0.0024",
+            "fee": "0.0579456",
+            "feeAsset": "USDT"
+          }
+        ],
+        "protection": {
+          "state": "PROTECTED",
+          "stopPrice": "58549.2",
+          "qty": "0.0024",
+          "history": [
+            {
+              "at": "2026-11-24T08:25:20.213Z",
+              "to": "ENTRY_SUBMITTED",
+              "from": null
+            },
+            {
+              "at": "2026-11-24T08:25:20.213Z",
+              "to": "ENTRY_FILLED",
+              "from": "ENTRY_SUBMITTED",
+              "note": "filled 0.0024"
+            },
+            {
+              "at": "2026-11-24T08:25:20.216Z",
+              "to": "PROTECTION_SUBMITTED",
+              "from": "ENTRY_FILLED",
+              "note": "stop 58549.2 for 0.0024"
+            },
+            {
+              "at": "2026-11-24T08:25:21.051Z",
+              "to": "PROTECTED",
+              "from": "PROTECTION_SUBMITTED",
+              "note": "venue lists stop algo:1000000300516442"
+            }
+          ]
+        },
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Binance T2P: PROTECTED via Algo Order API",
+      "result": "PASS",
+      "detail": {
+        "state": "PROTECTED",
+        "stopPrice": "58549.2",
+        "protectedQuantity": "0.0024",
+        "history": [
+          {
+            "at": "2026-11-24T08:25:20.213Z",
+            "to": "ENTRY_SUBMITTED",
+            "from": null
+          },
+          {
+            "at": "2026-11-24T08:25:20.213Z",
+            "to": "ENTRY_FILLED",
+            "from": "ENTRY_SUBMITTED",
+            "note": "filled 0.0024"
+          },
+          {
+            "at": "2026-11-24T08:25:20.216Z",
+            "to": "PROTECTION_SUBMITTED",
+            "from": "ENTRY_FILLED",
+            "note": "stop 58549.2 for 0.0024"
+          },
+          {
+            "at": "2026-11-24T08:25:21.051Z",
+            "to": "PROTECTED",
+            "from": "PROTECTION_SUBMITTED",
+            "note": "venue lists stop algo:1000000300516442"
+          }
+        ]
+      }
+    },
+    {
+      "step": "Binance stop cancel → CANCELED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufj78a005l9xeyj9xhwj5n",
+        "account": "Binance Demo · USDⓈ-M",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "STOP_MARKET",
+        "status": "CANCELED",
+        "providerOrderId": "algo:1000000300516442",
+        "filled": "0",
+        "avg": null,
+        "fills": [],
+        "protection": {
+          "state": "UNPROTECTED",
+          "stopPrice": "58549.2",
+          "qty": "0.0024",
+          "history": [
+            {
+              "at": "2026-11-24T08:25:20.213Z",
+              "to": "ENTRY_SUBMITTED",
+              "from": null
+            },
+            {
+              "at": "2026-11-24T08:25:20.213Z",
+              "to": "ENTRY_FILLED",
+              "from": "ENTRY_SUBMITTED",
+              "note": "filled 0.0024"
+            },
+            {
+              "at": "2026-11-24T08:25:20.216Z",
+              "to": "PROTECTION_SUBMITTED",
+              "from": "ENTRY_FILLED",
+              "note": "stop 58549.2 for 0.0024"
+            },
+            {
+              "at": "2026-11-24T08:25:21.051Z",
+              "to": "PROTECTED",
+              "from": "PROTECTION_SUBMITTED",
+              "note": "venue lists stop algo:1000000300516442"
+            },
+            {
+              "at": "2026-11-24T08:25:21.626Z",
+              "to": "UNPROTECTED",
+              "from": "PROTECTED",
+              "note": "protective stop canceled by user"
+            }
+          ]
+        },
+        "events": [
+          "∅→CONFIRMED (user: part of the confirmed Trade-to-Protect plan)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→ACCEPTED (provider: provider state)",
+          "ACCEPTED→CANCELED (user: cancel confirmed by venue)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Binance USDⓈ-M reduce-only close (fraction 1 of NET position): preview (risk ALLOW, est 60356.04166666666666666666666666666666667, expires 2026-11-24T08:26:14.334Z)",
+      "result": "PASS",
+      "detail": {
+        "order": {
+          "accountId": "cmwufadrw000o9xgx4shdcipk",
+          "instrument": "binance:perp:BTC-USDT:USDT",
+          "side": "SELL",
+          "type": "MARKET",
+          "clientOrderId": "helmenpd0161d308167112bdb89",
+          "reduceOnly": true,
+          "quantity": "0.0024"
+        },
+        "est": {
+          "price": "60356.04166666666666666666666666666666667",
+          "notional": "144.8545",
+          "fee": "0.07242725",
+          "slippageBps": "0.5895223515949962115940684387128697555981",
+          "notes": [
+            "Closes 100% of the LONG position (reduce-only)",
+            "HELM estimate: walked the public book; fee assumes 0.05% taker",
+            "Buying power: available margin reported by the account"
+          ]
+        },
+        "risk": {
+          "verdict": "ALLOW",
+          "findings": [
+            {
+              "rule": "all_checks",
+              "verdict": "ALLOW",
+              "message": "Within all Shield limits"
+            }
+          ],
+          "policyVersion": 1,
+          "assessedAt": "2026-11-24T08:25:29.334Z"
+        },
+        "protection": null
+      }
+    },
+    {
+      "step": "Binance USDⓈ-M reduce-only close (fraction 1 of NET position): confirm → FILLED",
+      "result": "PASS",
+      "detail": {
+        "orderId": "cmwufjjvn00629xeypdm2v0zo",
+        "account": "Binance Demo · USDⓈ-M",
+        "env": "DEMO",
+        "label": null,
+        "instrument": "binance:perp:BTC-USDT:USDT",
+        "side": "SELL",
+        "type": "MARKET",
+        "status": "FILLED",
+        "providerOrderId": "28693388925",
+        "filled": "0.0024",
+        "avg": "60353.5",
+        "fills": [
+          {
+            "id": "561114817",
+            "price": "60353.5",
+            "qty": "0.0024",
+            "fee": "0.05793936",
+            "feeAsset": "USDT"
+          }
+        ],
+        "protection": null,
+        "events": [
+          "∅→DRAFT (system)",
+          "DRAFT→VALIDATED (system: risk ALLOW (policy v1))",
+          "VALIDATED→AWAITING_CONFIRMATION (system)",
+          "AWAITING_CONFIRMATION→CONFIRMED (user: confirmed via glasses)",
+          "CONFIRMED→SUBMITTING (system)",
+          "SUBMITTING→FILLED (provider: provider state)"
+        ],
+        "fillTruth": "Reported by the exchange demo environment"
+      }
+    },
+    {
+      "step": "Shield BLOCKs $5000 spot (> max 1000), no confirm token issued",
+      "result": "PASS",
+      "detail": [
+        {
+          "rule": "max_spot_order",
+          "verdict": "BLOCK",
+          "message": "Order $4999.98 exceeds your spot limit",
+          "limit": "1000",
+          "actual": "4999.98"
+        }
+      ]
+    },
+    {
+      "step": "voice: ambiguous buy asks \"Which exchange?\"",
+      "result": "PASS",
+      "detail": {
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        },
+        "options": [
+          "Binance Demo · Spot",
+          "Bybit Demo · Unified",
+          "Coinbase Sandbox",
+          "Binance · SIM",
+          "Bybit · SIM"
+        ]
+      }
+    },
+    {
+      "step": "Pulse has ranked real events (fills, protection)",
+      "result": "PASS",
+      "detail": [
+        "PROTECTION_FAILED s4: BTC position is UNPROTECTED: no fill price reported",
+        "ORDER_REJECTED s3: BTC BUY rejected: PROVIDER_ERROR",
+        "ORDER_FILLED s1: SELL 0.0024 BTC @ 60353.5",
+        "ORDER_FILLED s1: BUY 0.0024 BTC @ 60360",
+        "ORDER_FILLED s1: SELL 0.00023 BTC @ 60314",
+        "ORDER_FILLED s1: BUY 0.00024 BTC @ 60300.01",
+        "ORDER_FILLED s1: SELL 0.002 BTC @ 60276",
+        "ORDER_FILLED s1: BUY 0.002 BTC @ 60280"
+      ]
+    }
+  ]
+}

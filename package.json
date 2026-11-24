@@ -2,7 +2,7 @@
   "name": "helm",
   "private": true,
   "version": "0.1.0",
-  "description": "HELM \u2014 Universal Trading Command Center for Even Realities G2",
+  "description": "HELM — Universal Trading Command Center for Even Realities G2",
   "packageManager": "pnpm@10.34.6",
   "engines": {
     "node": ">=20"
@@ -19,19 +19,20 @@
   },
   "devDependencies": {
     "@helm/connectors": "workspace:*",
+    "@helm/portfolio": "workspace:*",
+    "@helm/pulse": "workspace:*",
+    "@helm/risk-engine": "workspace:*",
+    "@helm/security": "workspace:*",
     "@helm/shared": "workspace:*",
+    "@helm/trading-core": "workspace:*",
+    "@helm/voice-engine": "workspace:*",
     "@prisma/client": "6.19.3",
     "@types/node": "^22.10.0",
+    "dotenv": "^18.0.10",
     "prisma": "6.19.3",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0",
-    "vitest": "^3.2.0",
-    "@helm/trading-core": "workspace:*",
-    "@helm/portfolio": "workspace:*",
-    "@helm/risk-engine": "workspace:*",
-    "@helm/voice-engine": "workspace:*",
-    "@helm/pulse": "workspace:*",
-    "@helm/security": "workspace:*"
+    "vitest": "^3.2.0"
   },
   "type": "module"
 }
