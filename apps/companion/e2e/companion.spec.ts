@@ -111,6 +111,40 @@ test.describe('signed in as the demo user', () => {
     expect(errs).toEqual([])
   })
 
+  test('Trade-to-Protect recovery on a SIMULATED perp: unprotected → Preview stop → confirm → PROTECTED → reduce-only close', async ({ page }) => {
+    const errs = watchErrors(page)
+    const t = await demoToken()
+    const h = { authorization: `Bearer ${t}`, 'content-type': 'application/json' }
+    const post = async (url: string, body: unknown) => (await fetch(`${API}${url}`, { method: 'POST', headers: h, body: JSON.stringify(body) })).json()
+    const accts = (await (await fetch(`${API}/v1/accounts`, { headers: h })).json()).accounts as Array<{ id: string; alias: string; environment: string; products: string[] }>
+    const sim = accts.find(a => a.environment === 'simulated' && a.products.includes('perp'))!
+    const p = await post('/v1/trade/preview', { accountId: sim.id, asset: 'BTC', product: 'perp', side: 'BUY', notional: '200', leverage: '2' })
+    const r = await post('/v1/trade/confirm', { proposalId: p.proposalId, confirmToken: p.confirmToken, idempotencyKey: `e2e-recov-${Date.now()}`, via: 'companion' })
+    expect(r.receipt.status).toBe('FILLED')
+    await page.goto('/protect')
+    await settle(page)
+    const row = page.getByTestId('unprotected').locator('li', { hasText: sim.alias })
+    await expect(row).toContainText('UNPROTECTED')
+    await row.getByTestId('recovery-dist').fill('4')
+    await row.getByTestId('recovery-preview').click()
+    const panel = page.getByTestId('recovery')
+    await expect(panel).toContainText(/Protect BTC/)
+    await expect(panel).toContainText('STOP_MARKET · reduce-only')
+    await expect(page.getByTestId('confirm')).toHaveText('Confirm reduce-only stop')
+    await expect(page.getByTestId('confirm')).toBeDisabled()
+    await shot(page, '29-protect-recovery-preview')
+    await page.getByTestId('ack').check()
+    await page.getByTestId('confirm').click()
+    await expect(page.getByTestId('recovery-receipt')).toContainText('PROTECTED')
+    await shot(page, '30-protect-recovery-receipt')
+    // flatten: reduce-only full close (cancels the recovery stop)
+    const c = await post('/v1/trade/preview', { accountId: sim.id, asset: 'BTC', product: 'perp', side: 'SELL', fraction: '1', reduceOnly: true })
+    expect(c.preview.willCancel.length).toBe(1)
+    const cr = await post('/v1/trade/confirm', { proposalId: c.proposalId, confirmToken: c.confirmToken, idempotencyKey: `e2e-recov-close-${Date.now()}`, via: 'companion' })
+    expect(cr.receipt.orphanCleanup[0].result).toBe('CANCELED')
+    expect(errs).toEqual([])
+  })
+
   test('voice sample (real WAV) → local STT → intent, no order placed', async ({ page }) => {
     const errs = watchErrors(page)
     await page.goto('/voice')
