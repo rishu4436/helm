@@ -31,7 +31,7 @@ export interface AppDeps {
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   assertLiveTradingDisabled() // refuse to boot with live trading enabled
   const app = Fastify({ logger: deps.logger ? { redact: ['req.headers.authorization', 'req.body.credentials', 'req.body.password'] } : false, bodyLimit: 64 * 1024 })
-  await app.register(cors, { origin: deps.corsOrigins ?? ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], credentials: false })
+  await app.register(cors, { origin: deps.corsOrigins ?? ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'], credentials: false, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] })
   await app.register(rateLimit, { max: deps.rateLimitMax ?? 120, timeWindow: '1 minute' })
 
   app.setErrorHandler((err, _req, reply) => {

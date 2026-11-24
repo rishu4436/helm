@@ -66,6 +66,19 @@ describe('auth', () => {
     await app.inject({ method: 'POST', url: '/v1/auth/logout', headers: authz(t) })
     expect((await app.inject({ url: '/v1/me', headers: authz(t) })).statusCode).toBe(401)
   })
+  it('updates the display name and lists/revokes sessions', async () => {
+    const t = await register('p@helm.test')
+    const r = await app.inject({ method: 'PATCH', url: '/v1/me', headers: authz(t), payload: { displayName: '  Rishu ' } })
+    expect(r.statusCode).toBe(200); expect(r.json().user.displayName).toBe('Rishu')
+    expect((await app.inject({ method: 'PATCH', url: '/v1/me', headers: authz(t), payload: { displayName: 'x'.repeat(61) } })).statusCode).toBe(400)
+    expect((await app.inject({ method: 'PATCH', url: '/v1/me', headers: authz(t), payload: { email: 'evil@x.y' } })).statusCode).toBe(400)
+    const t2 = (await app.inject({ method: 'POST', url: '/v1/auth/login', payload: { email: 'p@helm.test', password: 'correct horse battery' } })).json().token
+    const ss = (await app.inject({ url: '/v1/sessions', headers: authz(t) })).json().sessions
+    expect(ss.length).toBe(2); expect(ss.filter((s: { current: boolean }) => s.current).length).toBe(1)
+    const other = ss.find((s: { current: boolean }) => !s.current)
+    expect((await app.inject({ method: 'DELETE', url: `/v1/sessions/${other.id}`, headers: authz(t) })).statusCode).toBe(200)
+    expect((await app.inject({ url: '/v1/me', headers: authz(t2) })).statusCode).toBe(401)
+  })
   it('rejects missing/forged tokens and short passwords', async () => {
     expect((await app.inject({ url: '/v1/me' })).statusCode).toBe(401)
     expect((await app.inject({ url: '/v1/me', headers: authz('forged') })).statusCode).toBe(401)

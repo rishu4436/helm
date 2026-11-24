@@ -59,7 +59,7 @@ export function Pill({ v, title }: { v: string; title?: string }) {
 }
 const ENV_STYLE: Record<string, string> = { demo: 'text-up border-up/40', paper: 'text-sky-300 border-sky-400/40', sandbox_static: 'text-amber-helm border-amber-helm/40', simulated: 'text-violet-300 border-violet-400/40', blocked: 'text-down border-down/40' }
 const ENV_TEXT: Record<string, string> = { demo: 'DEMO', paper: 'PAPER', sandbox_static: 'STATIC SANDBOX', simulated: 'SIMULATED', blocked: 'BLOCKED' }
-export function EnvPill({ env }: { env: string }) { return <span className={`pill border ${ENV_STYLE[env] ?? 'border-graphite-700'}`}>{ENV_TEXT[env] ?? env}</span> }
+export function EnvPill({ env }: { env: string }) { return <span className={`pill whitespace-nowrap border ${ENV_STYLE[env] ?? 'border-graphite-700'}`}>{ENV_TEXT[env] ?? env}</span> }
 
 export function ErrorNote({ error, onRetry }: { error: ApiError | Error | null; onRetry?: () => void }) {
   if (!error) return null

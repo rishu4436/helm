@@ -44,6 +44,14 @@ export const authRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
     return { user: u }
   })
 
+  app.patch('/v1/me', { preHandler: requireUser(prisma) }, async (req, reply) => {
+    const b = z.object({ displayName: z.string().trim().min(1).max(60).nullable().optional() }).strict().safeParse(req.body ?? {})
+    if (!b.success) return reply.code(400).send({ error: { code: 'BAD_REQUEST', message: 'Display name must be 1–60 characters', reasons: b.error.issues.map(i => i.message) } })
+    const u = await prisma.user.update({ where: { id: req.userId! }, data: { displayName: b.data.displayName ?? null }, select: { id: true, email: true, displayName: true, reportingCurrency: true, createdAt: true } })
+    await audit(prisma, { userId: req.userId, actor: 'user', action: 'user.profile_updated' })
+    return { user: u }
+  })
+
   app.get('/v1/sessions', { preHandler: requireUser(prisma) }, async req => {
     const sessions = await prisma.authSession.findMany({ where: { userId: req.userId!, revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true, userAgent: true, createdAt: true, expiresAt: true }, orderBy: { createdAt: 'desc' } })
     return { sessions: sessions.map(s => ({ ...s, current: s.id === req.sessionId })) }
