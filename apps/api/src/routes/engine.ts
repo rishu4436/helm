@@ -131,7 +131,7 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
   })
 
   // ----- Voice -----
-  app.post('/v1/voice/command', { preHandler: any, config: ctx.rl(30) }, async req => {
+  app.post('/v1/voice/command', { preHandler: any, config: ctx.rl(30), bodyLimit: 1024 * 1024 /* ≤ ~20 s of 16 kHz PCM16 as base64 */ }, async req => {
     const b = z.object({ transcript: z.string().max(500).optional(), audioBase64: z.string().max(4_000_000).optional(), sampleRate: z.number().int().optional() }).refine(x => x.transcript || x.audioBase64).parse(req.body)
     let transcript = b.transcript ?? '', sttProvider = 'typed', sttLabel: string | null = null, confidence: number | null = null
     if (!b.transcript) {

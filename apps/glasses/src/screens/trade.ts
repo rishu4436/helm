@@ -130,7 +130,7 @@ export function receiptScreen(r: Receipt): ScreenSpec {
     `${r.account} · ${prodLabel(s.product)} · ${r.type}`,
     r.fills.length ? `Fee ${fee ? String(Number(fee.toFixed(8))) : '0'} ${feeAsset} · ${r.fills.length} fill${r.fills.length > 1 ? 's' : ''}` : reason || `Order ${r.providerOrderId ?? '—'}`,
     prot,
-    (r.label ?? r.fillTruth).slice(0, 60),
+    r.label?.startsWith('SIMULATED') ? 'SIMULATED by HELM · fill computed locally' : (r.label ?? r.fillTruth).slice(0, 60),
   ].join('\n')
   return textScreen('receipt', 'RECEIPT', envTag(r.environmentLabel), body, 'tap: home · double-tap: back', true)
 }

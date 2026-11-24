@@ -50,6 +50,7 @@ Times are IST (UTC+5:30). Status keys: PASS · FAIL · BLOCKED · NOT RUN.
 | Bybit Demo adapter run (balance, spot limit/cancel/market/stop/sell-back, linear leverage/limit/cancel, market entry → position → **reduce-only stop from actual fill, listed Untriggered → PROTECTED** → cancel → reduce-only close → flat, reduce-only with no position rejected 110017, production guard 0 calls) | **PASS 25/25** → `evidence/bybit-demo/run-2026-11-24T08-10-31-139Z.json` (first run 24/25: the guard made 1 public time call, fixed above) |
 | HELM API end to end on real Binance Demo + Bybit Demo (preview → confirm → submit → reconcile → receipt; idempotent replay; used token 409; Bybit + Binance Trade-to-Protect PROTECTED; stop cancel → UNPROTECTED; reduce-only closes; Shield BLOCK $5000; voice "Which exchange?"; Pulse) | **PASS 30/30, OKX BLOCKED** → `evidence/engine-e2e/run-2026-11-24T08-25-42-676Z.json` |
 | Even Hub simulator 0.9.5: pair (demo user) → overview → holdings → watchlist → venues → Which exchange? → ticket → impact → risk → confirm (Cancel default) → submitting → **receipt FILLED on Bybit Demo with PROTECTED stop** → Pulse → Compass → Emergency → reduce-only close FILLED | **PASS** → `evidence/g2-trade-flow/*.png`, `contact-sheet.jpg`, `console.json` |
+| Simulator voice: G2 mic open → 35 PCM frames captured → server STT → intent PLACE_ORDER BTC BUY $100 → **"Which exchange?"** → Binance · SIM → impact → confirm → **SIMULATED receipt** (labelled) | **PASS** (STT = deterministic **TEST STT**, labelled on screen; the simulator mic sends silence) → `evidence/g2-trade-flow/21…25` |
 | OKX Demo logged in | **BLOCKED** (region) |
 | Voice with a real STT provider | NOT RUN (no STT key; deterministic TEST STT is used and labelled as such) |
 | Real G2 hardware | NOT RUN |
@@ -64,12 +65,13 @@ Times are IST (UTC+5:30). Status keys: PASS · FAIL · BLOCKED · NOT RUN.
 7. A Binance futures fill acked with avgPrice 0 left the position UNPROTECTED (honestly reported, then closed). Fixed by re-reading the order, falling back to the venue trade list.
 8. G2 list items: the limit is **64 UTF-8 bytes** ("·" is 2 bytes). Simulator 0.9.5 also rejected a rebuild whose list items contained `@ ( ) _`; list items are now sanitized.
 9. The "Ⓢ" glyph (USDⓈ-M) is not in the firmware font and is mapped to "S".
-10. Bybit execution lists lag the order state. The engine re-reads, and GET /orders/:id backfills.
+10. Voice upload of 8 s PCM exceeded the 64 KB API body limit (413); the voice route now allows 1 MB.
+11. Bybit execution lists lag the order state. The engine re-reads, and GET /orders/:id backfills.
 
 **Known gaps / next**
 - After a reduce-only close fills, also cancel the now-orphaned protective stop (and say so in the preview). Bybit does not auto-cancel it; `demo-cleanup.ts` did it for this run.
 - Companion pages: dashboard, portfolio, terminal, Shield, Pulse, history, devices, diagnostics.
-- Voice: a real STT provider (Whisper-compatible adapter exists; needs a key) and simulator audio capture (no mic frames observed in the simulator).
+- Voice: a real STT provider (a Whisper-compatible adapter exists but needs a key). Mic capture works in the simulator, which only sends silence.
 - Demo video script.
 
 ## 2026-11-24 — Day 2 of build week (Phases 1–3, first glasses screens)
