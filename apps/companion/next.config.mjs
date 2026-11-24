@@ -2,7 +2,7 @@
 export default {
   reactStrictMode: true,
   poweredByHeader: false,
-  transpilePackages: ["@helm/shared"],
+  transpilePackages: ["@helm/shared", "@helm/glasses", "@helm/voice-engine"],
   async headers() {
     return [{ source: '/(.*)', headers: [
       { key: 'X-Frame-Options', value: 'DENY' },

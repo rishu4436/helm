@@ -13,7 +13,9 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@helm/shared": "workspace:*"
+    "@helm/shared": "workspace:*",
+    "@helm/glasses": "workspace:*",
+    "@helm/voice-engine": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",

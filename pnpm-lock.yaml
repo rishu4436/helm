@@ -108,9 +108,15 @@ importers:
 
   apps/companion:
     dependencies:
+      '@helm/glasses':
+        specifier: workspace:*
+        version: link:../glasses
       '@helm/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@helm/voice-engine':
+        specifier: workspace:*
+        version: link:../../packages/voice-engine
       next:
         specifier: ^15.5.0
         version: 15.5.29(@playwright/test@1.65.1)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
