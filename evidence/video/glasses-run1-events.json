@@ -1,0 +1,570 @@
+{
+ "t0_epoch": 1795520071.0967703,
+ "events": [
+  {
+   "t": 25,
+   "k": "mark",
+   "v": "start"
+  },
+  {
+   "t": 1525,
+   "k": "mark",
+   "v": "home"
+  },
+  {
+   "t": 3026,
+   "k": "mark",
+   "v": "overview"
+  },
+  {
+   "t": 3041,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 6443,
+   "k": "reached",
+   "v": "overview"
+  },
+  {
+   "t": 11459,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 11589,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 12589,
+   "k": "mark",
+   "v": "voice1"
+  },
+  {
+   "t": 12604,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 13070,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 13538,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 14003,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 14129,
+   "k": "reached",
+   "v": "listening"
+  },
+  {
+   "t": 15129,
+   "k": "play-start",
+   "v": "/workspace/helm-video/vo/cmd_positions.wav"
+  },
+  {
+   "t": 17956,
+   "k": "play-end",
+   "v": "/workspace/helm-video/vo/cmd_positions.wav"
+  },
+  {
+   "t": 18396,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 19090,
+   "k": "reached",
+   "v": "heard"
+  },
+  {
+   "t": 22090,
+   "k": "mark",
+   "v": "holdings"
+  },
+  {
+   "t": 22120,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 25609,
+   "k": "reached",
+   "v": "holdings"
+  },
+  {
+   "t": 31639,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 31792,
+   "k": "reached",
+   "v": "heard"
+  },
+  {
+   "t": 32019,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 32172,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 33172,
+   "k": "mark",
+   "v": "voice2"
+  },
+  {
+   "t": 33208,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 33687,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 34166,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 34650,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 34806,
+   "k": "reached",
+   "v": "listening"
+  },
+  {
+   "t": 35806,
+   "k": "play-start",
+   "v": "/workspace/helm-video/vo/cmd_buy.wav"
+  },
+  {
+   "t": 39143,
+   "k": "play-end",
+   "v": "/workspace/helm-video/vo/cmd_buy.wav"
+  },
+  {
+   "t": 39597,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 40290,
+   "k": "reached",
+   "v": "heard"
+  },
+  {
+   "t": 42790,
+   "k": "mark",
+   "v": "pick"
+  },
+  {
+   "t": 42856,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 43056,
+   "k": "reached",
+   "v": "acct-pick"
+  },
+  {
+   "t": 45556,
+   "k": "mark",
+   "v": "impact1"
+  },
+  {
+   "t": 45605,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 52032,
+   "k": "reached",
+   "v": "impact"
+  },
+  {
+   "t": 57084,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 57277,
+   "k": "reached",
+   "v": "risk"
+  },
+  {
+   "t": 60835,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 61035,
+   "k": "reached",
+   "v": "confirm"
+  },
+  {
+   "t": 64087,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 65288,
+   "k": "mark",
+   "v": "submit1"
+  },
+  {
+   "t": 65347,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 65541,
+   "k": "reached",
+   "v": "submitting"
+  },
+  {
+   "t": 72109,
+   "k": "reached",
+   "v": "receipt"
+  },
+  {
+   "t": 78158,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 78373,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 79373,
+   "k": "mark",
+   "v": "bybit"
+  },
+  {
+   "t": 79424,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 79937,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 80443,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 80949,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 81448,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 81656,
+   "k": "reached",
+   "v": "acct-pick"
+  },
+  {
+   "t": 82709,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 83210,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 83710,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 83918,
+   "k": "reached",
+   "v": "ticket"
+  },
+  {
+   "t": 84967,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 85619,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 86270,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 87470,
+   "k": "mark",
+   "v": "impact2"
+  },
+  {
+   "t": 87519,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 96654,
+   "k": "reached",
+   "v": "impact"
+  },
+  {
+   "t": 100724,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 100954,
+   "k": "reached",
+   "v": "risk"
+  },
+  {
+   "t": 104012,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 104214,
+   "k": "reached",
+   "v": "confirm"
+  },
+  {
+   "t": 106269,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 107269,
+   "k": "mark",
+   "v": "submit2"
+  },
+  {
+   "t": 107318,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 107521,
+   "k": "reached",
+   "v": "submitting"
+  },
+  {
+   "t": 121226,
+   "k": "reached",
+   "v": "receipt"
+  },
+  {
+   "t": 127279,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 127484,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 128484,
+   "k": "mark",
+   "v": "compass"
+  },
+  {
+   "t": 128540,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 129041,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 129550,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 130056,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 130558,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 131057,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 131555,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 135107,
+   "k": "reached",
+   "v": "compass"
+  },
+  {
+   "t": 141154,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 141352,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 142352,
+   "k": "mark",
+   "v": "protect"
+  },
+  {
+   "t": 142402,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 142911,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 143418,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 143928,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 144436,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 144937,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 145439,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 145946,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 146450,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 146953,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 150124,
+   "k": "reached",
+   "v": "unprotected"
+  },
+  {
+   "t": 155177,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 155376,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 156376,
+   "k": "mark",
+   "v": "end"
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen overview",
+  "[HELM] screen home",
+  "[HELM] mic open",
+  "[HELM] screen listening",
+  "[HELM] heard \"Helm, show all my positions.\" via local:faster-whisper:base.en \u2192 positions",
+  "[HELM] screen heard",
+  "[HELM] screen holdings",
+  "[HELM] screen heard",
+  "[HELM] screen home",
+  "[HELM] mic open",
+  "[HELM] screen listening",
+  "[HELM] heard \"Buy $100 of BTC.\" via local:faster-whisper:base.en \u2192 clarify_account",
+  "[HELM] screen heard",
+  "[HELM] screen acct-pick",
+  "[HELM] preview p060c0dd1a5a06198e9eb ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwumc0o7000b9xoqiu2t07so FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home",
+  "[HELM] screen acct-pick",
+  "[HELM] screen ticket",
+  "[HELM] preview pe55e5c3f975bec0063b3 ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwumcyp400129xoqdg2jv3ms FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home",
+  "[HELM] screen compass",
+  "[HELM] screen home",
+  "[HELM] screen unprotected",
+  "[HELM] screen home"
+ ]
+}

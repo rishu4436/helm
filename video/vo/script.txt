@@ -1,0 +1,27 @@
+This is HELM: hands-free trading, on Even Realities G2.
+
+It starts on the companion site, where I connect my accounts. Binance Demo, for spot and for futures. And Bybit Demo. Each key is checked before it's saved, it's encrypted on the server, and it never reaches the glasses. HELM never asks for a password, a two-factor code, or withdrawal rights. OKX is supported too. But I'm in India, where OKX isn't available, so it's untested from here. Bybit stands in for it today.
+
+Now, the glasses. One glance, and I've got my whole portfolio. Real balances, pulled from every demo account. Anything simulated is kept separate, and labelled.
+
+I can just ask. HELM, show all my positions.
+
+And I get one summary, across every exchange. What I hold, and where it actually sits.
+
+Let's trade. Buy one hundred dollars of BTC.
+
+Notice, I didn't say where. So HELM doesn't guess. It asks: which exchange? I'll pick Binance Demo.
+
+Before anything is sent, I see the preview. The account. The order. The estimated cost, and fee. My available balance. Then, the risk check, from HELM Shield. And on the confirm screen, the cursor starts on Cancel. I have to mean it. The preview also expires after forty-five seconds, so a stale price can't sneak through.
+
+Confirm. The order goes to Binance's demo exchange. And the receipt shows Binance's own order ID, with the status read back from the exchange. Not assumed.
+
+Same glasses, second exchange. On Bybit Demo, I'll open a small BTC long, with a three percent stop attached. Same preview. Same risk check. Same deliberate confirm.
+
+HELM Shield looks at everything together. Combined BTC exposure, across every account. And one insight, worth knowing: most of my money is sitting on a single exchange. And a stress test shows what a crypto crash would do, with my stops counted in.
+
+And that stop? HELM sized it from the actual fill. It only calls the position protected, because Bybit itself lists the stop. And when I close the position, the leftover stop is cancelled too. Nothing left behind. And if a timeout ever leaves an order in doubt, HELM checks with the exchange. It never just sends it again.
+
+Demo and paper accounts only. This isn't financial advice.
+
+One interface. Multiple exchanges. Verified actions.

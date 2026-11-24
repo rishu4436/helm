@@ -1,0 +1,349 @@
+[
+{
+"mark": "start"
+},
+{
+"wait": 1.5
+},
+{
+"mark": "home"
+},
+{
+"wait": 1.5
+},
+{
+"mark": "overview"
+},
+{
+"do": "click",
+"expect": "overview",
+"timeout": 30,
+"settle": 5.0
+},
+{
+"do": "double_click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "voice1"
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "listening",
+"timeout": 20,
+"settle": 1.0
+},
+{
+"play": "/workspace/helm-video/vo/cmd_positions.wav"
+},
+{
+"wait": 0.4
+},
+{
+"do": "click",
+"expect": "heard",
+"timeout": 40,
+"settle": 3.0
+},
+{
+"mark": "holdings"
+},
+{
+"do": "click",
+"expect": "holdings",
+"timeout": 30,
+"settle": 6.0
+},
+{
+"do": "double_click",
+"expect": "heard",
+"settle": 0.2
+},
+{
+"do": "double_click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "voice2"
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "listening",
+"timeout": 20,
+"settle": 1.0
+},
+{
+"play": "/workspace/helm-video/vo/cmd_buy.wav"
+},
+{
+"wait": 0.4
+},
+{
+"do": "click",
+"expect": "heard",
+"timeout": 40,
+"settle": 2.5
+},
+{
+"mark": "pick"
+},
+{
+"do": "click",
+"expect": "acct-pick",
+"timeout": 20,
+"settle": 2.5
+},
+{
+"mark": "impact1"
+},
+{
+"do": "click",
+"expect": "impact",
+"timeout": 60,
+"settle": 5.0
+},
+{
+"do": "click",
+"expect": "risk",
+"settle": 3.5
+},
+{
+"do": "click",
+"expect": "confirm",
+"settle": 3.0
+},
+{
+"do": "down",
+"settle": 1.2
+},
+{
+"mark": "submit1"
+},
+{
+"do": "click",
+"expect": "submitting",
+"settle": 0.1
+},
+{
+"do": null,
+"expect": "receipt",
+"timeout": 60,
+"settle": 6.0
+},
+{
+"do": "click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "bybit"
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "acct-pick",
+"settle": 1.0
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "ticket",
+"settle": 1.0
+},
+{
+"do": "down",
+"settle": 0.6
+},
+{
+"do": "down",
+"settle": 0.6
+},
+{
+"do": "down",
+"settle": 0.6
+},
+{
+"wait": 0.6
+},
+{
+"mark": "impact2"
+},
+{
+"do": "click",
+"expect": "impact",
+"timeout": 60,
+"settle": 4.0
+},
+{
+"do": "click",
+"expect": "risk",
+"settle": 3.0
+},
+{
+"do": "click",
+"expect": "confirm",
+"settle": 2.0
+},
+{
+"do": "down",
+"settle": 1.0
+},
+{
+"mark": "submit2"
+},
+{
+"do": "click",
+"expect": "submitting",
+"settle": 0.1
+},
+{
+"do": null,
+"expect": "receipt",
+"timeout": 60,
+"settle": 6.0
+},
+{
+"do": "click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "compass"
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "compass",
+"timeout": 30,
+"settle": 6.0
+},
+{
+"do": "double_click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "protect"
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "down",
+"settle": 0.45
+},
+{
+"do": "click",
+"expect": "unprotected",
+"timeout": 30,
+"settle": 5.0
+},
+{
+"do": "double_click",
+"expect": "home",
+"settle": 1.0
+},
+{
+"mark": "end"
+}
+]

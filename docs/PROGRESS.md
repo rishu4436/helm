@@ -2,6 +2,23 @@
 
 Times are IST (UTC+5:30). Status keys: PASS · FAIL · BLOCKED · NOT RUN.
 
+## 2026-11-24 17:50 IST — Part 21 flagship demo video rendered
+
+**Done**
+- `docs/DEMO-VIDEO-PLAN.md` rewritten for spec Part 21, points 1–10. Bybit Demo stands in for OKX, and the plan says OKX is supported but untested from India.
+- Glasses UI for the demo:
+  - Receipts always show the provider order id, plus "Verified: read back from <venue> demo".
+  - Positions shows a cross-exchange summary.
+  - `helm.ehpk` rebuilt (48,297 bytes, local only).
+- Fresh captures with **real demo orders**:
+  - Even Hub simulator recording. Two voice commands were played into the simulator mic and transcribed by local faster-whisper.
+  - Binance Demo · Spot BUY $100 BTC, FILLED 0.00166.
+  - Bybit Demo · Unified BTC perp long with a 3 % stop: PROTECTED, then a reduce-only close canceled 1/1 orphan stop.
+  - Companion Playwright `recordVideo` (Exchanges, Shield + stress test, Trade-to-Protect).
+- Rendered `/workspace/helm-video/final/helm_demo_v1.mp4`: 1080p30, **2:47**, −14.3 LUFS, true peak −1.4 dBFS. Narration is a single Kokoro am_adam take; some silent gaps were lengthened, nothing was stitched or sped up. It has a Rishabh Originals intro and outro, the end card "One interface. Multiple exchanges. Verified actions." and the disclaimer on screen throughout and on the end card and outro. **78 MB → not committed** (over 50 MB). Sources are in `video/`, logs and the EDL in `evidence/video/`.
+- `scripts/sellback-spot.ts` sells back the on-camera spot buy (exact net quantity).
+- After the shoot: demo-cleanup → `remaining: []`, and check-flat → positions=0 and openOrders=0 on all three demo accounts. 0.00000834 BTC of dust (the fee remainder below the lot step) stays on Binance Demo Spot.
+
 ## 2026-11-24 16:50 IST — Trade-to-Protect recovery, spot stop cleanup, simulator rerun, secret scan
 
 **Done**

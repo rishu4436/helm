@@ -1,0 +1,73 @@
+{
+ "events": [
+  {
+   "t": 1575,
+   "v": "connect-ready"
+  },
+  {
+   "t": 3815,
+   "v": "hover-binance"
+  },
+  {
+   "t": 6032,
+   "v": "hover-bybit"
+  },
+  {
+   "t": 9246,
+   "v": "hover-okx"
+  },
+  {
+   "t": 11063,
+   "v": "scrolled-connected"
+  },
+  {
+   "t": 12980,
+   "v": "recheck-click"
+  },
+  {
+   "t": 16008,
+   "v": "recheck-done"
+  },
+  {
+   "t": 21448,
+   "v": "connect-end"
+  },
+  {
+   "t": 26349,
+   "v": "shield-ready"
+  },
+  {
+   "t": 30080,
+   "v": "hover-largest"
+  },
+  {
+   "t": 31695,
+   "v": "scroll-scenarios"
+  },
+  {
+   "t": 33359,
+   "v": "crash-click"
+  },
+  {
+   "t": 37037,
+   "v": "run-click"
+  },
+  {
+   "t": 41045,
+   "v": "scroll-results"
+  },
+  {
+   "t": 44781,
+   "v": "shield-end"
+  },
+  {
+   "t": 49563,
+   "v": "protect-ready"
+  },
+  {
+   "t": 55814,
+   "v": "protect-end"
+  }
+ ],
+ "errors": []
+}

@@ -49,3 +49,14 @@ accounts are left flat afterwards (reduce-only closes / exact-quantity sell-back
 - Every glasses frame is a real simulator screenshot; every companion frame is a real Playwright recording.
 - No fill, balance or order id is typed in or mocked. Coinbase Sandbox static responses are never shown as fills.
 - QA: frame contact sheet reviewed for flashes, overflow and black frames before release.
+
+## As rendered (v1, 2026-11-24)
+- Output `/workspace/helm-video/final/helm_demo_v1.mp4`, 1920×1080 30 fps, H.264 + AAC, **2:47** (167 s), −14.3 LUFS integrated, true peak −1.2 dBFS, 5010 frames, 78 MB (not committed: over 50 MB). QA: blackdetect found no black frames; one luma step at 5.0 s (intro whip → first shot, intended); contact sheet reviewed.
+- Narration: one 149.9 s am_adam take at speed 0.92. 15 sentence gaps were lengthened by 0.4–5.3 s at silent points (≥60 ms of silence, found by energy) → 153.4 s. Words, pitch and tempo are untouched.
+- Glasses captures: `video/scripts/rec_glasses.py` polls `/api/screenshot/glasses` (~12 fps) while driving `run1.json` / `run2.json`. The spoken commands were played into the simulator mic, and local faster-whisper heard *"Helm, show all my positions."* and *"Buy $100 of BTC."*
+- Real demo orders shown (receipt ids in `evidence/video/glasses-run*-events.json`):
+  - Binance Demo · Spot: BUY $100 BTC, FILLED 0.00166 @ 59,900.01, sold back afterwards (0.00165, net of the BTC fee).
+  - Bybit Demo · Unified: BUY 0.002 BTC perp 2×, FILLED @ 59,872.20, stop 58,076.0 listed → PROTECTED. Reduce-only close FILLED @ 59,855.30 → 1/1 orphan stop canceled.
+- Companion: `video/scripts/rec_companion.mjs`, a Playwright `recordVideo` at 1440×810 (Exchanges, Shield + Crypto-crash scenario, Trade-to-Protect).
+- Edit: `video/scripts/build_edl.py` → `video/brand/film.js` (deterministic `render(t)`, Atlas approach, graphite/amber). Venue latency on preview/submit screens is trimmed. Some screens hold their last real frame while zoomed in on a line.
+- After the shoot: `scripts/sellback-spot.ts`, `demo-cleanup.ts` → `remaining: []`, and `check-flat.ts` → all three demo accounts have positions=0 and openOrders=0.

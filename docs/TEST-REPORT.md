@@ -36,6 +36,8 @@ Driver: `python3 scripts/sim-run.py <flow.json> evidence/g2-trade-flow`. Before 
 | 16 | Voice through the **simulator microphone**: a Kokoro-spoken WAV (`tests/fixtures/voice/buy-100-btc.wav`) played with `paplay` into the box's PulseAudio monitor source → local faster-whisper heard "Buy $100 of BTC." → Which exchange? → Binance · SIM → SIMULATED receipt | **PASS** | `evidence/g2-trade-flow/50…58*.png`, `run-log-flow3-voice*.json` |
 | 17 | Pairing flow (splash → code → approve → accounts → relaunch skips pairing) | **PASS** (earlier run) | `evidence/g2-simulator/` |
 | — | `contact-sheet.jpg` of all simulator screens | — | `evidence/g2-trade-flow/contact-sheet.jpg` |
+| 18 | **Demo-video capture** (`video/scripts/rec_glasses.py` with run1/run2): voice "HELM, show all my positions" → holdings; voice "Buy 100 dollars of BTC" → Which exchange? → **Binance Demo · Spot** → impact → risk → confirm → FILLED (order 85883431582); Trade → **Bybit Demo** LONG perp + 3 % stop → FILLED + PROTECTED; Compass; Protect positions (none); reduce-only close → 1/1 orphan stop canceled | **PASS** (all `[HELM] screen` waits reached; 1950 + 893 frames) | `evidence/video/glasses-run1-events.json`, `glasses-run2-events.json` |
+| 19 | Post-shoot flatten: `sellback-spot.ts` (SELL 0.00165 BTC FILLED), `demo-cleanup.ts`, `check-flat.ts` | **PASS: flat** (17:20) | `remaining: []`; positions=0 and openOrders=0 on all three demo accounts |
 
 ## Security
 

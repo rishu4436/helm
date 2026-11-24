@@ -1,0 +1,250 @@
+{
+ "t0_epoch": 1795520456.616251,
+ "events": [
+  {
+   "t": 68,
+   "k": "mark",
+   "v": "start"
+  },
+  {
+   "t": 1068,
+   "k": "mark",
+   "v": "close"
+  },
+  {
+   "t": 1125,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 1632,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 2144,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 2652,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 3161,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 3361,
+   "k": "reached",
+   "v": "acct-pick"
+  },
+  {
+   "t": 4426,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 4929,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 5434,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 5635,
+   "k": "reached",
+   "v": "ticket"
+  },
+  {
+   "t": 6681,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 7243,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 7800,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 8360,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 8917,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 10017,
+   "k": "mark",
+   "v": "impact3"
+  },
+  {
+   "t": 10069,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 19557,
+   "k": "reached",
+   "v": "impact"
+  },
+  {
+   "t": 24615,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 24811,
+   "k": "reached",
+   "v": "risk"
+  },
+  {
+   "t": 27365,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 27567,
+   "k": "reached",
+   "v": "confirm"
+  },
+  {
+   "t": 29627,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 30627,
+   "k": "mark",
+   "v": "submit3"
+  },
+  {
+   "t": 30677,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 30880,
+   "k": "reached",
+   "v": "submitting"
+  },
+  {
+   "t": 50697,
+   "k": "reached",
+   "v": "receipt"
+  },
+  {
+   "t": 56751,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 56964,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 57964,
+   "k": "mark",
+   "v": "protect2"
+  },
+  {
+   "t": 58012,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 58511,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 59014,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 59518,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 60023,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 60525,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 61028,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 61530,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 62030,
+   "k": "input",
+   "v": "down"
+  },
+  {
+   "t": 62533,
+   "k": "input",
+   "v": "click"
+  },
+  {
+   "t": 66089,
+   "k": "reached",
+   "v": "unprotected"
+  },
+  {
+   "t": 70143,
+   "k": "input",
+   "v": "double_click"
+  },
+  {
+   "t": 70358,
+   "k": "reached",
+   "v": "home"
+  },
+  {
+   "t": 71358,
+   "k": "mark",
+   "v": "end"
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen acct-pick",
+  "[HELM] screen ticket",
+  "[HELM] preview pfc3407b2f73b1cf81ef1 ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwumjkre002j9xoqjlcp0p9h FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home",
+  "[HELM] screen unprotected",
+  "[HELM] screen home"
+ ]
+}
