@@ -8,6 +8,11 @@ HELM puts every demo and paper trading account you hold (Binance, Bybit, OKX, Co
 
 Built for the **Heads Up: Even Realities Hackathon** (TVM Ventures × Daos Hub, DoraHacks), **Exchanges & Stocks** track.
 
+**Try it:** [Companion website](https://helm-silk-rho.vercel.app) · [API health](https://helm-api-v8lu.onrender.com/health) · [Source](https://github.com/rishu4436/helm)
+
+The hosted site is **demo / paper / sandbox only**. Click **Try the demo** for simulated Binance, Bybit and OKX accounts (labelled SIMULATED, no API keys, nothing sent to any exchange). You can also register and connect your own demo keys. The owner's demo keys are not on the hosted server. Live trading is hard-disabled. Spoken audio on the free hosted API falls back to typed commands or a labelled TEST STT.
+
+
 > ### Safety
 > - **Demo, paper and sandbox only.** Live trading is hard-disabled: `HELM_LIVE_TRADING` must be `false`, or the guard throws.
 > - An **environment guard** allow-lists demo/paper/sandbox hosts and blocks production signed endpoints before any network call.

@@ -35,5 +35,7 @@ Even Hub SDK 0.0.16, evenhub-simulator 0.9.5, evenhub-cli, @evenrealities/pretex
 
 ## Links
 
-- Repo: private (`rishu4436/helm`). Access on request.
+- Repo: https://github.com/rishu4436/helm (public, MIT)
+- Companion website: https://helm-silk-rho.vercel.app
+- API: https://helm-api-v8lu.onrender.com (`/health`)
 - Demo video: planned (`docs/DEMO-VIDEO-PLAN.md`), not yet rendered.

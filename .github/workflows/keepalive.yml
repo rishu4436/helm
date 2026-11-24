@@ -13,9 +13,9 @@ jobs:
       - name: Ping HELM API health
         run: |
           set -euo pipefail
-          url="${HELM_API_HEALTH_URL:-https://helm-api.onrender.com/health}"
+          url="${HELM_API_HEALTH_URL:-https://helm-api-v8lu.onrender.com/health}"
           echo "GET $url"
           # Cold starts can take ~50s on the free plan.
           curl -fsS --retry 5 --retry-delay 10 --retry-all-errors --max-time 30 "$url"
         env:
-          HELM_API_HEALTH_URL: https://helm-api.onrender.com/health
+          HELM_API_HEALTH_URL: https://helm-api-v8lu.onrender.com/health

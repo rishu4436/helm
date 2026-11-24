@@ -1,8 +1,17 @@
 # Deployment
 
-**Current status:** The companion website and API are being hosted so hackathon judges can try them (free plans only). `helm.ehpk` has been built but **not uploaded** to Even Hub. Live URLs are listed in the README once the deploy is verified.
+**Current status:** The companion website and API are hosted on free plans so hackathon judges can try them. `helm.ehpk` has been built but **not uploaded** to Even Hub.
 
-The hosted API is a **new** Render service (`helm-api`) and a **new** Neon project (`helm`). It does not use the ATLAS Social Vercel, Render or Neon projects. Public visitors use **SIMULATED** accounts (or their own demo keys). The owner's Binance/Bybit demo keys are **not** stored on the hosted server. `HELM_LIVE_TRADING=false`. Spoken commands on the free hosted API fall back to typed input or a labelled TEST STT.
+| | |
+|---|---|
+| Companion | https://helm-silk-rho.vercel.app |
+| API | https://helm-api-v8lu.onrender.com |
+| API health | https://helm-api-v8lu.onrender.com/health |
+| Repo | https://github.com/rishu4436/helm |
+
+The hosted API is a **new** Render free web service (`helm-api`, URL `helm-api-v8lu.onrender.com`) and a **new** Neon project (`helm`, id `mute-band-45994041`). It does not use the ATLAS Social Vercel, Render or Neon projects. Public visitors use **SIMULATED** accounts (or their own demo keys). The owner's Binance/Bybit demo keys are **not** stored on the hosted server. `HELM_LIVE_TRADING=false`. Spoken commands on the free hosted API fall back to typed input or a labelled TEST STT. A GitHub Actions cron pings `/health` every 10 minutes so the free Render service does not sleep.
+
+Vercel project: `helm` (team of rishu4436). The GitHub integration could not auto-link this new repo at deploy time, so production was created with `create_deployment` from `main` at `cbcf580`. Later companion changes need a new Vercel deploy (or a GitHub link in the Vercel dashboard). Render auto-deploys the API from `main`.
 
 ## Local stack (what the demo uses)
 
