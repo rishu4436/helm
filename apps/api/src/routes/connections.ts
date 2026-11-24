@@ -2,16 +2,19 @@ import type { FastifyPluginAsync } from 'fastify'
 import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { fingerprint, seal, unseal, type SealedSecret } from '@helm/security'
-import { HelmError, PROVIDER_INFO, type ExchangeAdapter, type ProviderId } from '@helm/shared'
+import { HelmError, PROVIDER_INFO, type Environment, type ExchangeAdapter, type ProviderId } from '@helm/shared'
+import { PrismaSimStore } from '../engine/accounts'
 import { requireUser } from '../auth'
 import { audit } from '../audit'
-import { CredentialSchemas, alpacaEnabled } from '../registry'
+import { CredentialSchemas, alpacaEnabled, isSimVenue, simulatorEnabled } from '../registry'
 import type { AppCtx } from '../app'
 
 const Create = z.object({
   provider: z.enum(['binance', 'okx', 'bybit', 'coinbase', 'ibkr', 'alpaca']),
   alias: z.string().min(1).max(40),
   credentials: z.record(z.string(), z.string()).default({}),
+  /** HELM local simulator (Binance/OKX/Bybit only): live public prices, fills computed locally. No keys. */
+  simulated: z.boolean().optional(),
 })
 
 const accountTypeFor = (provider: ProviderId, creds: Record<string, string>) =>
@@ -26,16 +29,19 @@ export const connectionRoutes = (ctx: AppCtx): FastifyPluginAsync => async app =
     if (!conn) throw Object.assign(new Error('Connection not found'), { statusCode: 404 })
     const creds = conn.credential ? JSON.parse(unseal(ctx.key, conn.credential.sealed as unknown as SealedSecret, `${userId}:${conn.id}`)) as Record<string, string> : {}
     const accountId = conn.accounts[0]?.id ?? conn.id
-    return { adapter: ctx.adapters(conn.provider as ProviderId, creds, accountId), accountId }
+    return { adapter: ctx.adapters(conn.provider as ProviderId, creds, accountId, { environment: conn.environment as Environment, simStore: new PrismaSimStore(prisma, accountId) }), accountId }
   }
 
   app.post('/v1/connections', { preHandler: auth, config: ctx.rl(20) }, async (req, reply) => {
     const b = Create.parse(req.body)
     if (b.provider === 'alpaca' && !alpacaEnabled()) throw new HelmError('UNSUPPORTED_OPERATION', 'Alpaca is disabled: not in the official Exchanges & Stocks track list', { provider: 'alpaca' })
-    const creds = CredentialSchemas[b.provider].parse(b.credentials) as Record<string, string>
+    const sim = b.simulated === true
+    if (sim && (!simulatorEnabled() || !isSimVenue(b.provider))) throw new HelmError('UNSUPPORTED_OPERATION', 'HELM simulator is available for Binance, OKX and Bybit only', { provider: b.provider })
+    const creds = sim ? {} : CredentialSchemas[b.provider].parse(b.credentials) as Record<string, string>
     const info = PROVIDER_INFO[b.provider]
-    const conn = await prisma.exchangeConnection.create({ data: { userId: req.userId!, provider: b.provider, environment: info.hackathonEnvironment, alias: b.alias, state: 'RECONNECTING' } })
-    const adapter = ctx.adapters(b.provider, creds, conn.id)
+    const environment: Environment = sim ? 'simulated' : info.hackathonEnvironment
+    const conn = await prisma.exchangeConnection.create({ data: { userId: req.userId!, provider: b.provider, environment, alias: b.alias, state: 'RECONNECTING' } })
+    const adapter = ctx.adapters(b.provider, creds, conn.id, { environment, simStore: new PrismaSimStore(prisma, conn.id) })
     const health = await adapter.connect()
     const manifest = adapter.getCapabilities()
     const failed = health.state === 'ERROR' || (health.state === 'DISCONNECTED' && b.provider !== 'ibkr')
@@ -51,7 +57,7 @@ export const connectionRoutes = (ctx: AppCtx): FastifyPluginAsync => async app =
       if (Object.keys(creds).length > 0) {
         await tx.exchangeCredentialReference.create({ data: { connectionId: conn.id, keyFingerprint: apiKey ? fingerprint(apiKey) : '—', sealed: seal(ctx.key, JSON.stringify(creds), `${req.userId}:${conn.id}`) as unknown as Prisma.InputJsonValue, scopes: [manifest.permissions.read ? 'read' : '', manifest.permissions.trade ? 'trade' : ''].filter(Boolean) } })
       }
-      const acct = await tx.tradingAccount.create({ data: { userId: req.userId!, connectionId: conn.id, provider: b.provider, environment: info.hackathonEnvironment, accountType: accountTypeFor(b.provider, creds), providerAccountId: `${b.provider}:${accountTypeFor(b.provider, creds)}`, alias: b.alias } })
+      const acct = await tx.tradingAccount.create({ data: { id: sim ? conn.id : undefined, userId: req.userId!, connectionId: conn.id, provider: b.provider, environment, accountType: sim ? 'unified' : accountTypeFor(b.provider, creds), providerAccountId: sim ? `${b.provider}:sim` : `${b.provider}:${accountTypeFor(b.provider, creds)}`, alias: b.alias } })
       await tx.accountCapability.create({ data: { accountId: acct.id, manifest: JSON.parse(JSON.stringify(manifest)) } })
       await tx.providerHealth.create({ data: { connectionId: conn.id, state: health.state, reasons: health.reasons } })
     })

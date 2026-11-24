@@ -3,6 +3,10 @@ import { simInstruments, type FetchLike } from '@helm/connectors'
 import type { PriceBook } from '@helm/portfolio'
 import { publicMarket } from '../registry'
 
+let marketFetch: FetchLike | undefined
+/** Override the fetch used for public market data (tests, offline demo). */
+export function setMarketFetch(f: FetchLike | undefined) { marketFetch = f; priceCache = null }
+
 const instCache = new Map<string, { at: number; inst: Instrument }>()
 const TTL = 10 * 60_000
 
@@ -63,7 +67,7 @@ export const VALUATION_ASSETS = ['BTC', 'ETH', 'SOL', 'BNB']
 
 export async function priceBook(fetchImpl?: FetchLike): Promise<PriceBook> {
   if (priceCache && Date.now() - priceCache.at < 10_000) return priceCache.book
-  const src = publicMarket('binance', fetchImpl)
+  const src = publicMarket('binance', fetchImpl ?? marketFetch)
   const book: PriceBook = new Map()
   await Promise.all(VALUATION_ASSETS.map(async a => {
     try {
@@ -84,7 +88,7 @@ export async function compareVenues(asset: string, product: 'spot' | 'perp' = 's
   return Promise.all((['binance', 'okx', 'bybit'] as const).map(async v => {
     const id = instrumentIdFor(v, 'public', asset, product)
     try {
-      const b = await publicMarket(v, fetchImpl).getOrderBook(id, 50)
+      const b = await publicMarket(v, fetchImpl ?? marketFetch).getOrderBook(id, 50)
       const bid = b.bids[0]?.price ?? null, ask = b.asks[0]?.price ?? null
       const mid = bid && ask ? bid.plus(ask).div(2) : null
       const depth = mid ? sum([...b.bids.filter(l => l.price.gte(mid.mul('0.999'))), ...b.asks.filter(l => l.price.lte(mid.mul('1.001')))].map(l => l.price.mul(l.quantity))) : null

@@ -61,3 +61,17 @@ export function requireDevice(prisma: PrismaClient) {
     await prisma.device.update({ where: { id: d.id }, data: { lastSeenAt: new Date() } })
   }
 }
+
+/** Either a companion session or a paired glasses device (both resolve to one userId, tenant-scoped). */
+export function requireUserOrDevice(prisma: PrismaClient) {
+  return async (req: FastifyRequest, reply: FastifyReply) => {
+    const t = bearer(req)
+    if (!t) return reply.code(401).send({ error: { code: 'UNAUTHENTICATED', message: 'Sign in or pair a device' } })
+    const h = hashToken(t)
+    const s = await prisma.authSession.findUnique({ where: { tokenHash: h } })
+    if (s && !s.revokedAt && s.expiresAt > new Date()) { req.userId = s.userId; req.sessionId = s.id; return }
+    const d = await prisma.device.findUnique({ where: { tokenHash: h } })
+    if (d && !d.revokedAt && d.expiresAt > new Date()) { req.userId = d.userId; req.deviceId = d.id; await prisma.device.update({ where: { id: d.id }, data: { lastSeenAt: new Date() } }); return }
+    return reply.code(401).send({ error: { code: 'SESSION_EXPIRED', message: 'Session expired or device revoked' } })
+  }
+}
