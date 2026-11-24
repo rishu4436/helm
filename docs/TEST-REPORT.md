@@ -10,7 +10,7 @@ All times are IST (UTC+5:30), 2026-11-24. Status keys: **PASS · FAIL · BLOCKED
 | 2 | `pnpm -r typecheck` | **PASS** (all packages) | — |
 | 3 | `pnpm --filter @helm/companion build` (`next build`) | **PASS** | 21 routes |
 | 4 | `cd apps/companion && npx playwright test` (prod build, real local API, demo user) | **PASS: 46/46** (16:17) | `evidence/companion/playwright-report.json`, `evidence/companion/*.png`. 27 page/flow tests plus a 19-page dead-button audit (0 dead). Safety: no confirm on a demo exchange; confirms only on HELM SIMULATED accounts |
-| 5 | `cd apps/glasses && pnpm run pack` | **PASS** | `apps/glasses/helm.ehpk` (47,957 bytes, local only, not uploaded) |
+| 5 | `cd apps/glasses && pnpm run pack` | **PASS** | `apps/glasses/helm.ehpk` (48,095 bytes, rebuilt 16:55 after the voice→Protect change; local only, not uploaded) |
 
 ## Real demo-exchange runs (logged in, demo money)
 
