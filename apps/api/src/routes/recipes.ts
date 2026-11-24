@@ -14,7 +14,7 @@ import { requireUser, requireUserOrDevice } from '../auth'
 import { audit } from '../audit'
 import type { AppCtx } from '../app'
 import { instrumentIdFor } from '../engine/market'
-import { userPortfolio } from '../engine/portfolio'
+import { cachedPortfolio, userPortfolio } from '../engine/portfolio'
 import { policyFor, previewTrade } from '../engine/trade'
 import { resolvable } from './engine'
 
@@ -165,7 +165,7 @@ export const recipeRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
     const preset = b.preset ? SCENARIO_PRESETS.find(p => p.id === b.preset) : undefined
     if (b.preset && !preset) throw Object.assign(new Error('Unknown preset'), { statusCode: 404 })
     const shocks = b.shocks ?? preset!.shocks
-    const { portfolio } = await userPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
+    const { portfolio } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
     return send({ scenario: multiScenario(portfolio, shocks.map(x => ({ asset: x.asset, shockPct: dec(x.shockPercent) })), b.name ?? preset?.name ?? null) })
   })
 }

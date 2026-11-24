@@ -15,7 +15,7 @@ page.on('pageerror', e => errs.push(String(e).slice(0, 300)))
 mkdirSync('/tmp/shots', { recursive: true })
 for (const p of process.argv.slice(2)) {
   await page.goto(`http://localhost:3000${p}`, { waitUntil: 'load', timeout: 60000 })
-  await page.waitForTimeout(4000)
+  await page.waitForTimeout(Number(process.env.WAIT ?? 6000))
   const f = `/tmp/shots/${p.replace(/[^a-z0-9]/gi, '_') || 'root'}.png`
   await page.screenshot({ path: f, fullPage: true })
   console.log(f)

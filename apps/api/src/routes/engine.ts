@@ -11,7 +11,7 @@ import { audit } from '../audit'
 import type { AppCtx } from '../app'
 import { listAccounts, type LoadedAccount } from '../engine/accounts'
 import { compareVenues, instrumentIdFor, priceBook, VALUATION_ASSETS } from '../engine/market'
-import { userPortfolio } from '../engine/portfolio'
+import { cachedPortfolio, invalidatePortfolio } from '../engine/portfolio'
 import { cancelOrder, confirmTrade, policyFor, previewTrade, receipt, refreshOrder, simulationLabel } from '../engine/trade'
 
 const dstr = z.string().regex(/^\d+(\.\d+)?$/).max(40)
@@ -39,7 +39,7 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
   })
 
   app.get('/v1/portfolio', { preHandler: any, config: ctx.rl(60) }, async req => {
-    const { portfolio, inputs } = await userPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
+    const { portfolio, inputs } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
     return send({ portfolio, accountErrors: inputs.filter(i => i.error).map(i => ({ accountId: i.account.id, error: i.error })) })
   })
 
@@ -69,7 +69,8 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
 
   app.post('/v1/trade/confirm', { preHandler: any, config: ctx.rl(30) }, async req => {
     const c = Confirm.parse(req.body)
-    const r = await confirmTrade(ectx, req.userId!, c)
+    let r: Awaited<ReturnType<typeof confirmTrade>>
+    try { r = await confirmTrade(ectx, req.userId!, c) } finally { invalidatePortfolio(req.userId!) }
     await audit(prisma, { userId: req.userId, actor: req.deviceId ? 'device' : 'user', action: 'trade.confirmed', subject: c.proposalId, detail: { orderId: r.receipt.orderId, status: r.receipt.status } })
     return send(r)
   })
@@ -81,7 +82,7 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
   app.get<{ Params: { id: string } }>('/v1/orders/:id', { preHandler: any }, async req => send(await refreshOrder(ectx, req.userId!, req.params.id)))
   app.post<{ Params: { id: string } }>('/v1/orders/:id/cancel', { preHandler: any, config: ctx.rl(30) }, async req => {
     z.object({ confirm: z.literal(true) }).parse(req.body) // explicit confirmation required
-    return send(await cancelOrder(ectx, req.userId!, req.params.id))
+    try { return send(await cancelOrder(ectx, req.userId!, req.params.id)) } finally { invalidatePortfolio(req.userId!) }
   })
   app.get('/v1/receipts', { preHandler: any }, async req => {
     const rows = await prisma.order.findMany({ where: { userId: req.userId!, status: { in: ['FILLED', 'PARTIALLY_FILLED', 'CANCELED', 'REJECTED', 'ACCEPTED', 'UNKNOWN', 'RECONCILING'] } }, orderBy: { createdAt: 'desc' }, take: 50, select: { id: true } })
@@ -98,13 +99,13 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
     return send({ policy: limits, version: version + 1 })
   })
   app.get('/v1/shield/compass', { preHandler: any }, async req => {
-    const { portfolio } = await userPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
+    const { portfolio } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
     const { policy } = await policyFor(prisma, req.userId!)
     return send({ compass: compass(portfolio, policy), netLiquidationUsd: portfolio.netLiquidationUsd, asOf: portfolio.asOf })
   })
   app.post('/v1/shield/scenario', { preHandler: any }, async req => {
     const b = z.object({ asset: z.string().max(12), shockPercent: z.string().regex(/^-?\d+(\.\d+)?$/) }).parse(req.body)
-    const { portfolio } = await userPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
+    const { portfolio } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
     return send({ scenario: scenario(portfolio, b.asset, dec(b.shockPercent)) })
   })
 
@@ -121,7 +122,7 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
 
   // ----- Emergency review (itemized; nothing is ever broadcast from here) -----
   app.get('/v1/emergency', { preHandler: any }, async req => {
-    const { portfolio } = await userPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
+    const { portfolio } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
     const c = compass(portfolio)
     const items = [
       ...portfolio.openOrders.map(o => ({ kind: 'CANCEL_ORDER', accountId: o.accountId, instrumentId: o.instrumentId, detail: `${o.side} ${o.type} ${o.quantity?.toFixed() ?? ''} @ ${o.price?.toFixed() ?? o.stopPrice?.toFixed() ?? 'mkt'}`, providerOrderId: o.providerOrderId })),
