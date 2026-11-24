@@ -139,9 +139,9 @@ export function receiptScreen(r: Receipt): ScreenSpec {
       ? `${r.status} · ${r.side} ${qty(r.quantity)} ${s.base}${/STOP/.test(r.type) ? ' (resting stop, not filled)' : ' (not filled)'}`
       : `${r.status} · ${r.side} ${qty(r.filledQuantity)} ${s.base}${r.avgFillPrice ? ` @ ${n(r.avgFillPrice, 2)}` : ''}`,
     `${r.account} · ${prodLabel(s.product)} · ${r.type}`,
-    r.fills.length ? `Fee ${fee ? String(Number(fee.toFixed(8))) : '0'} ${feeAsset} · ${r.fills.length} fill${r.fills.length > 1 ? 's' : ''}` : reason || `Order ${r.providerOrderId ?? '—'}`,
+    reason || `Order ${r.providerOrderId ? (r.providerOrderId.length > 14 ? `…${r.providerOrderId.slice(-12)}` : r.providerOrderId) : '—'}${r.fills.length ? ` · fee ${fee ? String(Number(fee.toPrecision(3))) : '0'} ${feeAsset}` : ''}`,
     prot,
-    r.label?.startsWith('SIMULATED') ? 'SIMULATED by HELM · fill computed locally' : (r.label ?? r.fillTruth).slice(0, 60),
+    r.label?.startsWith('SIMULATED') ? 'SIMULATED by HELM · fill computed locally' : r.label ? r.label.slice(0, 60) : r.fillTruth.startsWith('Reported by the exchange') ? `Verified: read back from ${r.provider.charAt(0).toUpperCase()}${r.provider.slice(1)} demo` : r.fillTruth.slice(0, 60),
   ].join('\n')
   return textScreen('receipt', 'RECEIPT', envTag(r.environmentLabel), body, 'tap: home · double-tap: back', true)
 }
