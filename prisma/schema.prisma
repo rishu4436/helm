@@ -23,6 +23,7 @@ enum Environment {
   demo
   paper
   sandbox_static
+  simulated
 }
 
 enum ConnectionState {
@@ -244,10 +245,14 @@ model Order {
   filledQuantity  Decimal            @default(0) @db.Decimal(38, 18)
   avgFillPrice    Decimal?           @db.Decimal(38, 18)
   simulatedStatic Boolean            @default(false)
+  simulatedLocal  Boolean            @default(false)
+  proposalId      String?
+  protectionPlanId String?
   raw             Json?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   fills           Fill[]
+  events          OrderEvent[]
   attempts        ExecutionAttempt[]
   confirmation    TradeConfirmation?
   @@unique([accountId, clientOrderId])
@@ -290,8 +295,12 @@ model OrderProposal {
   preview      Json
   risk         Json
   proposalHash String
+  tokenHash    String?     @unique
+  usedAt       DateTime?
+  status       String      @default("OPEN")
   createdAt    DateTime    @default(now())
   expiresAt    DateTime
+  @@index([userId, createdAt])
 }
 
 model TradeConfirmation {
@@ -408,4 +417,32 @@ model ProviderHealth {
   latencyMs    Int?
   checkedAt    DateTime           @default(now())
   @@index([connectionId, checkedAt])
+}
+
+/// Every order lifecycle transition, persisted with actor + timestamp.
+model OrderEvent {
+  id      String   @id @default(cuid())
+  orderId String
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  from    String?
+  to      String
+  actor   String
+  reason  String?
+  at      DateTime @default(now())
+  @@index([orderId, at])
+}
+
+/// HELM local simulator ledger (environment = simulated). Never an exchange account.
+model SimLedger {
+  accountId String   @id
+  state     Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Idempotency keys for trade confirmation: same key → same result, never a second submit.
+model IdempotencyKey {
+  key       String   @id
+  userId    String
+  orderId   String?
+  createdAt DateTime @default(now())
 }

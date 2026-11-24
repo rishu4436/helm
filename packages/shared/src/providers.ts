@@ -6,8 +6,10 @@ export type ProviderId = (typeof PROVIDERS)[number]
  * - demo:          exchange-operated demo trading with a real simulated matching engine (Binance, OKX, Bybit)
  * - paper:         broker paper account (IBKR paper, Alpaca paper)
  * - sandbox_static: predefined mocked responses (Coinbase Advanced Trade sandbox) — never real fills
+ * - simulated:     HELM local simulator — real public prices from the venue, fills computed locally by HELM.
+ *                  Nothing is sent to any exchange. Always labelled SIMULATED in every UI.
  */
-export const ENVIRONMENTS = ['demo', 'paper', 'sandbox_static', 'live'] as const
+export const ENVIRONMENTS = ['demo', 'paper', 'sandbox_static', 'simulated', 'live'] as const
 export type Environment = (typeof ENVIRONMENTS)[number]
 
 export interface ProviderInfo {
@@ -54,3 +56,13 @@ export const PROVIDER_INFO: Record<ProviderId, ProviderInfo> = {
     notes: 'NOT in the official Exchanges & Stocks track app list. Disabled by default (HELM_ENABLE_ALPACA) pending organizer permission.',
   },
 }
+
+/** Labels every UI must show for non-exchange-executed environments. */
+export const ENVIRONMENT_LABEL: Record<Exclude<Environment, 'live'>, string> = {
+  demo: 'DEMO', paper: 'PAPER', sandbox_static: 'SANDBOX', simulated: 'SIMULATED',
+}
+export const SIMULATED_LABEL = 'SIMULATED by HELM — live public prices, fills computed locally, nothing sent to any exchange'
+
+/** Venues the HELM simulator can price from (public market data only). */
+export const SIM_VENUES = ['binance', 'okx', 'bybit'] as const
+export type SimVenue = (typeof SIM_VENUES)[number]

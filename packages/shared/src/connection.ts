@@ -66,7 +66,12 @@ export function canTransition(from: ConnectionState, to: ConnectionState): boole
   return ALLOWED[from].includes(to)
 }
 
-/** Only these states may submit orders. */
-export function canSubmitOrders(state: ConnectionState): boolean {
-  return state === 'CONNECTED'
+/**
+ * Only these states may submit orders. Real demo/paper connections must be CONNECTED.
+ * Sandbox/simulated connections are honestly LIMITED (no real execution) and may run their
+ * labelled sandbox/simulated submit path.
+ */
+export function canSubmitOrders(state: ConnectionState, environment?: string): boolean {
+  if (state === 'CONNECTED') return environment !== 'live'
+  return state === 'LIMITED' && (environment === 'sandbox_static' || environment === 'simulated')
 }

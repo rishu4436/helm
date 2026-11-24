@@ -1,4 +1,4 @@
-import {
+import { type Fill,
   BaseAdapter, Decimal, HelmError, dec, decOrNull, deriveConnectionHealth, instrumentId, parseInstrumentId, toProviderSymbol,
   type Balance, type CapabilityManifest, type ConnectionHealth, type Instrument, type InstrumentId, type Order, type OrderBook,
   type OrderRequest, type OrderStatus, type Position, type MarketSnapshot, type ValidationResult, type AccountEquity, type HelmErrorCode,
@@ -88,7 +88,7 @@ export class BinanceAdapter extends BaseAdapter {
       orderTypes: spot ? ['MARKET', 'LIMIT', 'STOP_LIMIT', 'TAKE_PROFIT_LIMIT'] : ['MARKET', 'LIMIT', 'STOP_MARKET', 'TAKE_PROFIT_MARKET'],
       reduceOnly: !spot, hedgeMode: !spot, margin: !spot, cancelReplace: spot,
       streaming: { market: true, account: true }, simulation: 'demo_matching_engine',
-      operations: ['connect', 'disconnect', 'getConnectionState', 'getCapabilities', 'getBalances', 'getEquity', 'getOpenOrders', 'getOrderHistory',
+      operations: ['connect', 'disconnect', 'getConnectionState', 'getCapabilities', 'getBalances', 'getEquity', 'getOpenOrders', 'getOrderHistory', 'getFills',
         'getOrderBook', 'getMarketSnapshot', 'getInstruments', 'validateOrder', 'submitOrder', 'cancelOrder', 'reconcileOrder',
         ...(spot ? [] : ['getPositions', 'setLeverage'] as const)],
       restrictions: ['Binance Demo Trading only; production hosts are blocked by the environment guard'],
@@ -127,6 +127,15 @@ export class BinanceAdapter extends BaseAdapter {
     return body as T
   }
 
+  /** API-key scope (Binance SAPI). Returns null when the environment does not offer the endpoint. */
+  async getKeyRestrictions(): Promise<{ enableWithdrawals?: boolean; enableInternalTransfer?: boolean; permitsUniversalTransfer?: boolean; enableSpotAndMarginTrading?: boolean; enableFutures?: boolean; enableReading?: boolean; ipRestrict?: boolean } | null> {
+    if (this.market !== 'spot') return null
+    try { return await this.signed('GET', '/sapi/v1/account/apiRestrictions', {}) } catch (e) {
+      if (e instanceof HelmError && (e.code === 'INVALID_CREDENTIALS' || e.code === 'INSUFFICIENT_PERMISSIONS')) throw e
+      return null
+    }
+  }
+
   // ---------- connection ----------
   async connect(): Promise<ConnectionHealth> {
     this.health = { state: 'RECONNECTING', reasons: [], checkedAt: nowIso() }
@@ -135,7 +144,11 @@ export class BinanceAdapter extends BaseAdapter {
       if (this.market === 'spot') {
         const acct = await this.signed<{ canTrade: boolean; canWithdraw: boolean; canDeposit: boolean; accountType: string; balances: unknown[] }>('GET', '/api/v3/account', { omitZeroBalances: true })
         const ok = Array.isArray(acct.balances) && typeof acct.canTrade === 'boolean'
-        this.health = deriveConnectionHealth({ authenticatedReadOk: ok, environmentVerified: this.base.startsWith('https://demo-'), canRead: ok, canTrade: acct.canTrade, excessivePermissions: acct.canWithdraw === true, error: ok ? undefined : 'Unexpected account payload' })
+        // NOTE: account.canWithdraw is an ACCOUNT capability, not the API key's scope. Key scope comes from
+        // /sapi/v1/account/apiRestrictions when the environment offers it (verified live 2026-11-24).
+        const kr = await this.getKeyRestrictions()
+        this.health = deriveConnectionHealth({ authenticatedReadOk: ok, environmentVerified: this.base.startsWith('https://demo-'), canRead: ok, canTrade: acct.canTrade && (kr ? kr.enableSpotAndMarginTrading !== false : true), excessivePermissions: kr?.enableWithdrawals === true || kr?.enableInternalTransfer === true || kr?.permitsUniversalTransfer === true, error: ok ? undefined : 'Unexpected account payload' })
+        if (!kr && this.health.state === 'CONNECTED') this.health.reasons.push('Key withdrawal scope not inspectable in this environment (no apiRestrictions); Demo Trading funds are not withdrawable')
       } else {
         const acct = await this.signed<{ canTrade: boolean; canWithdraw?: boolean; assets: unknown[] }>('GET', '/fapi/v3/account', {})
         const ok = Array.isArray(acct.assets)
@@ -220,6 +233,7 @@ export class BinanceAdapter extends BaseAdapter {
       newOrderRespType: this.market === 'spot' ? 'FULL' : 'RESULT',
     }
     if (this.market === 'spot' && req.type === 'MARKET' && req.quoteQuantity && !req.quantity) params.quoteOrderQty = req.quoteQuantity.toFixed()
+    if (this.market === 'usdm' && isAlgoType(req.type)) return this.submitAlgo(req)
     if (this.market === 'usdm') {
       if (req.reduceOnly) params.reduceOnly = 'true'
       if (req.positionSide && req.positionSide !== 'NET') { params.positionSide = req.positionSide; delete params.reduceOnly } // hedge mode forbids reduceOnly
@@ -228,12 +242,54 @@ export class BinanceAdapter extends BaseAdapter {
     return this.toOrder(r, req.instrument.id)
   }
 
+  /**
+   * USDⓈ-M conditional orders (STOP_MARKET / TAKE_PROFIT_MARKET) go through the Algo Order API:
+   * since 2025-12-09 the classic /fapi/v1/order rejects them with -4120 (confirmed live on Demo 2026-11-24).
+   */
+  private async submitAlgo(req: OrderRequest): Promise<Order> {
+    const params: Record<string, string | undefined> = {
+      algoType: 'CONDITIONAL', symbol: req.instrument.providerSymbol, side: req.side, type: binanceType(req.type, this.market),
+      quantity: req.quantity?.toFixed(), triggerPrice: req.stopPrice?.toFixed(), workingType: 'MARK_PRICE', clientAlgoId: req.clientOrderId.slice(0, 36), newOrderRespType: 'RESULT',
+    }
+    if (req.reduceOnly) params.reduceOnly = 'true'
+    if (req.positionSide && req.positionSide !== 'NET') { params.positionSide = req.positionSide; delete params.reduceOnly }
+    const r = await this.signed<BinanceAlgoPayload>('POST', '/fapi/v1/algoOrder', params, true)
+    return this.algoToOrder(r, req.instrument.id)
+  }
+
+  private isAlgoIds(ids: { providerOrderId?: string; clientOrderId?: string }) { return this.market === 'usdm' && (ids.providerOrderId?.startsWith('algo:') || (!ids.providerOrderId && ids.clientOrderId?.startsWith('helmst'))) }
+  private algoParams(ids: { providerOrderId?: string; clientOrderId?: string }) {
+    return ids.providerOrderId?.startsWith('algo:') ? { algoId: ids.providerOrderId.slice(5) } : { clientAlgoId: ids.clientOrderId }
+  }
+
+  private algoToOrder(r: BinanceAlgoPayload, id: InstrumentId): Order {
+    const ts = new Date(r.updateTime ?? r.createTime ?? Date.now()).toISOString()
+    const st = r.algoStatus
+    // TRIGGERED/FINISHED = converted into a real order (actualOrderId): HELM then reconciles that order for fills.
+    const status: Order['status'] = st === 'NEW' || st === 'TRIGGERING' ? 'ACCEPTED' : st === 'CANCELED' || st === 'CANCELLED' ? 'CANCELED' : st === 'REJECTED' ? 'REJECTED' : st === 'EXPIRED' ? 'EXPIRED' : st === 'TRIGGERED' || st === 'FINISHED' ? 'RECONCILING' : 'UNKNOWN'
+    return {
+      accountId: this.accountId, provider: 'binance', instrumentId: id, providerOrderId: `algo:${r.algoId}`, clientOrderId: r.clientAlgoId,
+      side: r.side, type: fromBinanceType(r.orderType), timeInForce: (r.timeInForce as Order['timeInForce']) ?? null, quantity: decOrNull(r.quantity), quoteQuantity: null,
+      price: r.price && !dec(r.price).isZero() ? dec(r.price) : null, stopPrice: decOrNull(r.triggerPrice), reduceOnly: r.reduceOnly === true || r.reduceOnly === 'true',
+      status, filledQuantity: new Decimal(0), avgFillPrice: null, createdAt: ts, updatedAt: ts, raw: r,
+    }
+  }
+
   async cancelOrder(id: InstrumentId, ids: { providerOrderId?: string; clientOrderId?: string }): Promise<Order> {
+    if (this.isAlgoIds(ids)) return this.algoToOrder({ ...(await this.signed<BinanceAlgoPayload>('DELETE', '/fapi/v1/algoOrder', this.algoParams(ids))), algoStatus: 'CANCELED' } as BinanceAlgoPayload, id)
     const r = await this.signed<BinanceOrderPayload>('DELETE', `${this.prefix}/order`, { symbol: this.symbolOf(id), orderId: ids.providerOrderId, origClientOrderId: ids.providerOrderId ? undefined : ids.clientOrderId })
     return this.toOrder(r, id)
   }
 
   async reconcileOrder(id: InstrumentId, ids: { providerOrderId?: string; clientOrderId?: string }): Promise<Order | null> {
+    if (this.isAlgoIds(ids)) {
+      try {
+        const a = this.algoToOrder(await this.signed<BinanceAlgoPayload>('GET', '/fapi/v1/algoOrder', this.algoParams(ids)), id)
+        const actual = (a.raw as BinanceAlgoPayload).actualOrderId
+        if (a.status === 'RECONCILING' && actual) { const o = await this.reconcileOrder(id, { providerOrderId: String(actual) }); return o ? { ...o, raw: { algo: a.raw, order: o.raw } } : a }
+        return a
+      } catch (e) { if (e instanceof HelmError && (e.providerCode === '-2013' || e.providerCode === '-2011')) return null; throw e }
+    }
     try {
       const r = await this.signed<BinanceOrderPayload>('GET', `${this.prefix}/order`, { symbol: this.symbolOf(id), orderId: ids.providerOrderId, origClientOrderId: ids.providerOrderId ? undefined : ids.clientOrderId })
       return this.toOrder(r, id)
@@ -245,12 +301,27 @@ export class BinanceAdapter extends BaseAdapter {
 
   async getOpenOrders(id?: InstrumentId): Promise<Order[]> {
     const rows = await this.signed<BinanceOrderPayload[]>('GET', `${this.prefix}/openOrders`, { symbol: id ? this.symbolOf(id) : undefined })
-    return rows.map(r => this.toOrder(r, id ?? this.idFromSymbol(r.symbol)))
+    const out = rows.map(r => this.toOrder(r, id ?? this.idFromSymbol(r.symbol)))
+    if (this.market === 'usdm') {
+      const algos = await this.signed<BinanceAlgoPayload[]>('GET', '/fapi/v1/openAlgoOrders', { symbol: id ? this.symbolOf(id) : undefined })
+      out.push(...(Array.isArray(algos) ? algos : []).map(a => this.algoToOrder(a, id ?? this.idFromSymbol(a.symbol))))
+    }
+    return out
   }
 
   async getOrderHistory(id: InstrumentId, limit = 50): Promise<Order[]> {
     const rows = await this.signed<BinanceOrderPayload[]>('GET', `${this.prefix}/allOrders`, { symbol: this.symbolOf(id), limit })
     return rows.map(r => this.toOrder(r, id))
+  }
+
+  /** Exchange-reported trades: spot /api/v3/myTrades, USDⓈ-M /fapi/v1/userTrades. */
+  async getFills(id: InstrumentId, limit = 50): Promise<Fill[]> {
+    const rows = await this.signed<Array<{ id: number; orderId: number; price: string; qty: string; commission: string; commissionAsset: string; time: number; isMaker?: boolean; maker?: boolean; isBuyer?: boolean; buyer?: boolean; side?: 'BUY' | 'SELL' }>>('GET', this.market === 'spot' ? '/api/v3/myTrades' : '/fapi/v1/userTrades', { symbol: this.symbolOf(id), limit })
+    return rows.map(t => ({
+      accountId: this.accountId, provider: 'binance' as const, instrumentId: id, providerOrderId: String(t.orderId), providerTradeId: String(t.id),
+      side: t.side ?? ((t.isBuyer ?? t.buyer) ? 'BUY' as const : 'SELL' as const), price: dec(t.price), quantity: dec(t.qty), fee: dec(t.commission), feeAsset: t.commissionAsset,
+      isMaker: t.isMaker ?? t.maker ?? null, timestamp: new Date(t.time).toISOString(), raw: t,
+    }))
   }
 
   async setLeverage(id: InstrumentId, leverage: Decimal): Promise<void> {
@@ -278,6 +349,9 @@ export class BinanceAdapter extends BaseAdapter {
     }
   }
 }
+
+interface BinanceAlgoPayload { algoId: number | string; clientAlgoId: string; algoType: string; orderType: string; symbol: string; side: 'BUY' | 'SELL'; positionSide?: string; timeInForce?: string; quantity?: string; algoStatus: string; triggerPrice?: string; price?: string; reduceOnly?: boolean | string; createTime?: number; updateTime?: number; actualOrderId?: string | number | null }
+const isAlgoType = (t: OrderRequest['type']) => t === 'STOP_MARKET' || t === 'TAKE_PROFIT_MARKET'
 
 function binanceType(t: OrderRequest['type'], market: BinanceMarket): string {
   if (market === 'spot') {

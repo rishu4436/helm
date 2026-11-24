@@ -129,6 +129,30 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/portfolio:
+    dependencies:
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/pulse:
+    dependencies:
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/risk-engine:
+    dependencies:
+      '@helm/portfolio':
+        specifier: workspace:*
+        version: link:../portfolio
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
+
   packages/security:
     dependencies:
       '@helm/shared':
@@ -149,6 +173,15 @@ importers:
       '@helm/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/voice-engine:
+    dependencies:
+      '@helm/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
 
 packages:
 

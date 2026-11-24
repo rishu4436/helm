@@ -63,6 +63,8 @@ export interface Position {
   liquidationPrice: Decimal | null
   marginMode: MarginMode | null
   positionMode: PositionMode | null
+  /** Set only where balances EXCLUDE the position's isolated margin (HELM simulator); avoids double counting. */
+  isolatedMargin?: Decimal | null
   asOf: string
   raw?: unknown
 }
@@ -93,6 +95,8 @@ export interface Order {
   updatedAt: string
   /** True for Coinbase static sandbox responses: these are mocked, never real fills. */
   simulatedStatic?: boolean
+  /** True for HELM local-simulator orders: fills computed by HELM from public prices, never sent to an exchange. */
+  simulatedLocal?: boolean
   raw?: unknown
 }
 
@@ -110,6 +114,7 @@ export interface Fill {
   isMaker: boolean | null
   timestamp: string
   simulatedStatic?: boolean
+  simulatedLocal?: boolean
   raw?: unknown
 }
 
@@ -160,7 +165,7 @@ export interface PortfolioSnapshot {
 const decimalString = z.string().regex(/^\d+(\.\d+)?$/, 'positive decimal string')
 
 export const TradeIntentSchema = z.object({
-  intent: z.enum(['QUERY_POSITIONS', 'QUERY_BALANCE', 'QUERY_EXPOSURE', 'QUERY_ORDERS', 'PLACE_ORDER', 'CLOSE_POSITION', 'REDUCE_POSITION', 'CANCEL_ORDER', 'PREPARE_PROTECTION', 'UNKNOWN']),
+  intent: z.enum(['QUERY_POSITIONS', 'QUERY_BALANCE', 'QUERY_EXPOSURE', 'QUERY_ORDERS', 'QUERY_UNPROTECTED', 'QUERY_PORTFOLIO', 'STRESS_TEST', 'COMPARE_VENUES', 'EMERGENCY_REVIEW', 'PLACE_ORDER', 'CLOSE_POSITION', 'REDUCE_POSITION', 'CANCEL_ORDER', 'PREPARE_PROTECTION', 'UNKNOWN']),
   provider: z.enum(['binance', 'okx', 'bybit', 'coinbase', 'ibkr', 'alpaca']).nullable(),
   accountId: z.string().nullable(),
   asset: z.string().max(16).nullable(),
@@ -173,6 +178,8 @@ export const TradeIntentSchema = z.object({
   leverage: decimalString.nullable(),
   limitPrice: decimalString.nullable(),
   stopOffsetPercent: decimalString.nullable(),
+  shockPercent: z.string().regex(/^-?\d+(\.\d+)?$/).nullable(),
+  rejectedReason: z.string().max(120).nullable(),
   confidence: z.number().min(0).max(1),
   clarificationNeeded: z.array(z.enum(['account', 'instrument', 'quantity', 'side', 'position', 'price'])),
   requiresConfirmation: z.literal(true),

@@ -6,6 +6,8 @@ import { btcusdtPerp, btcusdtSpot } from './fixtures'
 
 const creds = { apiKey: 'demo-key', apiSecret: 'demo-secret' }
 const time = ['GET', '/api/v3/time', { body: { serverTime: 1_700_000_000_000 } }] as const
+const timeF = ['GET', '/fapi/v1/time', { body: { serverTime: 1_700_000_000_000 } }] as const
+const perpInst = btcusdtPerp
 
 describe('Binance signing', () => {
   it('matches the documented HMAC example from the Binance Spot API docs', () => {
@@ -38,12 +40,35 @@ describe('Binance connection', () => {
     expect(acct.headers['X-MBX-APIKEY']).toBe('demo-key')
     expect(a.getCapabilities().permissions.trade).toBe(true)
   })
-  it('downgrades to LIMITED when the key can withdraw', async () => {
-    const m = mockFetch([[...time], ['GET', '/api/v3/account', { body: { canTrade: true, canWithdraw: true, balances: [] } }]])
+  it('downgrades to LIMITED when the API KEY scope allows withdrawals (apiRestrictions)', async () => {
+    const m = mockFetch([[...time], ['GET', '/api/v3/account', { body: { canTrade: true, canWithdraw: true, balances: [] } }], ['GET', '/sapi/v1/account/apiRestrictions', { body: { enableWithdrawals: true, enableSpotAndMarginTrading: true, enableReading: true } }]])
     const a = new BinanceAdapter(creds, { market: 'spot', accountId: 'a1', fetch: m.fetch })
     const h = await a.connect()
     expect(h.state).toBe('LIMITED')
     expect(a.getCapabilities().permissions.trade).toBe(false)
+  })
+  it('account-level canWithdraw is NOT treated as key scope; uninspectable scope is reported (Demo has no apiRestrictions)', async () => {
+    const m = mockFetch([[...time], ['GET', '/api/v3/account', { body: { canTrade: true, canWithdraw: true, balances: [] } }]]) // apiRestrictions → 404
+    const h = await new BinanceAdapter(creds, { market: 'spot', accountId: 'a1', fetch: m.fetch }).connect()
+    expect(h.state).toBe('CONNECTED')
+    expect(h.reasons.join(' ')).toMatch(/not inspectable/)
+  })
+  it('key without spot trading scope → READ_ONLY', async () => {
+    const m = mockFetch([[...time], ['GET', '/api/v3/account', { body: { canTrade: true, balances: [] } }], ['GET', '/sapi/v1/account/apiRestrictions', { body: { enableWithdrawals: false, enableSpotAndMarginTrading: false, enableReading: true } }]])
+    expect((await new BinanceAdapter(creds, { market: 'spot', accountId: 'a1', fetch: m.fetch }).connect()).state).toBe('READ_ONLY')
+  })
+  it('USDⓈ-M stop protection routes to the Algo Order API (classic endpoint returns -4120)', async () => {
+    const algo = { algoId: 77, clientAlgoId: 'helmst1', algoType: 'CONDITIONAL', orderType: 'STOP_MARKET', symbol: 'BTCUSDT', side: 'SELL', quantity: '0.002', algoStatus: 'NEW', triggerPrice: '54000', reduceOnly: true, createTime: 1 }
+    const m = mockFetch([[...timeF], ['POST', '/fapi/v1/algoOrder', { body: algo }], ['GET', '/fapi/v1/algoOrder', { body: { ...algo, algoStatus: 'CANCELED' } }], ['DELETE', '/fapi/v1/algoOrder', { body: { algoId: 77, clientAlgoId: 'helmst1', code: '200', msg: 'success' } }], ['GET', '/fapi/v1/openOrders', { body: [] }], ['GET', '/fapi/v1/openAlgoOrders', { body: [algo] }]])
+    const a = new BinanceAdapter(creds, { market: 'usdm', accountId: 'a1', fetch: m.fetch })
+    const inst = { ...perpInst }
+    const o = await a.submitOrder({ accountId: 'a1', instrument: inst, side: 'SELL', type: 'STOP_MARKET', quantity: dec('0.002'), stopPrice: dec('54000'), reduceOnly: true, clientOrderId: 'helmst1' })
+    expect(o.providerOrderId).toBe('algo:77'); expect(o.status).toBe('ACCEPTED'); expect(o.stopPrice!.toFixed()).toBe('54000')
+    const post = m.calls.find(c => c.method === 'POST')!
+    expect(post.url).toMatch(/algoType=CONDITIONAL/); expect(post.url).toMatch(/triggerPrice=54000/); expect(post.url).toMatch(/reduceOnly=true/)
+    expect((await a.getOpenOrders(inst.id)).map(x => x.providerOrderId)).toEqual(['algo:77'])
+    expect((await a.cancelOrder(inst.id, { providerOrderId: 'algo:77' })).status).toBe('CANCELED')
+    expect((await a.reconcileOrder(inst.id, { providerOrderId: 'algo:77' }))!.status).toBe('CANCELED')
   })
   it('reports invalid key as ERROR with the provider code', async () => {
     const m = mockFetch([[...time], ['GET', '/api/v3/account', { status: 401, body: { code: -2015, msg: 'Invalid API-key, IP, or permissions for action.' } }]])

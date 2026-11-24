@@ -28,7 +28,7 @@ export interface CapabilityManifest {
   cancelReplace: boolean
   streaming: { market: boolean; account: boolean }
   /** demo = real matching engine; static = canned responses (Coinbase sandbox) */
-  simulation: 'demo_matching_engine' | 'paper_broker' | 'static_responses'
+  simulation: 'demo_matching_engine' | 'paper_broker' | 'static_responses' | 'local_simulation'
   operations: AdapterOperation[]
   restrictions: string[]
   /** Facts below this line were verified against docs/endpoints, not live credentials, unless stated. */
