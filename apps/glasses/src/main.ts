@@ -49,7 +49,7 @@ async function pollClaim(p: Extract<State, { name: 'pairing' }>) {
     const r = await api.claim(p.pairingId, p.pollSecret)
     if (r.data.status === 'PAIRED' && r.data.deviceToken) {
       token = r.data.deviceToken
-      await bridge.setLocalStorage(TOKEN_KEY, token)
+      await saveToken(token)
       console.log('[HELM] paired')
       await loadAccounts()
     }
@@ -75,15 +75,22 @@ async function loadAccounts() {
   } catch (e) {
     if (e instanceof ApiError && e.status === 401) {
       token = ''
-      await bridge.setLocalStorage(TOKEN_KEY, '')
+      await saveToken('')
       return startPairing()
     }
     await go({ name: 'error', reason: 'Check the HELM server and network.' })
   }
 }
 
+function safeLocal<T>(f: () => T): T | null { try { return f() } catch { return null } }
+/** Bridge storage is the reliable store on device; WebView localStorage is a best-effort mirror (simulator). */
+async function saveToken(t: string) {
+  await bridge.setLocalStorage(TOKEN_KEY, t)
+  safeLocal(() => (t ? window.localStorage.setItem(TOKEN_KEY, t) : window.localStorage.removeItem(TOKEN_KEY)))
+}
+
 async function begin() {
-  token = (await bridge.getLocalStorage(TOKEN_KEY)) || ''
+  token = (await bridge.getLocalStorage(TOKEN_KEY)) || safeLocal(() => window.localStorage.getItem(TOKEN_KEY)) || ''
   if (token) return loadAccounts()
   return startPairing()
 }

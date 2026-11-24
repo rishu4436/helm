@@ -30,6 +30,12 @@ describe('G2 screens', () => {
     const s = accountSelectorScreen('r', accounts)
     expect(s.lists![0]!.items).toEqual(['● My Binance · DEMO', '◐ OKX Trading · DEMO', '◐ Coinbase Sandbox · SANDBOX'])
   })
+  it('pairing code is drawn large as an image within G2 image limits', () => {
+    const img = pairingScreen('K7M4Q2', 299).images![0]!
+    expect(img.draw).toEqual({ code: 'K7M4Q2' })
+    expect(img.w).toBeLessThanOrEqual(288); expect(img.h).toBeLessThanOrEqual(144)
+  })
+
   it('pairing countdown formats m:ss and keeps structure stable for in-place updates', () => {
     expect(pairingScreen('ABCDEF', 65).texts[1]!.text).toBe('expires 1:05')
     const a = pairingScreen('ABCDEF', 65), b = pairingScreen('ABCDEF', 64)

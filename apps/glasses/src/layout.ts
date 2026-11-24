@@ -26,7 +26,7 @@ export interface ListBox {
   border?: number
   capture?: boolean
 }
-export interface ImageBox { id: number; name: string; x: number; y: number; w: number; h: number; draw: 'wordmark' }
+export interface ImageBox { id: number; name: string; x: number; y: number; w: number; h: number; draw: 'wordmark' | { code: string } }
 
 export interface ScreenSpec {
   key: string // screen identity; same key + same structure → in-place text updates

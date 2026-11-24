@@ -8,10 +8,10 @@ async function call<T>(path: string, init: { method?: string; body?: unknown; to
   try {
     res = await fetch(`${API_BASE}${path}`, {
       method: init.method ?? 'GET',
-      headers: { 'Content-Type': 'application/json', ...(init.token ? { Authorization: `Bearer ${init.token}` } : {}) },
+      headers: { ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(init.token ? { Authorization: `Bearer ${init.token}` } : {}) },
       body: init.body ? JSON.stringify(init.body) : undefined,
     })
-  } catch (e) {
+  } catch {
     throw new ApiError(0, 'NETWORK', 'Server unreachable')
   }
   const data = (await res.json().catch(() => ({}))) as T & { error?: { code: string; message: string } }

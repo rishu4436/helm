@@ -1,4 +1,4 @@
-import { H, W, spaced, type ScreenSpec } from '../layout'
+import { H, W, type ScreenSpec } from '../layout'
 
 /** Shared frame: header strip (title + context), body, footer hint. */
 function frame(key: string, title: string, context: string, body: string, hint: string, opts: { bodyBorder?: boolean } = {}): ScreenSpec {
@@ -18,18 +18,26 @@ export function splashScreen(status: string): ScreenSpec {
     key: 'splash',
     texts: [
       { id: 1, name: 'capture', x: 0, y: 0, w: W, h: H, text: ' ', capture: true },
-      { id: 2, name: 'tagline', x: 96, y: 150, w: 384, h: 40, text: 'One interface. Every exchange.', pad: 4 },
-      { id: 3, name: 'status', x: 96, y: 220, w: 384, h: 44, text: status, pad: 4 },
+      { id: 2, name: 'tagline', x: 149, y: 150, w: 320, h: 40, text: 'One interface. Every exchange.', pad: 4 },
+      { id: 3, name: 'status', x: 232, y: 220, w: 300, h: 44, text: status, pad: 4 },
     ],
-    images: [{ id: 10, name: 'wordmark', x: 144, y: 40, w: 288, h: 100, draw: 'wordmark' }],
+    images: [{ id: 10, name: 'wordmark', x: 160, y: 40, w: 288, h: 100, draw: 'wordmark' }],
   }
 }
 
 export function pairingScreen(code: string, secondsLeft: number): ScreenSpec {
   const m = Math.floor(secondsLeft / 60), s = String(secondsLeft % 60).padStart(2, '0')
-  return frame('pairing', 'HELM · PAIR GLASSES', `expires ${m}:${s}`,
-    `\n      ${spaced(code)}\n\nCompanion → Devices → enter code`,
-    'Waiting for approval…  · double-tap: exit', { bodyBorder: true })
+  return {
+    key: 'pairing',
+    texts: [
+      { id: 1, name: 'header', x: 0, y: 0, w: 400, h: 40, text: 'HELM · PAIR GLASSES', pad: 6 },
+      { id: 2, name: 'context', x: 400, y: 0, w: 176, h: 40, text: `expires ${m}:${s}`, pad: 6 },
+      { id: 4, name: 'hint', x: 72, y: 166, w: 432, h: 40, text: 'Companion → Devices → enter this code', pad: 4, capture: true },
+      { id: 5, name: 'footer', x: 0, y: H - 44, w: W, h: 44, text: 'Waiting for approval…  · double-tap: exit', pad: 6 },
+    ],
+    // Large code as an image: the firmware font is fixed-size, so digits are drawn for legibility.
+    images: [{ id: 10, name: 'code', x: 144, y: 58, w: 288, h: 100, draw: { code } }],
+  }
 }
 
 export function pairingExpiredScreen(): ScreenSpec {
@@ -65,5 +73,5 @@ export function accountSelectorScreen(userName: string, accounts: AccountRow[]):
 
 export function accountChosenScreen(a: AccountRow): ScreenSpec {
   return frame('account-chosen', 'ACTIVE ACCOUNT', ENV_LABEL[a.environment] ?? a.environment,
-    `\n${a.alias}\n${a.provider.toUpperCase()} · ${a.state}\n\nSet as active on this device ✓`, 'double-tap: back to accounts', { bodyBorder: true })
+    `\n${a.alias}\n${a.provider.toUpperCase()} · ${a.state}\n\nSaved as active on this device.`, 'double-tap: back to accounts', { bodyBorder: true })
 }

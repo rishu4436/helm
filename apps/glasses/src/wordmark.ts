@@ -20,3 +20,18 @@ export async function drawWordmark(w: number, h: number): Promise<Uint8Array> {
   const blob: Blob = await new Promise(res => c.toBlob(b => res(b!), 'image/png'))
   return new Uint8Array(await blob.arrayBuffer())
 }
+
+/** Draws a pairing code in large, widely spaced glyphs as PNG bytes. */
+export async function drawCode(code: string, w: number, h: number): Promise<Uint8Array> {
+  const c = document.createElement('canvas')
+  c.width = w; c.height = h
+  const g = c.getContext('2d')!
+  g.fillStyle = '#000'; g.fillRect(0, 0, w, h)
+  g.fillStyle = '#fff'
+  g.font = 'bold 54px "DejaVu Sans Mono", Menlo, monospace'
+  g.textBaseline = 'middle'; g.textAlign = 'center'
+  const step = w / code.length
+  for (let i = 0; i < code.length; i++) g.fillText(code[i]!, step * i + step / 2, h / 2 + 2)
+  const blob: Blob = await new Promise(res => c.toBlob(b => res(b!), 'image/png'))
+  return new Uint8Array(await blob.arrayBuffer())
+}

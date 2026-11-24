@@ -3,7 +3,7 @@ import {
   RebuildPageContainer, TextContainerProperty, TextContainerUpgrade, type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
 import { structureSignature, validateSpec, type ScreenSpec } from './layout'
-import { drawWordmark } from './wordmark'
+import { drawCode, drawWordmark } from './wordmark'
 
 /**
  * Renders ScreenSpecs efficiently: identical structure → flicker-free textContainerUpgrade of
@@ -42,7 +42,11 @@ export class Renderer {
     const containerTotalNum = textObject.length + listObject.length + imageObject.length
     if (!this.started) {
       const r = await this.bridge.createStartUpPageContainer(new CreateStartUpPageContainer({ containerTotalNum, textObject, listObject, imageObject }))
-      if (r !== 0) { console.error('[HELM] createStartUpPageContainer failed', r); return }
+      if (r !== 0) {
+        // After a WebView reload the host still holds our startup page; rebuild instead.
+        const ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer({ containerTotalNum, textObject, listObject, imageObject }))
+        if (!ok) { console.error('[HELM] createStartUpPageContainer failed', r); return }
+      }
       this.started = true
     } else {
       const ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer({ containerTotalNum, textObject, listObject, imageObject }))
@@ -51,7 +55,7 @@ export class Renderer {
     this.sig = sig
     this.lastText = new Map(spec.texts.map(t => [t.id, t.text]))
     for (const img of spec.images ?? []) {
-      const bytes = await drawWordmark(img.w, img.h)
+      const bytes = img.draw === 'wordmark' ? await drawWordmark(img.w, img.h) : await drawCode(img.draw.code, img.w, img.h)
       this.imageQueue = this.imageQueue.then(() => this.bridge.updateImageRawData(new ImageRawDataUpdate({ containerID: img.id, containerName: img.name, imageData: bytes })))
       const res = await this.imageQueue
       if (res !== 'success') console.warn('[HELM] image', res)
