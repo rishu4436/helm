@@ -1,0 +1,411 @@
+// HELM persistent model. Money/quantities are Decimal(38,18) — never float.
+// Every sensitive row carries userId for tenant isolation.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Provider {
+  binance
+  okx
+  bybit
+  coinbase
+  ibkr
+  alpaca
+}
+
+enum Environment {
+  demo
+  paper
+  sandbox_static
+}
+
+enum ConnectionState {
+  CONNECTED
+  READ_ONLY
+  LIMITED
+  EXPIRED
+  RECONNECTING
+  DISCONNECTED
+  ERROR
+}
+
+enum OrderStatus {
+  DRAFT
+  VALIDATED
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  SUBMITTING
+  ACCEPTED
+  PARTIALLY_FILLED
+  FILLED
+  CANCELED
+  REJECTED
+  EXPIRED
+  UNKNOWN
+  RECONCILING
+}
+
+model User {
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  passwordHash       String
+  displayName        String?
+  reportingCurrency  String               @default("USD")
+  createdAt          DateTime             @default(now())
+  sessions           AuthSession[]
+  connections        ExchangeConnection[]
+  accounts           TradingAccount[]
+  devices            Device[]
+  pairings           DevicePairing[]
+  riskPolicies       RiskPolicy[]
+  recipes            Recipe[]
+  auditEvents        AuditEvent[]
+  pulseEvents        PulseEvent[]
+  voiceCommands      VoiceCommand[]
+  intents            TradeIntent[]
+  orders             Order[]
+  tradingSessions    TradingSession[]
+  portfolioSnapshots PortfolioSnapshot[]
+}
+
+model AuthSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  @@index([userId])
+}
+
+model ExchangeConnection {
+  id            String                         @id @default(cuid())
+  userId        String
+  user          User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider      Provider
+  environment   Environment
+  alias         String
+  state         ConnectionState                @default(DISCONNECTED)
+  stateReasons  String[]
+  lastCheckedAt DateTime?
+  createdAt     DateTime                       @default(now())
+  deletedAt     DateTime?
+  credential    ExchangeCredentialReference?
+  accounts      TradingAccount[]
+  health        ProviderHealth[]
+  @@index([userId])
+}
+
+/// Encrypted credential blob (AES-256-GCM, AAD = userId:connectionId). Never returned by the API.
+model ExchangeCredentialReference {
+  id             String             @id @default(cuid())
+  connectionId   String             @unique
+  connection     ExchangeConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  keyFingerprint String
+  sealed         Json
+  scopes         String[]
+  createdAt      DateTime           @default(now())
+  rotatedAt      DateTime?
+}
+
+model TradingAccount {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId      String
+  connection        ExchangeConnection  @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  provider          Provider
+  environment       Environment
+  accountType       String
+  providerAccountId String
+  alias             String
+  isDefault         Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  capabilities      AccountCapability[]
+  positions         PositionSnapshot[]
+  orders            Order[]
+  @@unique([connectionId, providerAccountId, accountType])
+  @@index([userId])
+}
+
+model AccountCapability {
+  id         String         @id @default(cuid())
+  accountId  String
+  account    TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  manifest   Json
+  verifiedAt DateTime       @default(now())
+}
+
+model Device {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  tokenHash  String           @unique
+  activeAccountId String?
+  createdAt  DateTime         @default(now())
+  lastSeenAt DateTime?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  sessions   TradingSession[]
+  @@index([userId])
+}
+
+model DevicePairing {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  pollSecretHash String
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId    String?
+  label       String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  approvedAt  DateTime?
+  claimedAt   DateTime?
+}
+
+model TradingSession {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String?
+  device    Device?   @relation(fields: [deviceId], references: [id])
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  budgetUsd Decimal?  @db.Decimal(38, 18)
+}
+
+model MarketSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     Provider
+  instrumentId String
+  createdAt    DateTime @default(now())
+  @@unique([userId, provider, instrumentId])
+}
+
+model PortfolioSnapshot {
+  id                     String   @id @default(cuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reportingCurrency      String
+  netLiquidationValue    Decimal  @db.Decimal(38, 18)
+  grossDerivativeExposure Decimal @db.Decimal(38, 18)
+  unvaluedAssets         String[]
+  detail                 Json
+  asOf                   DateTime
+  @@index([userId, asOf])
+}
+
+model PositionSnapshot {
+  id               String         @id @default(cuid())
+  accountId        String
+  account          TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  instrumentId     String
+  side             String
+  quantity         Decimal        @db.Decimal(38, 18)
+  entryPrice       Decimal?       @db.Decimal(38, 18)
+  markPrice        Decimal?       @db.Decimal(38, 18)
+  unrealizedPnl    Decimal?       @db.Decimal(38, 18)
+  liquidationPrice Decimal?       @db.Decimal(38, 18)
+  raw              Json?
+  asOf             DateTime
+  @@index([accountId, instrumentId])
+}
+
+model Order {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         TradingAccount     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  provider        Provider
+  environment     Environment
+  instrumentId    String
+  clientOrderId   String
+  providerOrderId String?
+  side            String
+  type            String
+  quantity        Decimal?           @db.Decimal(38, 18)
+  quoteQuantity   Decimal?           @db.Decimal(38, 18)
+  price           Decimal?           @db.Decimal(38, 18)
+  stopPrice       Decimal?           @db.Decimal(38, 18)
+  reduceOnly      Boolean            @default(false)
+  status          OrderStatus
+  filledQuantity  Decimal            @default(0) @db.Decimal(38, 18)
+  avgFillPrice    Decimal?           @db.Decimal(38, 18)
+  simulatedStatic Boolean            @default(false)
+  raw             Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  fills           Fill[]
+  attempts        ExecutionAttempt[]
+  confirmation    TradeConfirmation?
+  @@unique([accountId, clientOrderId])
+  @@index([userId, status])
+}
+
+model Fill {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  providerTradeId String
+  price           Decimal  @db.Decimal(38, 18)
+  quantity        Decimal  @db.Decimal(38, 18)
+  fee             Decimal? @db.Decimal(38, 18)
+  feeAsset        String?
+  isMaker         Boolean?
+  timestamp       DateTime
+  raw             Json?
+  @@unique([orderId, providerTradeId])
+}
+
+model TradeIntent {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source     String
+  transcript String?
+  parsed     Json
+  createdAt  DateTime        @default(now())
+  proposals  OrderProposal[]
+}
+
+model OrderProposal {
+  id           String      @id @default(cuid())
+  intentId     String?
+  intent       TradeIntent? @relation(fields: [intentId], references: [id])
+  userId       String
+  accountId    String
+  request      Json
+  preview      Json
+  risk         Json
+  proposalHash String
+  createdAt    DateTime    @default(now())
+  expiresAt    DateTime
+}
+
+model TradeConfirmation {
+  id           String    @id @default(cuid())
+  orderId      String    @unique
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  proposalId   String
+  tokenHash    String    @unique
+  confirmedVia String
+  expiresAt    DateTime
+  usedAt       DateTime?
+}
+
+model ExecutionAttempt {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  attempt     Int
+  outcome     String
+  errorCode   String?
+  providerRaw Json?
+  startedAt   DateTime @default(now())
+  finishedAt  DateTime?
+  @@unique([orderId, attempt])
+}
+
+model ProtectionPlan {
+  id                      String   @id @default(cuid())
+  userId                  String
+  accountId               String
+  instrumentId            String
+  entryOrderId            String
+  protectionOrderId       String?
+  stopOffsetPercent       Decimal? @db.Decimal(38, 18)
+  stopPrice               Decimal? @db.Decimal(38, 18)
+  protectedQuantity       Decimal  @default(0) @db.Decimal(38, 18)
+  state                   String
+  history                 Json
+  updatedAt               DateTime @updatedAt
+  @@index([userId, state])
+}
+
+model RiskPolicy {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  version   Int
+  limits    Json
+  createdAt DateTime @default(now())
+  @@unique([userId, version])
+}
+
+model PulseEvent {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         String
+  severity     Int
+  provider     Provider?
+  accountId    String?
+  instrumentId String?
+  reason       String
+  context      Json
+  dedupeKey    String
+  createdAt    DateTime  @default(now())
+  dismissedAt  DateTime?
+  @@index([userId, createdAt])
+  @@unique([userId, dedupeKey])
+}
+
+model Recipe {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  version    Int      @default(1)
+  definition Json
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model VoiceCommand {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transcript String
+  sttProvider String
+  confidence Decimal? @db.Decimal(5, 4)
+  intent     Json?
+  outcome    String
+  createdAt  DateTime @default(now())
+}
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actor     String
+  action    String
+  subject   String?
+  detail    Json
+  ip        String?
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+
+model ProviderHealth {
+  id           String             @id @default(cuid())
+  connectionId String
+  connection   ExchangeConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  state        ConnectionState
+  reasons      String[]
+  latencyMs    Int?
+  checkedAt    DateTime           @default(now())
+  @@index([connectionId, checkedAt])
+}

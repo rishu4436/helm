@@ -1,0 +1,60 @@
+import type { FastifyPluginAsync } from 'fastify'
+import { z } from 'zod'
+import { hashToken } from '@helm/security'
+import { createSession, hashPassword, requireUser, verifyPassword } from '../auth'
+import { audit } from '../audit'
+import type { AppCtx } from '../app'
+
+const Register = z.object({ email: z.string().email().max(200).transform(s => s.toLowerCase()), password: z.string().min(10).max(200), displayName: z.string().max(60).optional() })
+const Login = z.object({ email: z.string().email().transform(s => s.toLowerCase()), password: z.string().min(1).max(200) })
+
+export const authRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
+  const { prisma } = ctx
+  app.post('/v1/auth/register', { config: ctx.rl(10) }, async (req, reply) => {
+    const b = Register.parse(req.body)
+    const exists = await prisma.user.findUnique({ where: { email: b.email } })
+    if (exists) return reply.code(409).send({ error: { code: 'EMAIL_TAKEN', message: 'An account with this email exists' } })
+    const user = await prisma.user.create({ data: { email: b.email, passwordHash: await hashPassword(b.password), displayName: b.displayName } })
+    const s = await createSession(prisma, user.id, req.headers['user-agent'])
+    await audit(prisma, { userId: user.id, actor: 'user', action: 'auth.register', ip: req.ip })
+    return reply.code(201).send({ user: { id: user.id, email: user.email, displayName: user.displayName }, token: s.token, expiresAt: s.expiresAt })
+  })
+
+  app.post('/v1/auth/login', { config: ctx.rl(10) }, async (req, reply) => {
+    const b = Login.parse(req.body)
+    const user = await prisma.user.findUnique({ where: { email: b.email } })
+    const ok = user ? await verifyPassword(b.password, user.passwordHash) : false
+    if (!user || !ok) {
+      await audit(prisma, { userId: user?.id, actor: 'anonymous', action: 'auth.login_failed', ip: req.ip })
+      return reply.code(401).send({ error: { code: 'INVALID_LOGIN', message: 'Email or password is incorrect' } })
+    }
+    const s = await createSession(prisma, user.id, req.headers['user-agent'])
+    await audit(prisma, { userId: user.id, actor: 'user', action: 'auth.login', ip: req.ip })
+    return { user: { id: user.id, email: user.email, displayName: user.displayName }, token: s.token, expiresAt: s.expiresAt }
+  })
+
+  app.post('/v1/auth/logout', { preHandler: requireUser(prisma) }, async req => {
+    await prisma.authSession.update({ where: { id: req.sessionId! }, data: { revokedAt: new Date() } })
+    await audit(prisma, { userId: req.userId, actor: 'user', action: 'auth.logout' })
+    return { ok: true }
+  })
+
+  app.get('/v1/me', { preHandler: requireUser(prisma) }, async req => {
+    const u = await prisma.user.findUniqueOrThrow({ where: { id: req.userId! }, select: { id: true, email: true, displayName: true, reportingCurrency: true, createdAt: true } })
+    return { user: u }
+  })
+
+  app.get('/v1/sessions', { preHandler: requireUser(prisma) }, async req => {
+    const sessions = await prisma.authSession.findMany({ where: { userId: req.userId!, revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true, userAgent: true, createdAt: true, expiresAt: true }, orderBy: { createdAt: 'desc' } })
+    return { sessions: sessions.map(s => ({ ...s, current: s.id === req.sessionId })) }
+  })
+
+  app.delete<{ Params: { id: string } }>('/v1/sessions/:id', { preHandler: requireUser(prisma) }, async (req, reply) => {
+    const r = await prisma.authSession.updateMany({ where: { id: req.params.id, userId: req.userId! }, data: { revokedAt: new Date() } })
+    if (r.count === 0) return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Session not found' } })
+    await audit(prisma, { userId: req.userId, actor: 'user', action: 'auth.session_revoked', subject: req.params.id })
+    return { ok: true }
+  })
+
+  void hashToken
+}
