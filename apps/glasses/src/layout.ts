@@ -22,7 +22,7 @@ export interface ListBox {
   id: number
   name: string
   x: number; y: number; w: number; h: number
-  items: string[] // ≤20, ≤64 chars
+  items: string[] // ≤20, ≤LIST_ITEM_MAX_BYTES UTF-8 bytes
   border?: number
   capture?: boolean
 }
@@ -35,9 +35,14 @@ export interface ScreenSpec {
   images?: ImageBox[]
 }
 
-/** Firmware limits list items to 64 BYTES (UTF-8), not characters — '·' is 2 bytes. */
 export const utf8Len = (t: string) => new TextEncoder().encode(t).length
-export function clipBytes(t: string, max = 64): string {
+/**
+ * List items are limited in UTF-8 BYTES, not characters ('·' is 2 bytes, '…' is 3). The SDK docs say 64, but simulator 0.9.5
+ * rejects the whole rebuild when any item is exactly 64 bytes and accepts 63 (bisected 2026-11-24 on a real Pulse list),
+ * so HELM keeps every item at ≤63 bytes.
+ */
+export const LIST_ITEM_MAX_BYTES = 63
+export function clipBytes(t: string, max = LIST_ITEM_MAX_BYTES): string {
   if (utf8Len(t) <= max) return t
   let out = ''
   for (const ch of t) { if (utf8Len(out + ch + '…') > max) break; out += ch }
@@ -71,7 +76,7 @@ export function validateSpec(s: ScreenSpec): string[] {
   for (const i of images) if (i.w < 20 || i.w > 288 || i.h < 20 || i.h > 144) errs.push(`${i.name} image size out of range`)
   for (const l of lists) {
     if (l.items.length < 1 || l.items.length > 20) errs.push(`${l.name} needs 1–20 items`)
-    for (const it of l.items) if (utf8Len(it) > 64) errs.push(`${l.name} item exceeds 64 bytes`)
+    for (const it of l.items) if (utf8Len(it) > LIST_ITEM_MAX_BYTES) errs.push(`${l.name} item exceeds ${LIST_ITEM_MAX_BYTES} bytes`)
   }
   for (const t of s.texts) if (t.text.length > 1000) errs.push(`${t.name} > 1000 chars`)
   return errs

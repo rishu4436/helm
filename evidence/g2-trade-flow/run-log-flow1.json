@@ -1,0 +1,405 @@
+{
+ "steps": [
+  {
+   "do": "click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "pulse",
+   "reached": true,
+   "shot": "15-pulse"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "compass",
+   "reached": true,
+   "shot": "16-compass"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "emergency",
+   "reached": true,
+   "shot": "17-emergency"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "unprotected",
+   "reached": true,
+   "shot": "18-protect-none-unprotected"
+  },
+  {
+   "do": "double_click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "acct-pick",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "click",
+   "expect": "ticket",
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": null
+  },
+  {
+   "do": null,
+   "expect": null,
+   "reached": true,
+   "shot": "19-ticket-close-selected"
+  },
+  {
+   "do": "click",
+   "expect": "impact",
+   "reached": true,
+   "shot": "20-close-impact"
+  },
+  {
+   "do": "click",
+   "expect": "risk",
+   "reached": true,
+   "shot": "21-close-risk"
+  },
+  {
+   "do": "click",
+   "expect": "confirm",
+   "reached": true,
+   "shot": "22-close-confirm-default-cancel"
+  },
+  {
+   "do": "down",
+   "expect": null,
+   "reached": true,
+   "shot": "23-close-confirm-selected"
+  },
+  {
+   "do": "click",
+   "expect": "submitting",
+   "reached": true,
+   "shot": "24-close-submitting"
+  },
+  {
+   "do": null,
+   "expect": "receipt",
+   "reached": true,
+   "shot": "25-close-receipt"
+  },
+  {
+   "do": "click",
+   "expect": "home",
+   "reached": true,
+   "shot": null
+  }
+ ],
+ "helmConsole": [
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen home",
+  "[HELM] screen overview",
+  "[HELM] screen home",
+  "[HELM] screen holdings",
+  "[HELM] screen home",
+  "[HELM] screen watchlist",
+  "[HELM] screen market-BTC",
+  "[HELM] screen acct-pick",
+  "[HELM] screen ticket",
+  "[HELM] preview p61f55caed60891038987 ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwul18ln00539xnedwh957et FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home",
+  "[HELM] rebuildPageContainer failed pulse",
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen home",
+  "[HELM] screen pulse",
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen splash",
+  "[HELM] APP_READY",
+  "[HELM] screen home",
+  "[HELM] screen pulse",
+  "[HELM] screen home",
+  "[HELM] screen compass",
+  "[HELM] screen home",
+  "[HELM] screen emergency",
+  "[HELM] screen home",
+  "[HELM] screen unprotected",
+  "[HELM] screen home",
+  "[HELM] screen acct-pick",
+  "[HELM] screen ticket",
+  "[HELM] preview p6e0fff8feae67a0854d8 ALLOW",
+  "[HELM] screen impact",
+  "[HELM] screen risk",
+  "[HELM] screen confirm",
+  "[HELM] user confirmed",
+  "[HELM] screen submitting",
+  "[HELM] receipt cmwul5ubb00649xne6sgnrah1 FILLED",
+  "[HELM] screen receipt",
+  "[HELM] screen home"
+ ]
+}

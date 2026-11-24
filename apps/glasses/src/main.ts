@@ -7,6 +7,8 @@ import { accountChosenScreen, accountSelectorScreen, connectionErrorScreen, pair
 const TOKEN_KEY = 'helm.deviceToken'
 const bridge = await waitForEvenAppBridge()
 const ui = new Renderer(bridge)
+// If the host refuses a screen, say so instead of leaving the wearer on a stale screen that no longer matches app state.
+ui.onRenderFail = key => { if (key !== 'err') { stack.length = 0; void go({ name: 'fail', title: 'DISPLAY ERROR', msg: `The glasses could not draw ${key}. Tap for home; check Receipts before acting again.` }) } }
 
 type Review = { name: 'impact' | 'risk' | 'confirm'; p: PreviewResp; via: 'glasses' | 'voice'; key: string }
 type State =
@@ -42,6 +44,8 @@ let token = ''
 let me: DeviceMe | null = null
 let accts: Acct[] = []
 let timers: number[] = []
+/** A preview is in flight: further taps are ignored so one tap = one proposal (venues can take seconds to answer). */
+let previewing = false
 const clearTimers = () => { timers.forEach(t => clearInterval(t)); timers = [] }
 const newKey = () => `g2-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 
@@ -148,19 +152,23 @@ async function openUnprotected() {
 }
 
 async function runProtectPreview(item: T.UnprotectedItem, stopOffsetPercent: string) {
+  if (previewing) { console.log('[HELM] preview in flight, tap ignored'); return }
+  previewing = true
   try {
     const p = (await trade.protectPreview(token, { accountId: item.accountId, instrumentId: item.instrumentId, stopOffsetPercent })).data
     console.log(`[HELM] protect preview ${p.proposalId} ${p.risk.verdict} stop ${p.order.stopPrice}`)
     await nav({ name: 'impact', p, via: 'glasses', key: newKey() })
-  } catch (e) { await fail('PREVIEW FAILED', e) }
+  } catch (e) { await fail('PREVIEW FAILED', e) } finally { previewing = false }
 }
 
 async function runPreview(tk: Ticket, via: 'glasses' | 'voice') {
+  if (previewing) { console.log('[HELM] preview in flight, tap ignored'); return }
+  previewing = true
   try {
     const p = (await trade.preview(token, tk)).data
     console.log(`[HELM] preview ${p.proposalId} ${p.risk.verdict}`)
     await nav({ name: 'impact', p, via, key: newKey() })
-  } catch (e) { await fail('PREVIEW FAILED', e) }
+  } catch (e) { await fail('PREVIEW FAILED', e) } finally { previewing = false }
 }
 
 async function submit(s: Review) {

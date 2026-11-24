@@ -95,7 +95,7 @@ export function impactScreen(p: PreviewResp, now = Date.now()): ScreenSpec {
     `Spread ${n(i.spreadBps, 1)}bp · slip ${n(v.estimatedSlippageBps, 1)}bp`,
     `${i.asset} exposure ${usd(i.currentExposureUsd, 0)} → ${usd(i.proposedExposureUsd, 0)}`,
     `Buying power left ${usd(v.remainingBuyingPower, 0)}${v.requiredMargin ? ` · margin ${usd(v.requiredMargin)}` : ''}`,
-    v.protection ? `Stop ${v.protection.stopOffsetPercent}% → ≈${n(v.protection.estimatedStopPrice, 1)}${v.protection.supported ? '' : ' (unsupported)'}` : 'No protective stop',
+    v.protection ? `Stop ${v.protection.stopOffsetPercent}% → ≈${n(v.protection.estimatedStopPrice, 1)}${v.protection.supported ? '' : ' (unsupported)'}` : v.willCancel?.length ? `Then cancels ${v.willCancel.length} stop(s) left with nothing to protect` : p.order.reduceOnly ? 'Reduce-only: cannot add exposure' : 'No protective stop',
   ].join('\n')
   return textScreen('impact', 'TRADE IMPACT', `${envTag(p.account.environmentLabel)} · ${secondsLeft(p, now)}s`, body, 'tap: risk check · double-tap: cancel', true)
 }
@@ -135,7 +135,9 @@ export function receiptScreen(r: Receipt): ScreenSpec {
   const prot = orph ?? (r.protection ? `Protection: ${r.protection.state}${r.protection.stopPrice ? ` · stop ${n(r.protection.stopPrice, 1)}` : ''}` : 'No protection requested')
   const reason = r.status === 'REJECTED' ? (r.events.slice().reverse().find(e => e.to === 'REJECTED')?.reason ?? '').slice(0, 56) : ''
   const body = [
-    `${r.status} · ${r.side} ${qty(r.filledQuantity)} ${s.base}${r.avgFillPrice ? ` @ ${n(r.avgFillPrice, 2)}` : ''}`,
+    Number(r.filledQuantity) === 0 && r.quantity
+      ? `${r.status} · ${r.side} ${qty(r.quantity)} ${s.base}${/STOP/.test(r.type) ? ' (resting stop, not filled)' : ' (not filled)'}`
+      : `${r.status} · ${r.side} ${qty(r.filledQuantity)} ${s.base}${r.avgFillPrice ? ` @ ${n(r.avgFillPrice, 2)}` : ''}`,
     `${r.account} · ${prodLabel(s.product)} · ${r.type}`,
     r.fills.length ? `Fee ${fee ? String(Number(fee.toFixed(8))) : '0'} ${feeAsset} · ${r.fills.length} fill${r.fills.length > 1 ? 's' : ''}` : reason || `Order ${r.providerOrderId ?? '—'}`,
     prot,
@@ -152,7 +154,7 @@ export const unprotectedScreen = (items: UnprotectedItem[]) =>
   listScreen('unprotected', 'PROTECT POSITIONS', `${items.length} open`, items.length ? items.map(i => `${sym(i.instrumentId).base} ${i.side === 'SHORT' || (i.notionalUsd && Number(i.notionalUsd) < 0) ? 'SHORT' : 'LONG'} ${prodLabel(sym(i.instrumentId).product)} · ${i.alias}${i.notionalUsd ? ` · ${usd(String(Math.abs(Number(i.notionalUsd))), 0)}` : ''}`) : ['Every position has a venue-listed stop'], items.length ? 'tap: add a stop · double-tap: back' : 'double-tap: back', items.length ? 'No venue-listed stop on these positions' : undefined)
 export const STOP_DISTANCES = ['2', '3', '5'] as const
 export const protectPickScreen = (i: UnprotectedItem) =>
-  listScreen('protect-pick', `PROTECT ${sym(i.instrumentId).base}`, envTag(i.alias), STOP_DISTANCES.map(d => `Reduce-only stop ${d}% from mark`), 'tap: preview · double-tap: back', i.alias)
+  listScreen('protect-pick', `PROTECT ${sym(i.instrumentId).base}`, 'stop distance', STOP_DISTANCES.map(d => `Reduce-only stop ${d}% from mark`), 'tap: preview · double-tap: back', i.alias)
 function protectImpactScreen(p: PreviewResp, now: number): ScreenSpec {
   const s = sym(p.order.instrument), r = p.preview.recovery
   const body = [

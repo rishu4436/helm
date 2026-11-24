@@ -40,6 +40,7 @@ export interface PreviewResp {
   order: { instrument: string; side: string; type: string; quantity?: string; quoteQuantity?: string; price?: string; stopPrice?: string; reduceOnly?: boolean; leverage?: string }
   preview: { estimatedPrice: string | null; estimatedNotional: string | null; estimatedFee: string | null; estimatedSlippageBps: string | null; requiredMargin: string | null; remainingBuyingPower: string | null; estimateNotes: string[]
     recovery?: { positionQty: string; positionSide: 'LONG' | 'SHORT'; entryPrice: string | null; markPrice: string | null; referencePrice: string; stopOffsetPercent: string | null }
+    willCancel?: Array<{ type: string; stopPrice: string | null; quantity?: string | null }>
     impact: { asset: string; currentExposureUsd: string; proposedExposureUsd: string; currentPositionQty: string; proposedPositionQty: string; spreadBps: string | null; liquidation: { current: string | null; proposed: string | null; note: string } }
     protection: { stopOffsetPercent: string; estimatedStopPrice: string | null; supported: boolean; note: string } | null }
   risk: { verdict: 'ALLOW' | 'WARN' | 'BLOCK'; findings: Finding[]; policyVersion: number }

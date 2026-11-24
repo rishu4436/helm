@@ -20,6 +20,8 @@ export class Renderer {
   private sig = ''
   private lastText = new Map<number, string>()
   private imageQueue: Promise<unknown> = Promise.resolve()
+  /** Called when the host refuses a rebuild, so app state never silently diverges from what the wearer sees. */
+  onRenderFail: ((key: string) => void) | null = null
   constructor(private readonly bridge: EvenAppBridge) {}
 
   async show(spec: ScreenSpec): Promise<void> {
@@ -57,7 +59,7 @@ export class Renderer {
       this.started = true
     } else {
       const ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer({ containerTotalNum, textObject, listObject, imageObject }))
-      if (!ok) { console.error('[HELM] rebuildPageContainer failed', spec.key); return }
+      if (!ok) { console.error('[HELM] rebuildPageContainer failed', spec.key); this.onRenderFail?.(spec.key); return }
     }
     this.sig = sig
     this.lastText = new Map(spec.texts.map(t => [t.id, t.text]))

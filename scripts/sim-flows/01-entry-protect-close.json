@@ -1,0 +1,375 @@
+[
+{
+"do": "click",
+"expect": "home",
+"shot": "01-home"
+},
+{
+"do": "click",
+"expect": "overview",
+"shot": "02-overview",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "holdings",
+"shot": "03-holdings",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "watchlist",
+"shot": "04-watchlist",
+"timeout": 30
+},
+{
+"do": "click",
+"expect": "market",
+"shot": "05-market-btc",
+"timeout": 30
+},
+{
+"do": "click",
+"expect": "acct-pick",
+"shot": "06-which-exchange"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "ticket",
+"shot": "07-ticket"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": null,
+"expect": null,
+"shot": "08-ticket-long-stop-selected"
+},
+{
+"do": "click",
+"expect": "impact",
+"shot": "09-impact",
+"timeout": 60
+},
+{
+"do": "click",
+"expect": "risk",
+"shot": "10-risk"
+},
+{
+"do": "click",
+"expect": "confirm",
+"shot": "11-confirm-default-cancel"
+},
+{
+"do": "down",
+"expect": null,
+"shot": "12-confirm-selected"
+},
+{
+"do": "click",
+"expect": "submitting",
+"shot": "13-submitting",
+"settle": 0.2
+},
+{
+"do": null,
+"expect": "receipt",
+"shot": "14-receipt",
+"timeout": 60,
+"settle": 1.5
+},
+{
+"do": "click",
+"expect": "home",
+"shot": null
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "pulse",
+"shot": "15-pulse",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "compass",
+"shot": "16-compass",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "emergency",
+"shot": "17-emergency",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "unprotected",
+"shot": "18-protect-none-unprotected",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "acct-pick",
+"shot": null
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "ticket",
+"shot": null
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": null,
+"expect": null,
+"shot": "19-ticket-close-selected"
+},
+{
+"do": "click",
+"expect": "impact",
+"shot": "20-close-impact",
+"timeout": 60
+},
+{
+"do": "click",
+"expect": "risk",
+"shot": "21-close-risk"
+},
+{
+"do": "click",
+"expect": "confirm",
+"shot": "22-close-confirm-default-cancel"
+},
+{
+"do": "down",
+"expect": null,
+"shot": "23-close-confirm-selected"
+},
+{
+"do": "click",
+"expect": "submitting",
+"shot": "24-close-submitting",
+"settle": 0.2
+},
+{
+"do": null,
+"expect": "receipt",
+"shot": "25-close-receipt",
+"timeout": 60,
+"settle": 1.5
+},
+{
+"do": "click",
+"expect": "home",
+"shot": null
+}
+]

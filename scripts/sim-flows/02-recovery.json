@@ -1,0 +1,220 @@
+[
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "unprotected",
+"shot": "31-protect-unprotected-list",
+"timeout": 30
+},
+{
+"do": "click",
+"expect": "protect-pick",
+"shot": "32-protect-pick-distance"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": null,
+"expect": null,
+"shot": "33-protect-3pct-selected"
+},
+{
+"do": "click",
+"expect": "impact",
+"shot": "34-protect-impact",
+"timeout": 60
+},
+{
+"do": "click",
+"expect": "risk",
+"shot": "35-protect-risk"
+},
+{
+"do": "click",
+"expect": "confirm",
+"shot": "36-protect-confirm-default-cancel"
+},
+{
+"do": "down",
+"expect": null,
+"shot": "37-protect-confirm-selected"
+},
+{
+"do": "click",
+"expect": "submitting",
+"shot": "38-protect-submitting",
+"settle": 0.2
+},
+{
+"do": null,
+"expect": "receipt",
+"shot": "39-protect-receipt",
+"timeout": 60,
+"settle": 1.5
+},
+{
+"do": "click",
+"expect": "home",
+"shot": null
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "unprotected",
+"shot": "40-protect-after-none-unprotected",
+"timeout": 30
+},
+{
+"do": "double_click",
+"expect": "home"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "acct-pick",
+"shot": null
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "ticket",
+"shot": "41-ticket-binance-usdm"
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "down",
+"settle": 0.4
+},
+{
+"do": "click",
+"expect": "impact",
+"shot": "42-recovery-close-impact",
+"timeout": 60
+},
+{
+"do": "click",
+"expect": "risk",
+"shot": "43-recovery-close-risk"
+},
+{
+"do": "click",
+"expect": "confirm",
+"shot": "44-recovery-close-confirm-default-cancel"
+},
+{
+"do": "down",
+"expect": null,
+"shot": "45-recovery-close-confirm-selected"
+},
+{
+"do": "click",
+"expect": "submitting",
+"shot": "46-recovery-close-submitting",
+"settle": 0.2
+},
+{
+"do": null,
+"expect": "receipt",
+"shot": "47-recovery-close-receipt",
+"timeout": 60,
+"settle": 1.5
+},
+{
+"do": "click",
+"expect": "home",
+"shot": null
+}
+]

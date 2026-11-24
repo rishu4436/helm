@@ -62,7 +62,7 @@ const protPrev = { ...prev, kind: 'protect_existing' as const, account: { ...pre
   preview: { ...prev.preview, estimateNotes: ['Protects the existing LONG 0.0025 BTC', 'If triggered: P&L vs entry ≈ -4.52 USDT before fees and slippage'], recovery: { positionQty: '0.0025', positionSide: 'LONG' as const, entryPrice: '60343.1', markPrice: '60341.2', referencePrice: '60341.2', stopOffsetPercent: '3' } } }
 const tradeScreens: ScreenSpec[] = [
   T.unprotectedScreen([uitem, { ...uitem, instrumentId: 'bybit:perp:ETH-USDT:USDT', side: 'SHORT', alias: 'Bybit Demo · Unified' }]), T.unprotectedScreen([]), T.protectPickScreen(uitem),
-  T.impactScreen(protPrev), T.confirmScreen(protPrev),
+  T.impactScreen(protPrev), T.confirmScreen(protPrev), T.receiptScreen({ ...rcpt, type: 'STOP_MARKET', side: 'SELL', status: 'ACCEPTED', filledQuantity: '0', quantity: '0.0025', avgFillPrice: null, fills: [] } as never),
   T.homeScreen('rishabh', true), T.overviewScreen(pf), T.holdingsScreen(pf), T.watchlistScreen([{ asset: 'BTC', price: '60312.5' }, { asset: 'SOL', price: '150.123' }]),
   T.marketScreen('BTC', [{ venue: 'binance', bid: '60312.0', ask: '60312.1', spreadBps: '0.02' }, { venue: 'okx', bid: '60311.9', ask: '60312.0', spreadBps: '0.02' }, { venue: 'bybit', bid: null, ask: null, spreadBps: null, error: 'EXCHANGE_UNAVAILABLE' }]),
   T.accountPickScreen([acct, { ...acct, id: 'a2', alias: 'Binance Demo · Spot', products: ['spot'] }]), T.ticketScreen(acct, 'BTC'),
@@ -91,9 +91,9 @@ describe('G2 trading screens', () => {
     expect(T.receiptScreen({ ...rcpt, label: 'SIMULATED by HELM — x', environmentLabel: 'SIMULATED' }).texts.find(t => t.name === 'body')!.text).toMatch(/SIMULATED/)
     expect(T.holdingsScreen(pf).lists![0]!.items[0]).toMatch(/^SHORT BTC/)
   })
-  it('list items are clipped to 64 UTF-8 bytes (firmware limit; "·" is 2 bytes)', () => {
+  it('list items are clipped to 63 UTF-8 bytes (a 64-byte item made simulator 0.9.5 reject the rebuild; "·" is 2 bytes)', () => {
     const s = T.emergencyScreen([{ kind: 'CLOSE_POSITION', detail: 'LONG 0.002 (reduce-only close, needs its own preview + confirm)', instrumentId: 'bybit:perp:BTC-USDT:USDT' }])
-    for (const it of s.lists![0]!.items) expect(new TextEncoder().encode(it).length).toBeLessThanOrEqual(64)
+    for (const it of s.lists![0]!.items) expect(new TextEncoder().encode(it).length).toBeLessThanOrEqual(63)
   })
   it('recovery: unprotected list, stop distances, PROTECT impact, and a Cancel-first stop confirmation', () => {
     expect(T.unprotectedScreen([uitem]).lists![0]!.items[0]).toMatch(/^BTC SHORT PERP · Binance Demo/)
@@ -102,6 +102,14 @@ describe('G2 trading screens', () => {
     const c = T.confirmScreen(protPrev)
     expect(c.lists![0]!.items[0]).toBe('Cancel'); expect(c.lists![0]!.items[1]).toMatch(/^Confirm stop on Binance Demo/)
     expect(c.texts.find(t => t.name === 'summary')!.text).toMatch(/PROTECTED only once the venue lists it/)
+  })
+  it('a reduce-only full close says it will cancel the stop it leaves behind', () => {
+    const c = { ...prev, order: { ...prev.order, side: 'SELL', reduceOnly: true }, preview: { ...prev.preview, protection: undefined, willCancel: [{ type: 'STOP_MARKET', stopPrice: '58000' }] } }
+    expect(T.impactScreen(c as never).texts.find(t => t.name === 'body')!.text).toMatch(/Then cancels 1 stop/)
+  })
+  it('a resting stop receipt shows its size, not "0 BTC"', () => {
+    const b = T.receiptScreen({ ...rcpt, type: 'STOP_MARKET', side: 'SELL', status: 'ACCEPTED', filledQuantity: '0', quantity: '0.0025', avgFillPrice: null, fills: [] } as never).texts.find(t => t.name === 'body')!.text
+    expect(b).toMatch(/^ACCEPTED · SELL 0\.0025 BTC \(resting stop, not filled\)/)
   })
   it('blocked risk cannot continue', () => { expect(T.riskScreen({ ...prev, canConfirm: false, risk: { ...prev.risk, verdict: 'BLOCK' } }).texts.find(t => t.name === 'footer')!.text).toMatch(/Blocked/) })
 })
