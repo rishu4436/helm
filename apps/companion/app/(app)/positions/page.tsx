@@ -41,7 +41,7 @@ export default function Positions() {
       <ErrorNote error={pf.error} onRetry={pf.reload} />
       {msg && <div role="status" className={`mb-4 rounded-lg border px-4 py-2 text-sm ${msg.ok ? 'border-up/40 text-up' : 'border-down/40 text-down'}`}>{msg.text}</div>}
       <Card title={`Positions (${pos.length})`} pad={false}>
-        {!p ? <div className="p-5"><Skeleton /></div> : pos.length === 0 ? <div className="p-5"><Empty title="No open positions" hint="Both demo accounts are flat." action={<Btn href="/terminal" variant="amber">Open the terminal</Btn>} /></div> : (
+        {!p ? <div className="p-5"><Skeleton /></div> : pos.length === 0 ? <div className="p-5"><Empty title="No open positions" hint="No positions on any connected account." action={<Btn href="/terminal" variant="amber">Open the terminal</Btn>} /></div> : (
           <div className="overflow-x-auto"><table className="tbl"><thead><tr><th>Instrument</th><th>Account</th><th>Side</th><th className="r">Size</th><th className="r">Entry</th><th className="r">Mark</th><th className="r">Liq.</th><th className="r">uPnL</th><th>Protection</th><th></th></tr></thead>
             <tbody>{pos.map(x => { const un = unprot.some(u => u.accountId === x.accountId && u.instrumentId === x.instrumentId); const long = !(Number(x.quantity) < 0 || x.side === 'SHORT'); return (
               <tr key={x.accountId + x.instrumentId}>
