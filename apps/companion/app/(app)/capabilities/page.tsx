@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react'
 import { api, type Manifest } from '@/lib/api'
-import { EnvPill } from '../components'
+import { useEffect, useState } from 'react'
+import { Btn, Card, EnvPill, ErrorNote, PageHeader, Skeleton } from '../../ui'
 
 const ROWS: Array<[string, (m: Manifest) => boolean | string]> = [
   ['Spot', m => m.spot], ['Futures / perps', m => m.futures], ['Stocks', m => m.stocks],
@@ -13,29 +13,22 @@ const ROWS: Array<[string, (m: Manifest) => boolean | string]> = [
 ]
 
 export default function Capabilities() {
-  const [ms, setMs] = useState<Array<Manifest & { note?: string }>>([])
-  const [err, setErr] = useState<string | null>(null)
-  useEffect(() => { api<{ manifests: Manifest[] }>('/v1/capabilities', { auth: false }).then(r => setMs(r.manifests)).catch(e => setErr(e.message)) }, [])
+  const [ms, setMs] = useState<Manifest[]>([])
+  const [err, setErr] = useState<Error | null>(null)
+  useEffect(() => { api<{ manifests: Manifest[] }>('/v1/capabilities', { auth: false }).then(r => setMs(r.manifests)).catch(e => setErr(e)) }, [])
   const name = (m: Manifest) => `${m.provider}${m.provider === 'binance' ? (m.futures ? ' USDⓈ-M' : ' Spot') : ''}`
   return (
-    <div className="pt-10">
-      <h1 className="text-3xl font-semibold">Capability matrix</h1>
-      <p className="mt-2 max-w-3xl text-graphite-300">What each HELM adapter is built to do in its hackathon environment, from the providers&apos; documentation. A connected account&apos;s real permissions are verified separately and can be narrower.</p>
-      {err && <p className="mt-4 text-down">{err}</p>}
-      <div className="card mt-6 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-graphite-300"><th className="p-3">Capability</th>{ms.map(m => <th key={name(m)} className="p-3 capitalize"><div>{name(m)}</div><div className="mt-1"><EnvPill env={m.environment} /></div></th>)}</tr></thead>
-          <tbody>
-            {ROWS.map(([label, f]) => (
-              <tr key={label} className="border-t border-graphite-800">
-                <td className="p-3 text-graphite-300">{label}</td>
-                {ms.map(m => { const v = f(m); return <td key={name(m)} className="p-3">{typeof v === 'string' ? <span className="text-xs">{v}</span> : v ? <span className="text-up">●</span> : <span className="text-graphite-700">—</span>}</td> })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-6 space-y-2 text-xs text-graphite-500">{ms.map(m => <p key={name(m)}><b className="capitalize text-graphite-300">{name(m)}:</b> {m.restrictions.join(' · ')}</p>)}</div>
+    <div>
+      <PageHeader kicker="EXCHANGES" title="Capability matrix" subtitle="What each HELM adapter is built to do in its hackathon environment, from the providers' documentation. A connected account's real permissions are verified separately and can be narrower." actions={<Btn href="/connect">Back to exchanges</Btn>} />
+      <ErrorNote error={err} />
+      {!ms.length && !err ? <Skeleton h="h-96" /> : (
+        <Card pad={false} className="overflow-x-auto">
+          <table className="tbl"><thead><tr><th>Capability</th>{ms.map(m => <th key={name(m)} className="capitalize"><div>{name(m)}</div><div className="mt-1"><EnvPill env={m.provider === 'okx' ? 'blocked' : m.environment} /></div></th>)}</tr></thead>
+            <tbody>{ROWS.map(([label, f]) => <tr key={label}><td className="text-graphite-300">{label}</td>{ms.map(m => { const v = f(m); return <td key={name(m)}>{typeof v === 'string' ? <span className="text-xs">{v}</span> : v ? <span className="text-up">●</span> : <span className="text-graphite-700">—</span>}</td> })}</tr>)}</tbody>
+          </table>
+        </Card>
+      )}
+      <div className="mt-6 space-y-2 text-xs text-graphite-500">{ms.map(m => <p key={name(m)}><b className="capitalize text-graphite-300">{name(m)}:</b> {m.restrictions.join(' · ')}{m.provider === 'okx' ? ' · Logged-in OKX demo is BLOCKED for this team: OKX is unavailable in India. The adapter is built and tested with mocks and public endpoints.' : ''}</p>)}</div>
     </div>
   )
 }

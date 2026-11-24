@@ -56,7 +56,7 @@ function Voice() {
       <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
         <span className="text-graphite-500">Speech-to-text:</span>{stt ? <><Pill v={stt.status} /><span className="text-graphite-300">{stt.detail}</span></> : <span className="text-graphite-500">checking…</span>}
       </div>
-      <div className="grid gap-6 xl:grid-cols-[1fr_620px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_600px]">
         <div className="space-y-6">
           <Card title="Say it">
             <div className="flex flex-wrap items-center gap-3">
@@ -70,7 +70,7 @@ function Voice() {
             </form>
           </Card>
           <Card title="Spoken samples (Kokoro TTS, generated locally)">
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2">
               {SAMPLES.map(([id, label]) => (
                 <div key={id} className="flex items-center gap-2 rounded-lg border border-graphite-800 px-3 py-2 text-sm">
                   <span className="min-w-0 flex-1 truncate" title={label}>“{label}”</span>

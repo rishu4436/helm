@@ -1,63 +1,71 @@
 import Link from 'next/link'
 import { PROVIDER_INFO } from '@helm/shared'
-import { HelmMark } from './components'
+import { HelmMark } from '../brand'
+import { LandingDemo } from './demo'
 
 const FLOW = ['Observe', 'Understand', 'Prepare', 'Check risk', 'Confirm', 'Execute', 'Verify']
+const SAFETY: Array<[string, string]> = [
+  ['Demo, paper and sandbox only', 'Signed requests are hard-restricted to an allow-list of demo / paper / sandbox hosts. A production host is refused before any network call.'],
+  ['Every order is previewed', 'Impact, fees, exposure change and Shield policy checks first. Each preview carries a single-use 45-second confirm token.'],
+  ['Protection is never assumed', 'A stop shows as active only after the exchange lists it. If a stop can’t be placed, the receipt says so.'],
+  ['No blind retries', 'If an exchange times out, HELM reconciles by client order id instead of resubmitting.'],
+  ['“Which exchange?”', 'An ambiguous command never guesses a venue. “Close everything” is never broadcast — it becomes an itemized, reduce-only review.'],
+  ['Funds never move', 'Trade-only keys. HELM never asks for exchange passwords, 2FA codes, recovery phrases or withdrawal permission.'],
+]
+const STATUS: Record<string, [string, string]> = {
+  binance: ['DEMO', 'Live in the flagship demo (Spot + USDⓈ-M).'], bybit: ['DEMO', 'Live in the flagship demo (Unified).'],
+  okx: ['BLOCKED', 'Adapter built and tested; logged-in demo unavailable in our region (India).'], coinbase: ['STATIC SANDBOX', 'Predefined mocked responses — never shown as fills.'],
+  ibkr: ['PAPER', 'Via local Client Portal Gateway.'], alpaca: ['DISABLED', 'Not in the track app list.'],
+}
 
 export default function Landing() {
-  const providers = Object.values(PROVIDER_INFO)
   return (
     <div className="pt-16">
-      <section className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr]">
-        <div>
+      <section className="grid items-center gap-12">
+        <div className="max-w-3xl">
           <div className="mb-5 flex items-center gap-3 text-xs font-semibold tracking-[0.25em] text-amber-helm"><HelmMark size={20} /> FOR EVEN REALITIES G2</div>
-          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">One interface.<br />Every supported exchange.<br /><span className="text-amber-helm">Hands-free.</span></h1>
-          <p className="mt-6 max-w-xl text-lg text-graphite-300">HELM connects the exchange and brokerage accounts you already have and puts the one number that matters in front of your eyes. Ask by voice, review the impact, confirm with a deliberate tap. Funds never leave your exchange.</p>
-          <div className="mt-8 flex gap-3">
-            <Link href="/login" className="btn btn-amber">Create a HELM account</Link>
-            <Link href="/capabilities" className="btn btn-ghost">See what each exchange supports</Link>
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">Every exchange.<br />One glance.<br /><span className="text-amber-helm">Nothing executes unseen.</span></h1>
+          <p className="mt-6 max-w-2xl text-lg text-graphite-300">HELM is a trading command center for your G2 glasses. It connects the exchange accounts you already have, shows the exposure that matters, and turns a spoken command into a previewed, risk-checked order you confirm with a deliberate tap.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href="#demo" className="btn btn-amber">Try the interactive demo</a>
+            <Link href="/login?mode=register" className="btn btn-ghost">Create a HELM account</Link>
           </div>
-          <p className="mt-6 text-xs text-graphite-500">Hackathon build: signed requests are hard-restricted to demo, paper and sandbox environments. No financial advice.</p>
+          <p className="mt-6 text-xs text-graphite-500">Hackathon build · live trading is switched off · not financial advice.</p>
         </div>
-        <figure>
-          <div className="g2-glass relative aspect-[2/1] w-full overflow-hidden rounded-2xl border border-graphite-800 p-6">
-            <div className="g2-text flex h-full flex-col justify-between text-[15px] leading-[1.6]">
-              <div className="flex justify-between"><span>ALL EXCHANGES</span><span>3 accts</span></div>
-              <div>
-                <div className="text-2xl">BTC exposure  +0.42</div>
-                <div className="opacity-80">Binance DEMO long 0.30 · OKX DEMO spot 0.12</div>
-                <div className="opacity-80">1 position unprotected</div>
-              </div>
-              <div className="opacity-70">tap: review · hold: speak · double-tap: back</div>
-            </div>
-          </div>
-          <figcaption className="mt-3 text-xs text-graphite-500">Design illustration of a 576×288 monochrome G2 card (not live data). Real screens render through the Even Hub SDK.</figcaption>
-        </figure>
       </section>
 
-      <section className="mt-24">
-        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">EVERY ACTION, THE SAME SEVEN STEPS</h2>
+      <section id="demo" className="mt-20 scroll-mt-20">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">INTERACTIVE DEMO</h2>
+        <p className="mb-6 mt-2 max-w-2xl text-graphite-300">Drive the glasses with a simulated R1 ring. The screens are HELM&apos;s real G2 layouts at 576×288; the numbers are simulated sample data.</p>
+        <LandingDemo />
+      </section>
+
+      <section id="how" className="mt-24 scroll-mt-20">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">HOW IT WORKS — EVERY ACTION, THE SAME SEVEN STEPS</h2>
         <ol className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
-          {FLOW.map((s, i) => (
-            <li key={s} className="card px-4 py-3"><div className="num text-xs text-amber-helm">{String(i + 1).padStart(2, '0')}</div><div className="mt-1 font-medium">{s}</div></li>
-          ))}
+          {FLOW.map((s, i) => <li key={s} className="card px-4 py-3"><div className="num text-xs text-amber-helm">{String(i + 1).padStart(2, '0')}</div><div className="mt-1 font-medium">{s}</div></li>)}
         </ol>
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          {[['Speak', 'Hold the ring and talk. Local speech-to-text (faster-whisper on the HELM server) and a deterministic parser — no LLM decides your trade.'], ['Review', 'Impact, fees, exposure change and Shield checks on the lens. A companion web app shows the same preview in full.'], ['Verify', 'Receipts show exchange-confirmed fills, protection state and any orphan stops HELM cleaned up.']].map(([t, d]) => <div key={t} className="card p-5"><div className="font-semibold">{t}</div><p className="mt-2 text-sm text-graphite-300">{d}</p></div>)}
+        </div>
       </section>
 
-      <section className="mt-20">
-        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">CONNECT WHAT YOU ALREADY USE</h2>
+      <section id="safety" className="mt-24 scroll-mt-20">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">SAFETY, BY CONSTRUCTION</h2>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SAFETY.map(([t, d]) => <div key={t} className="card p-5"><div className="font-semibold">{t}</div><p className="mt-2 text-sm text-graphite-300">{d}</p></div>)}</div>
+      </section>
+
+      <section id="exchanges" className="mt-24 scroll-mt-20">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-graphite-300">EXCHANGES</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {providers.map(p => (
+          {Object.values(PROVIDER_INFO).map(p => { const [tag, line] = STATUS[p.id]; return (
             <div key={p.id} className="card p-5">
-              <div className="flex items-center justify-between">
-                <div className="font-semibold">{p.name}</div>
-                <span className={`pill ${p.trackEligible ? 'bg-up/15 text-up' : 'bg-graphite-700 text-graphite-300'}`}>{p.trackEligible ? 'track app' : 'disabled'}</span>
-              </div>
-              <div className="mt-1 text-xs uppercase tracking-wider text-graphite-500">{p.assetClasses.join(' · ').replace(/_/g, ' ')} — {p.hackathonEnvironment.replace('_', ' ')}</div>
-              <p className="mt-3 text-sm text-graphite-300">{p.notes}</p>
-            </div>
-          ))}
+              <div className="flex items-center justify-between"><div className="font-semibold">{p.name}</div><span className={`pill ${tag === 'DEMO' || tag === 'PAPER' ? 'bg-up/15 text-up' : tag === 'BLOCKED' ? 'bg-down/15 text-down' : 'bg-graphite-700 text-graphite-300'}`}>{tag}</span></div>
+              <div className="mt-1 text-xs uppercase tracking-wider text-graphite-500">{p.assetClasses.join(' · ').replace(/_/g, ' ')}</div>
+              <p className="mt-3 text-sm text-graphite-300">{line}</p>
+            </div>) })}
         </div>
+        <div className="mt-10 flex flex-wrap gap-3"><Link href="/login?mode=register" className="btn btn-amber">Get started</Link><Link href="/login" className="btn btn-ghost">Sign in</Link></div>
       </section>
     </div>
   )

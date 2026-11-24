@@ -30,7 +30,7 @@ function Rose({ c }: { c: Compass }) {
   )
 }
 
-export function ScenarioLab() {
+function ScenarioLab() {
   const presets = useApi<{ presets: Array<{ id: string; name: string; shocks: Array<{ asset: string; shockPercent: string }> }> }>('/v1/shield/scenario/presets')
   const [shocks, setShocks] = useState<Array<{ asset: string; shockPercent: string }>>([{ asset: 'BTC', shockPercent: '-10' }])
   const [name, setName] = useState<string | null>('BTC −10%')
