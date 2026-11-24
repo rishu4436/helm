@@ -10,6 +10,8 @@ for d in pg_notify pg_replslot pg_tblspc pg_twophase pg_snapshots pg_commit_ts p
 $PGBIN/pg_isready -h 127.0.0.1 -p 5444 -q || $PGBIN/pg_ctl -D $PGD -l /workspace/helm-pgdata.log -o "-p 5444 -k /tmp" start
 [ -x /workspace/helm-stt/venv/bin/python ] || bash services/stt/setup.sh
 curl -sf localhost:8178/health >/dev/null || (nohup /workspace/helm-stt/venv/bin/python services/stt/server.py > /tmp/helm-stt.log 2>&1 &)
+# --restart-api: kill whatever holds :4000 by PID (pkill patterns miss the tsx child process)
+if [ "${1:-}" = "--restart-api" ]; then for p in $(pgrep -f 'apps/api/src/server.ts'); do kill "$p" 2>/dev/null; done; sleep 2; fi
 curl -sf localhost:4000/health >/dev/null || (set -a; . ./.env; set +a; nohup npx tsx apps/api/src/server.ts > /tmp/helm-api.log 2>&1 &)
 curl -sf -o /dev/null localhost:3000/ || (cd apps/companion && nohup npx next dev -p 3000 > /tmp/helm-companion.log 2>&1 &)
 sleep 8

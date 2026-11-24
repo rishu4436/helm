@@ -2,6 +2,45 @@
 
 Times are IST (UTC+5:30). Status keys: PASS · FAIL · BLOCKED · NOT RUN.
 
+## 2026-11-24 16:50 IST — Trade-to-Protect recovery, spot stop cleanup, simulator rerun, secret scan
+
+**Done**
+- **Protect an existing position (recovery):** `POST /v1/protection/preview` builds a reduce-only STOP_MARKET for the whole open perp position, placed from the mark price at a chosen distance (or an explicit stop price on the safe side). Confirmation goes through the normal `/v1/trade/confirm`, which rechecks that the position is still the same size and the market has not already crossed the stop (otherwise STALE). The plan (`source=recovery`, no entry order) becomes PROTECTED only once the venue lists the stop. A second preview is refused with ALREADY_PROTECTED, and spot is refused.
+  - On the glasses: Home → **Protect positions** → position → 2/3/5 % → PROTECT POSITION impact → risk → CONFIRM STOP (Cancel is the default) → receipt.
+  - In the companion: `/protect` → Unprotected positions → stop % → **Preview stop** → the same preview/confirm panel → receipt. The plans table shows Entry or Recovery.
+  - By voice: "add a 3 percent stop to my BTC position" or "show unprotected positions" opens Protect positions, narrowed by asset and account.
+- **Spot stop cleanup on sale:** "sell all" on spot first cancels that asset's resting spot stops; if any cancel fails, nothing is sold (PROTECTION_RELEASE_FAILED). Any other spot sale cancels stops (newest first) that the remaining holding can no longer cover. HELM never silently re-places a smaller stop.
+- **Glasses fixes found in the simulator rerun:**
+  - **List items must be ≤63 UTF-8 bytes.** A Pulse list with 64-byte items made simulator 0.9.5 reject the whole rebuild; 63 bytes worked (bisected).
+  - One tap now makes one preview: repeated taps during a slow venue preview had created 3 proposals (none confirmed).
+  - A refused rebuild now shows DISPLAY ERROR instead of leaving the app state out of step with the display.
+  - The close impact says it will cancel the leftover stop.
+  - Resting-stop receipts show the stop size instead of "0 BTC".
+- `scripts/sim-run.py` + `scripts/sim-flows/*.json` drive the simulator and wait for each `[HELM] screen …` log before every screenshot.
+- **Secret scan:**
+  - gitleaks 8.21.2 over git history: 0 leaks.
+  - Working tree: 9 hits, all in gitignored `.env`, `apps/api/.env` and `.next/`.
+  - `scripts/secret-history-check.ts` unseals each stored exchange key in memory and searches every patch in history for the literal values: 0 found.
+
+**Verification**
+
+| Check | Result |
+|---|---|
+| `pnpm test` | **PASS — 276/276** (21 files) |
+| `pnpm -r typecheck` | PASS |
+| Real recovery + spot cleanup run (`scripts/live-recovery-demo.ts`) on Bybit Demo linear, Binance Demo USDⓈ-M, Bybit Demo spot SOL | **PASS 25/25** → `evidence/protection-recovery/run-2026-11-24T10-37-33-009Z.json`. The first run was 23/25 because of a bug in the script's own check (it read `body.code` instead of `body.error.code`; the venue had returned 409 correctly) → `run-2026-11-24T10-34-35-670Z.json` |
+| Playwright (prod build) | **PASS 46/46**, including /protect recovery on a SIM perp → `evidence/companion/29-*.png`, `30-*.png` |
+| `helm.ehpk` rebuilt | PASS (local only, not uploaded) |
+| Simulator rerun: entry + 3 % stop → PROTECTED → Pulse/Compass/Emergency → reduce-only close (orphan stop canceled) on **Bybit Demo** | **PASS** (82/82 scripted steps) → `evidence/g2-trade-flow/01…25`, `run-log-flow1-*.json` |
+| Simulator recovery on **Binance Demo USDⓈ-M** (position opened without a stop, then protected on the glasses, then closed) | **PASS** (47/47 steps) → `evidence/g2-trade-flow/31…47`, `run-log-flow2-recovery.json` |
+| Simulator voice: a Kokoro-spoken WAV played into the box's PulseAudio monitor → simulator mic → local faster-whisper heard "Buy $100 of BTC." → Which exchange? → Binance · SIM → SIMULATED receipt | **PASS** → `evidence/g2-trade-flow/50…58` (synthetic voice, not a human through G2 mics) |
+| Secret scan | **PASS** → `evidence/secret-scan/` |
+| Demo accounts afterwards (`scripts/check-flat.ts`, `demo-cleanup`) | **Flat**: 0 positions and 0 open orders on all three demo accounts; `remaining: []` |
+
+**Notes**
+- The Bybit spot SOL sale left about 0.00006 SOL of dust (below the 0.001 lot step), so it cannot be sold.
+- During the first simulator attempt the running API process was a stale one from 15:17 (`pkill` did not match it), which produced 500s in Playwright. It was killed by PID and the run was repeated. `dev-up.sh` should kill by PID.
+
 ## 2026-11-24 15:51 IST — Orphan-stop fix, local STT, recipes + scenarios, complete companion site
 
 **Done**
@@ -32,8 +71,8 @@ Playwright safety: no test confirms on a demo exchange. The terminal test previe
 **Bugs found (fixed):** Tailwind 4 unlayered custom CSS overrode utilities (moved to `@layer`); Next.js rejected non-default exports from page/layout files; `/v1/portfolio` 3.6–5 s (parallel reads + cache → ~1.7 s); dead-button audit found selected-state buttons without `aria-pressed`, ring swipes at list bounds, and CSV export with no feedback.
 
 **Known gaps**
-- Attaching a stop to an *existing* unprotected position is not built (stated on /protect).
-- Spot orphan cleanup is not implemented (spot stops are not reduce-only).
+- ~~Attaching a stop to an existing unprotected position~~ → built 16:50.
+- ~~Spot orphan cleanup~~ → built 16:50.
 - "Vision" is interpreted as the live G2 HUD mirror (no separate spec text was available).
 - Dead-button audit covers up to 30 buttons per page; on long lists (history, pulse, voice samples) it clicks a subset.
 - Box resets wipe /tmp and uncommitted work; WIP is now committed often.
