@@ -66,7 +66,10 @@ export function parseDeterministic(transcript: string): TradeIntent {
   const notionalVal = notional ? (notional[1] ?? notional[2] ?? notional[3]) : null
   const lev = t.match(new RegExp(String.raw`${num}\s?(?:x|times)\b(?:\s+leverage)?|leverage\s+(?:of\s+)?${num}`))
   const levVal = lev ? (lev[1] ?? lev[2]) : null
-  const stop = t.match(new RegExp(String.raw`stop(?:\s+loss)?\s+(?:at\s+)?${num}\s?(?:percent|%)\s+(?:below|under|beneath|above)`))
+  const stopA = t.match(new RegExp(String.raw`stop(?:\s+loss)?\s+(?:at\s+)?${num}\s?(?:percent|%)\s+(?:below|under|beneath|above)`))
+  // “with a 3% stop” / “3 percent stop loss” (the form speech recognisers usually return)
+  const stopB = t.match(new RegExp(String.raw`${num}\s?(?:percent|%)\s+stop(?:[\s-]+loss)?\b`))
+  const stop = stopA ?? stopB
   const shares = t.match(new RegExp(String.raw`${num}\s+shares?`))
   const qty = t.match(new RegExp(String.raw`(?<![$\d.]\s?)${num}\s+(?:btc|bitcoin|eth|ether|sol|solana)\b`))
   const pctMatch = t.match(new RegExp(String.raw`${num}\s?(?:percent|%)`))

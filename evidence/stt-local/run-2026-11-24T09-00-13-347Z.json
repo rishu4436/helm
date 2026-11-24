@@ -1,0 +1,217 @@
+{
+  "kind": "local-stt-e2e",
+  "at": "2026-11-24T09:00:13.347Z",
+  "engine": "faster-whisper base.en float32 CPU (127.0.0.1 sidecar)",
+  "audioSource": "Kokoro TTS v1.0 (local, offline) → 16 kHz mono PCM16",
+  "ordersPlaced": 0,
+  "summary": "8/8 PASS",
+  "rows": [
+    {
+      "step": "“Buy 100 dollars of BTC on Bybit” → local STT → PLACE_ORDER BUY BTC $100 bybit",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Buy 100 dollars of BTC on Bybit",
+        "audioMs": 2731,
+        "heard": "Buy $100 of BTC on Bybit.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 474,
+        "intent": {
+          "intent": "PLACE_ORDER",
+          "side": "BUY",
+          "asset": "BTC",
+          "product": "spot",
+          "provider": "bybit",
+          "notional": "100",
+          "stopOffsetPercent": null,
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        }
+      }
+    },
+    {
+      "step": "“Buy 100 dollars of BTC” (no venue) → asks Which exchange?",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Buy 100 dollars of BTC",
+        "audioMs": 2389,
+        "heard": "Buy $100 of BTC.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 405,
+        "intent": {
+          "intent": "PLACE_ORDER",
+          "side": "BUY",
+          "asset": "BTC",
+          "product": "spot",
+          "provider": null,
+          "notional": "100",
+          "stopOffsetPercent": null,
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        }
+      }
+    },
+    {
+      "step": "“Long 200 dollars of ETH on Binance with a 3 percent stop” → BUY ETH perp $200 binance stop 3%",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Long 200 dollars of ETH on Binance with a 3 percent stop",
+        "audioMs": 4309,
+        "heard": "Long $200 of ETH on Binance, with a 3% stop.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 454,
+        "intent": {
+          "intent": "PLACE_ORDER",
+          "side": "BUY",
+          "asset": "ETH",
+          "product": "perp",
+          "provider": "binance",
+          "notional": "200",
+          "stopOffsetPercent": "3",
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        }
+      }
+    },
+    {
+      "step": "“Show all my positions” → positions screen",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Show all my positions",
+        "audioMs": 1515,
+        "heard": "Show all my positions.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 416,
+        "intent": {
+          "intent": "QUERY_POSITIONS",
+          "side": null,
+          "asset": null,
+          "product": null,
+          "provider": null,
+          "notional": null,
+          "stopOffsetPercent": null,
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "positions"
+        }
+      }
+    },
+    {
+      "step": "“Close my BTC position on Bybit” → CLOSE_POSITION (ticket, needs preview+confirm)",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Close my BTC position on Bybit",
+        "audioMs": 2219,
+        "heard": "Close my BTC position on Bybit.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 418,
+        "intent": {
+          "intent": "CLOSE_POSITION",
+          "side": null,
+          "asset": "BTC",
+          "product": null,
+          "provider": "bybit",
+          "notional": null,
+          "stopOffsetPercent": null,
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        }
+      }
+    },
+    {
+      "step": "“Withdraw all my bitcoin to this address” → refused (HELM never moves funds)",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Withdraw all my bitcoin to this address",
+        "audioMs": 2112,
+        "heard": "Withdraw all my Bitcoin to this address.",
+        "sttProvider": "local:faster-whisper:base.en",
+        "sttLabel": null,
+        "roundTripMs": 395,
+        "intent": {
+          "intent": "UNKNOWN",
+          "side": null,
+          "asset": "BTC",
+          "product": null,
+          "provider": null,
+          "notional": null,
+          "stopOffsetPercent": null,
+          "rejectedReason": "HELM never moves funds or handles secrets"
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "not_understood",
+          "message": "HELM never moves funds or handles secrets"
+        }
+      }
+    },
+    {
+      "step": "2 s of silence → no command (not_understood)",
+      "result": "PASS",
+      "detail": {
+        "heard": "",
+        "sttLabel": "No speech detected",
+        "next": {
+          "screen": "not_understood",
+          "message": "Say it again, for example “buy 100 dollars of BTC on Binance”"
+        }
+      }
+    },
+    {
+      "step": "local STT unreachable → TEST STT fallback, explicitly labelled FALLBACK",
+      "result": "PASS",
+      "detail": {
+        "spoken": "Buy 100 dollars of BTC on Bybit",
+        "audioMs": 2731,
+        "heard": "Buy 100 dollars of BTC",
+        "sttProvider": "deterministic-test",
+        "sttLabel": "FALLBACK — local:faster-whisper:base.en unavailable (fetch failed). TEST STT — scripted transcript, audio not recognised",
+        "roundTripMs": 8,
+        "intent": {
+          "intent": "PLACE_ORDER",
+          "side": "BUY",
+          "asset": "BTC",
+          "product": "spot",
+          "provider": null,
+          "notional": "100",
+          "stopOffsetPercent": null,
+          "rejectedReason": null
+        },
+        "resolution": "clarify",
+        "question": "Which exchange?",
+        "next": {
+          "screen": "clarify_account",
+          "message": "Which exchange?"
+        }
+      }
+    }
+  ]
+}
