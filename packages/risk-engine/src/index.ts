@@ -188,4 +188,73 @@ export function scenario(portfolio: Portfolio, asset: string, shockPct: Decimal)
   return { asset: asset.toUpperCase(), shockPct, totalPnlUsd: sum(legs.map(l => l.pnlUsd)), legs, disclaimer: 'Stress test using a linear model on current exposure. Not a market prediction; ignores funding, fees, and margin tier changes.' }
 }
 
+export interface MultiScenarioResult {
+  name: string | null
+  shocks: Array<{ asset: string; shockPct: Decimal }>
+  totalPnlUsd: Decimal
+  /** Same shocks, but perp legs with a venue-listed reduce-only stop lose at most down to the stop trigger. */
+  totalPnlWithStopsUsd: Decimal
+  netLiquidationUsd: Decimal
+  pnlPctOfNetLiq: Decimal | null
+  perAsset: Array<ScenarioResult & { pnlWithStopsUsd: Decimal }>
+  byAccount: Array<{ accountId: string; alias: string; pnlUsd: Decimal; pnlWithStopsUsd: Decimal }>
+  liquidationBreaches: Array<{ accountId: string; alias: string; asset: string }>
+  stopsCounted: Array<{ accountId: string; instrumentId: string; stopPrice: Decimal; savedUsd: Decimal }>
+  unprotectedLegs: Array<{ accountId: string; instrumentId: string }>
+  disclaimer: string
+}
+
+export const SCENARIO_PRESETS: Array<{ id: string; name: string; shocks: Array<{ asset: string; shockPercent: string }> }> = [
+  { id: 'btc-10', name: 'BTC −10%', shocks: [{ asset: 'BTC', shockPercent: '-10' }] },
+  { id: 'crypto-crash', name: 'Crypto crash (BTC −15, ETH −20, SOL −25)', shocks: [{ asset: 'BTC', shockPercent: '-15' }, { asset: 'ETH', shockPercent: '-20' }, { asset: 'SOL', shockPercent: '-25' }] },
+  { id: 'flash-wick', name: 'Flash wick (all −30%)', shocks: [{ asset: 'BTC', shockPercent: '-30' }, { asset: 'ETH', shockPercent: '-30' }, { asset: 'SOL', shockPercent: '-30' }] },
+  { id: 'squeeze', name: 'Short squeeze (BTC +12, ETH +15)', shocks: [{ asset: 'BTC', shockPercent: '12' }, { asset: 'ETH', shockPercent: '15' }] },
+  { id: 'eth-underperform', name: 'ETH/BTC unwind (BTC −3, ETH −12)', shocks: [{ asset: 'BTC', shockPercent: '-3' }, { asset: 'ETH', shockPercent: '-12' }] },
+]
+
+/** Several simultaneous shocks. Linear on current exposure; optionally caps perp losses at venue-listed protective stops. */
+export function multiScenario(portfolio: Portfolio, shocks: Array<{ asset: string; shockPct: Decimal }>, name: string | null = null): MultiScenarioResult {
+  const stopsCounted: MultiScenarioResult['stopsCounted'] = []
+  const unprotectedLegs: MultiScenarioResult['unprotectedLegs'] = []
+  const perAsset = shocks.map(sh => {
+    const r = scenario(portfolio, sh.asset, sh.shockPct)
+    let withStops = dec(0)
+    for (const leg of r.legs) {
+      const p = leg.kind === 'perp' ? portfolio.positions.find(x => x.accountId === leg.accountId && baseOf(x.instrumentId) === r.asset && x.product === 'perp' && !x.quantity.isZero()) : undefined
+      if (!p || !p.markPrice) { withStops = withStops.plus(leg.pnlUsd); continue }
+      const long = !(p.side === 'SHORT' || p.quantity.isNegative())
+      const stop = portfolio.openOrders.find(o => o.accountId === p.accountId && o.instrumentId === p.instrumentId && (o.type === 'STOP_MARKET' || o.type === 'STOP_LIMIT') && o.reduceOnly && o.side === (long ? 'SELL' : 'BUY') && o.stopPrice)
+      if (!stop) { unprotectedLegs.push({ accountId: p.accountId, instrumentId: p.instrumentId }); withStops = withStops.plus(leg.pnlUsd); continue }
+      const shocked = p.markPrice.mul(dec(1).plus(sh.shockPct.div(100)))
+      const hit = long ? shocked.lte(stop.stopPrice!) : shocked.gte(stop.stopPrice!)
+      if (!hit || leg.pnlUsd.gte(0)) { withStops = withStops.plus(leg.pnlUsd); continue }
+      const qty = p.quantity.abs()
+      const capped = (long ? stop.stopPrice!.minus(p.markPrice) : p.markPrice.minus(stop.stopPrice!)).mul(qty)
+      const legWith = Decimal.max(leg.pnlUsd, capped)
+      stopsCounted.push({ accountId: p.accountId, instrumentId: p.instrumentId, stopPrice: stop.stopPrice!, savedUsd: legWith.minus(leg.pnlUsd) })
+      withStops = withStops.plus(legWith)
+    }
+    return { ...r, pnlWithStopsUsd: withStops }
+  })
+  const acc = new Map<string, { accountId: string; alias: string; pnlUsd: Decimal; pnlWithStopsUsd: Decimal }>()
+  for (const a of perAsset) for (const l of a.legs) {
+    const cur = acc.get(l.accountId) ?? { accountId: l.accountId, alias: l.alias, pnlUsd: dec(0), pnlWithStopsUsd: dec(0) }
+    cur.pnlUsd = cur.pnlUsd.plus(l.pnlUsd)
+    const saved = stopsCounted.filter(x => x.accountId === l.accountId && baseOf(x.instrumentId) === a.asset).reduce((t, x) => t.plus(x.savedUsd), dec(0))
+    cur.pnlWithStopsUsd = cur.pnlWithStopsUsd.plus(l.pnlUsd).plus(l.kind === 'perp' ? saved : 0)
+    acc.set(l.accountId, cur)
+  }
+  const total = sum(perAsset.map(a => a.totalPnlUsd))
+  const totalWith = sum(perAsset.map(a => a.pnlWithStopsUsd))
+  const nl = portfolio.netLiquidationUsd
+  return {
+    name, shocks: shocks.map(x => ({ asset: x.asset.toUpperCase(), shockPct: x.shockPct })), totalPnlUsd: total, totalPnlWithStopsUsd: totalWith,
+    netLiquidationUsd: nl, pnlPctOfNetLiq: nl.isZero() ? null : total.div(nl).mul(100),
+    perAsset, byAccount: [...acc.values()].sort((a, b) => a.pnlUsd.comparedTo(b.pnlUsd)),
+    liquidationBreaches: perAsset.flatMap(a => a.legs.filter(l => l.breachesLiquidation).map(l => ({ accountId: l.accountId, alias: l.alias, asset: a.asset }))),
+    stopsCounted, unprotectedLegs,
+    disclaimer: 'Stress test, not a prediction. Linear model on current exposure; ignores funding, fees, correlation changes and margin tiers. "With stops" assumes each venue-listed stop fills at its trigger — real gaps and slippage can be worse.',
+  }
+}
+
 export { Decimal }

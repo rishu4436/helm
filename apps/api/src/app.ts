@@ -10,6 +10,7 @@ import { pairingRoutes } from './routes/pairing'
 import { connectionRoutes } from './routes/connections'
 import { metaRoutes } from './routes/meta'
 import { engineRoutes } from './routes/engine'
+import { recipeRoutes } from './routes/recipes'
 import { setMarketFetch } from './engine/market'
 import type { FetchLike } from '@helm/connectors'
 
@@ -53,6 +54,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   await app.register(pairingRoutes(ctx))
   await app.register(connectionRoutes(ctx))
   await app.register(engineRoutes(ctx))
+  await app.register(recipeRoutes(ctx))
   return app
 }
 

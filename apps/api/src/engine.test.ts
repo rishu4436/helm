@@ -162,3 +162,55 @@ describe('orphaned protective orders', () => {
     expect(em.items).toEqual([])
   })
 })
+
+describe('recipes + multi-asset scenarios', () => {
+  it('CRUD with validation, versioning and owner isolation', async () => {
+    const t = await register('r@helm.test'); const other = await register('r2@helm.test')
+    const list = (await app.inject({ method: 'GET', url: '/v1/recipes', headers: H(t) })).json()
+    expect(list.builtins.map((b: { id: string }) => b.id)).toEqual(expect.arrayContaining(['builtin:protected-entry', 'builtin:pre-sleep', 'builtin:trim-half']))
+    expect(list.recipes).toEqual([])
+    const bad = await app.inject({ method: 'POST', url: '/v1/recipes', headers: H(t), payload: { name: 'x', definition: { steps: [{ type: 'trade', product: 'perp', asset: 'BTC', side: 'BUY' }] } } })
+    expect(bad.statusCode).toBe(400)
+    const def = { params: { amt: { label: 'Amount', kind: 'amount', default: '25' } }, steps: [{ type: 'trade', product: 'spot', asset: 'ETH', side: 'BUY', notional: '{{amt}}' }] }
+    const c = await app.inject({ method: 'POST', url: '/v1/recipes', headers: H(t), payload: { name: 'ETH nibble', definition: def } })
+    expect(c.statusCode).toBe(201)
+    const id = c.json().id
+    const u = (await app.inject({ method: 'PUT', url: `/v1/recipes/${id}`, headers: H(t), payload: { name: 'ETH nibble v2', definition: def } })).json()
+    expect(u.version).toBe(2)
+    expect((await app.inject({ method: 'PUT', url: `/v1/recipes/${id}`, headers: H(other), payload: { name: 'hijack', definition: def } })).statusCode).toBe(404)
+    expect((await app.inject({ method: 'POST', url: `/v1/recipes/${id}/run`, headers: H(other), payload: {} })).statusCode).toBe(404)
+    expect((await app.inject({ method: 'DELETE', url: `/v1/recipes/${id}`, headers: H(t) })).json()).toEqual({ deleted: true })
+    expect(await prisma.auditEvent.count({ where: { action: { startsWith: 'recipe.' } } })).toBe(3)
+  })
+
+  it('running a recipe only previews (no orders); each preview confirms on its own; ambiguous venue asks Which exchange?', async () => {
+    const t = await register('rr@helm.test'); const acct = await simAccount(t)
+    const run = (await app.inject({ method: 'POST', url: '/v1/recipes/builtin:protected-entry/run', headers: H(t), payload: { params: { notional: '240', stop: '3' } } })).json()
+    expect(run.ordersPlaced).toBe(0)
+    expect(run.steps.map((s: { type: string; status: string }) => `${s.type}:${s.status}`)).toEqual(['check:ok', 'trade:previewed'])
+    const pv = run.steps[1].preview
+    expect(pv.confirmToken).toBeTruthy()
+    expect(await prisma.order.count()).toBe(0)
+    const r = (await confirm(t, pv)).json().receipt
+    expect(r.status).toBe('FILLED'); expect(r.protection.state).toBe('PROTECTED')
+    // stop-aware stress: long BTC with a 3% stop under a −15% crash
+    const sc = (await app.inject({ method: 'POST', url: '/v1/shield/scenarios', headers: H(t), payload: { preset: 'crypto-crash' } })).json().scenario
+    expect(Number(sc.totalPnlUsd)).toBeLessThan(0)
+    expect(sc.stopsCounted).toHaveLength(1)
+    expect(Number(sc.totalPnlWithStopsUsd)).toBeGreaterThan(Number(sc.totalPnlUsd))
+    const q = Number(r.filledQuantity)
+    // loss capped at the stop: saved = linear loss (−15%) − loss down to the stop trigger (marks ≈ 60000 in this test)
+    expect(Number(sc.stopsCounted[0].savedUsd)).toBeCloseTo(q * 60000 * 0.15 - q * (60000 - Number(r.protection.stopPrice)), 0)
+    expect(Number(sc.totalPnlWithStopsUsd) - Number(sc.totalPnlUsd)).toBeCloseTo(Number(sc.stopsCounted[0].savedUsd), 6)
+    expect(sc.disclaimer).toMatch(/not a prediction/)
+    const custom = await app.inject({ method: 'POST', url: '/v1/shield/scenarios', headers: H(t), payload: { shocks: [{ asset: 'BTC', shockPercent: '-150' }] } })
+    expect(custom.statusCode).toBe(400)
+    const sleep = (await app.inject({ method: 'POST', url: '/v1/recipes/builtin:pre-sleep/run', headers: H(t), payload: {} })).json()
+    expect(sleep.steps.map((s: { status: string }) => s.status)).toEqual(['ok', expect.any(String), 'ok'])
+    await simAccount(t, 'bybit', 'Bybit · SIM')
+    const amb = (await app.inject({ method: 'POST', url: '/v1/recipes/builtin:spot-buy/run', headers: H(t), payload: {} })).json()
+    expect(amb.steps[0]).toMatchObject({ status: 'needs_account', question: 'Which exchange?' })
+    const chosen = (await app.inject({ method: 'POST', url: '/v1/recipes/builtin:spot-buy/run', headers: H(t), payload: { params: { account: acct } } })).json()
+    expect(chosen.steps[0].status).toBe('previewed')
+  })
+})
