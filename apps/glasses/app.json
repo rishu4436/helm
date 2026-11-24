@@ -1,0 +1,13 @@
+{
+  "package_id": "com.helm.g2trading",
+  "edition": "202601",
+  "name": "HELM",
+  "version": "0.1.0",
+  "min_sdk_version": "0.0.10",
+  "entrypoint": "index.html",
+  "permissions": [
+    { "name": "network", "desc": "Talk to the HELM backend (pairing, portfolio, order previews). Exchange keys never reach the glasses.", "whitelist": ["http://localhost:4000", "http://127.0.0.1:4000"] },
+    { "name": "g2-microphone", "desc": "Voice commands, only while you hold a listening session." }
+  ],
+  "supported_languages": ["en"]
+}
