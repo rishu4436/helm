@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "description": "HELM — Universal Trading Command Center for Even Realities G2",
   "packageManager": "pnpm@10.34.6",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -12,11 +14,16 @@
     "build": "pnpm -r --if-present build",
     "dev:api": "pnpm --filter @helm/api dev",
     "dev:glasses": "pnpm --filter @helm/glasses dev",
-    "dev:companion": "pnpm --filter @helm/companion dev"
+    "dev:companion": "pnpm --filter @helm/companion dev",
+    "check:live-public": "tsx scripts/live-public-check.ts"
   },
   "devDependencies": {
+    "@helm/connectors": "workspace:*",
+    "@helm/shared": "workspace:*",
     "@types/node": "^22.10.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.0",
     "vitest": "^3.2.0"
-  }
+  },
+  "type": "module"
 }

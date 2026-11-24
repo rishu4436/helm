@@ -1,0 +1,66 @@
+{
+  "ranAt": "2026-11-24T07:32:35.201Z",
+  "note": "No credentials used. Public market data + Coinbase static sandbox only.",
+  "rows": [
+    {
+      "check": "binance demo spot clock sync",
+      "result": "PASS",
+      "detail": "offset 397 ms"
+    },
+    {
+      "check": "binance demo spot order book BTCUSDT",
+      "result": "PASS",
+      "detail": "bid 60418.56 / ask 60418.57 @ 2026-11-24T07:32:27.328Z (5x5 levels)"
+    },
+    {
+      "check": "binance demo spot exchangeInfo BTCUSDT filters",
+      "result": "PASS",
+      "detail": "lot 0.00001 tick 0.01 minNotional 5 status trading"
+    },
+    {
+      "check": "binance demo usdm order book BTCUSDT",
+      "result": "PASS",
+      "detail": "bid 60387.7 / ask 60390.1 @ 2026-11-24T07:32:30.343Z (5x5 levels)"
+    },
+    {
+      "check": "okx public order book BTC-USDT",
+      "result": "PASS",
+      "detail": "bid 60423 / ask 60423.1 @ 2026-11-24T07:32:30.705Z (5x5 levels)"
+    },
+    {
+      "check": "okx public swap instruments",
+      "result": "PASS",
+      "detail": "ctVal 0.01 lot 0.01 tick 0.1"
+    },
+    {
+      "check": "bybit demo clock sync",
+      "result": "PASS",
+      "detail": "offset 601 ms"
+    },
+    {
+      "check": "bybit demo order book linear BTCUSDT",
+      "result": "PASS",
+      "detail": "bid 60394.1 / ask 60394.2 @ 2026-11-24T07:32:34.561Z (5x5 levels)"
+    },
+    {
+      "check": "coinbase static sandbox connect",
+      "result": "PASS",
+      "detail": "LIMITED: Coinbase static sandbox — predefined mock responses, not real executions"
+    },
+    {
+      "check": "coinbase static sandbox balances",
+      "result": "PASS",
+      "detail": "USDC 100, ETH 1, USD 100, BTC 0.5"
+    },
+    {
+      "check": "coinbase static sandbox create order (mock)",
+      "result": "PASS",
+      "detail": "status ACCEPTED simulatedStatic=true providerOrderId=f898eaf4-6ffc-47be-a159-7ff292e5cdcf"
+    },
+    {
+      "check": "env guard blocks production signed order (no network)",
+      "result": "PASS",
+      "detail": "blocked: Blocked DELETE https://api.binance.com/api/v3/order: authenticated requests are restricted to demo/paper/sandbox hosts"
+    }
+  ]
+}

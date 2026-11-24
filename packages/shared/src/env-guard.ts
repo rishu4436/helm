@@ -21,6 +21,8 @@ interface HostRule {
   /** Header that must be present with the given value on authenticated requests. */
   requiredAuthHeader?: { name: string; value: string }
   loopbackOnly?: boolean
+  /** Static mock sandboxes (no auth, no state): any method allowed, auth forbidden. */
+  staticSandbox?: string[]
 }
 
 export const ENDPOINT_RULES: Record<ProviderId, HostRule> = {
@@ -43,8 +45,9 @@ export const ENDPOINT_RULES: Record<ProviderId, HostRule> = {
   coinbase: {
     // Static sandbox needs no auth; HELM never sends Coinbase production credentials in the hackathon.
     authenticated: [],
-    publicData: ['api-sandbox.coinbase.com', 'api.coinbase.com'],
-    publicPathPrefixes: ['/api/v3/brokerage/'],
+    staticSandbox: ['api-sandbox.coinbase.com'],
+    publicData: ['api.coinbase.com'],
+    publicPathPrefixes: ['/api/v3/brokerage/market/'],
   },
   alpaca: {
     authenticated: ['paper-api.alpaca.markets'],
@@ -109,6 +112,7 @@ export function assertEndpointAllowed(c: EndpointCheck): void {
   }
 
   // unauthenticated
+  if (rule.staticSandbox?.includes(host)) return
   if (method !== 'GET') fail('unauthenticated requests are GET-only market data')
   if (!rule.publicData.includes(host) && !rule.authenticated.includes(host)) fail('host not on public market-data allowlist')
   if (rule.publicPathPrefixes && rule.publicData.includes(host) && !rule.authenticated.includes(host)) {

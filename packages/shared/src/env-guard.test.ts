@@ -45,6 +45,11 @@ describe('environment guard', () => {
     blocked({ provider: 'okx', url: 'https://www.okx.com/api/v5/trade/order', method: 'GET', authenticated: false })
     ok({ provider: 'coinbase', url: 'https://api-sandbox.coinbase.com/api/v3/brokerage/accounts', method: 'GET', authenticated: false })
     blocked({ provider: 'coinbase', url: 'https://evil.example.com/api/v3/brokerage/accounts', method: 'GET', authenticated: false })
+    ok({ provider: 'coinbase', url: 'https://api-sandbox.coinbase.com/api/v3/brokerage/orders', method: 'POST', authenticated: false })
+    blocked({ provider: 'coinbase', url: 'https://api-sandbox.coinbase.com/api/v3/brokerage/orders', method: 'POST', authenticated: true })
+    ok({ provider: 'coinbase', url: 'https://api.coinbase.com/api/v3/brokerage/market/products/BTC-USD', method: 'GET', authenticated: false })
+    blocked({ provider: 'coinbase', url: 'https://api.coinbase.com/api/v3/brokerage/orders', method: 'POST', authenticated: false })
+    blocked({ provider: 'coinbase', url: 'https://api.coinbase.com/api/v3/brokerage/accounts', method: 'GET', authenticated: false })
   })
 
   it('treats Alpaca data API as GET-only', () => {
