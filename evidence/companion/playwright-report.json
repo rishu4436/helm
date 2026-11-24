@@ -1,0 +1,358 @@
+{
+  "config": {
+    "argv": [
+      "/usr/local/lib/nodejs/node",
+      "/workspace/helm/node_modules/.pnpm/@playwright+test@1.65.1/node_modules/@playwright/test/cli.js",
+      "test",
+      "e2e/dead-buttons.spec.ts",
+      "-g",
+      "on /$|protect|devices|settings|capabilities"
+    ],
+    "configFile": "/workspace/helm/apps/companion/playwright.config.ts",
+    "rootDir": "/workspace/helm/apps/companion/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/helm/apps/companion/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/helm/apps/companion/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/helm/apps/companion/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/workspace/helm/apps/companion/e2e",
+        "snapshotDir": "/workspace/helm/apps/companion/e2e",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "actionTimeout": 20000,
+          "navigationTimeout": 60000
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../../evidence/companion/playwright-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dead-buttons.spec.ts",
+      "file": "dead-buttons.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "no dead buttons on /",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/: 7 buttons clicked, 7 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9395,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /: clicked 7/7 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:04:37.749Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/: 7 buttons clicked, 7 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-1df8bd74277c1634fc63",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /protect",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/protect: 0 buttons clicked, 0 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6123,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /protect: clicked 0/0 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:04:47.224Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/protect: 0 buttons clicked, 0 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-87e378e8ded210402723",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /devices",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/devices: 0 buttons clicked, 0 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2712,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /devices: clicked 0/0 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:04:53.357Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/devices: 0 buttons clicked, 0 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-111346dfbee6d3bd4873",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /capabilities",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/capabilities: 0 buttons clicked, 0 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2689,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /capabilities: clicked 0/0 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:04:56.083Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/capabilities: 0 buttons clicked, 0 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-ab982c6d590678e08b71",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "no dead buttons on /settings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "audit",
+                  "description": "/settings: 0 buttons clicked, 0 eligible, dead: 0"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2683,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /settings: clicked 0/0 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T10:04:58.780Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/settings: 0 buttons clicked, 0 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-3f1cf0bcff874460bd5b",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-24T10:04:37.335Z",
+    "duration": 24199.493000000002,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

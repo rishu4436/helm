@@ -38,7 +38,7 @@ export default function Settings() {
         <Card title="Reporting">
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between"><dt className="text-graphite-300">Reporting currency</dt><dd className="num">{me.data?.user.reportingCurrency ?? 'USD'}</dd></div>
-            <p className="text-xs text-graphite-500">Values are USD-equivalent using live venue prices (USDT/USDC at their quoted rate). Other currencies are not offered yet.</p>
+            <p className="text-xs text-graphite-500">Values are USD-equivalent, using live venue prices. Other currencies are not offered yet.</p>
             <div className="flex justify-between"><dt className="text-graphite-300">Times</dt><dd>India Standard Time (IST)</dd></div>
           </dl>
         </Card>

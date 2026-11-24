@@ -105,8 +105,8 @@ export function LandingDemo() {
         <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] text-amber-helm"><span className="pill bg-amber-helm/15 text-amber-helm">SIMULATED SAMPLE DATA</span><span className="text-graphite-500">runs in your browser · nothing is sent</span></div>
         <div className="max-w-full overflow-hidden"><G2Screen spec={spec} selected={st.sel} testId="landing-g2" caption={`Real HELM G2 screen builder: ${spec.key}. Sample numbers, not an account.`} /></div>
         <div className="mt-3 flex flex-wrap gap-2" aria-label="Simulated R1 ring">
-          <button className="btn btn-ghost" onClick={() => move(-1)} disabled={!listLen} data-testid="ring-up">Swipe ↑</button>
-          <button className="btn btn-ghost" onClick={() => move(1)} disabled={!listLen} data-testid="ring-down">Swipe ↓</button>
+          <button className="btn btn-ghost" onClick={() => move(-1)} disabled={st.sel <= 0} data-testid="ring-up">Swipe ↑</button>
+          <button className="btn btn-ghost" onClick={() => move(1)} disabled={st.sel >= listLen - 1} data-testid="ring-down">Swipe ↓</button>
           <button className="btn btn-amber" onClick={tap} data-testid="ring-tap">Tap</button>
           <button className="btn btn-ghost" onClick={back} data-testid="ring-back">Double-tap</button>
         </div>

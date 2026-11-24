@@ -52,8 +52,8 @@ export default function Vision() {
         <div>
           {spec ? <div className="max-w-full overflow-x-auto"><G2Screen spec={spec} selected={sel} testId="vision-g2" caption={`screen: ${spec.key} · live data`} /></div> : <div style={{ width: 576, height: 288 }} className="max-w-full"><Skeleton h="h-[288px]" /></div>}
           <div className="mt-3 flex flex-wrap gap-2" aria-label="R1 ring">
-            <Btn onClick={() => setSel(s => Math.max(0, s - 1))} disabled={!len} testId="vision-up">Swipe ↑</Btn>
-            <Btn onClick={() => setSel(s => Math.min(len - 1, s + 1))} disabled={!len} testId="vision-down">Swipe ↓</Btn>
+            <Btn onClick={() => setSel(s => Math.max(0, s - 1))} disabled={sel <= 0} testId="vision-up">Swipe ↑</Btn>
+            <Btn onClick={() => setSel(s => Math.min(len - 1, s + 1))} disabled={sel >= len - 1} testId="vision-down">Swipe ↓</Btn>
             <Btn variant="amber" onClick={tap} testId="vision-tap">Tap</Btn>
             <Btn onClick={() => open('home')} testId="vision-back">Double-tap</Btn>
           </div>

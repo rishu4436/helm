@@ -13,13 +13,13 @@ export default function Diagnostics() {
   const n = (s: string) => c.filter(x => x.status === s).length
   return (
     <div>
-      <PageHeader kicker="ACCOUNT" title="Diagnostics" subtitle="Live checks against the database, the speech-to-text sidecar and every connected account. Run this before a demo." actions={<Btn variant="amber" busy={d.loading} onClick={async () => { await Promise.all([d.reload(), health.reload()]) }} testId="diag-run">Run checks again</Btn>} />
+      <PageHeader kicker="ACCOUNT" title="Diagnostics" subtitle="Live checks of the database and the speech-to-text sidecar, plus the verified state of every connected account. Run this before a demo." actions={<Btn variant="amber" busy={d.loading} onClick={async () => { await Promise.all([d.reload(), health.reload()]) }} testId="diag-run">Run checks again</Btn>} />
       <ErrorNote error={d.error} onRetry={d.reload} />
       <div className="mb-6 grid gap-3 sm:grid-cols-4">
         <Stat label="Pass" value={d.data ? n('PASS') : '…'} tone="text-up" />
         <Stat label="Warn" value={d.data ? n('WARN') : '…'} tone="text-amber-helm" />
         <Stat label="Fail" value={d.data ? n('FAIL') : '…'} tone={n('FAIL') ? 'text-down' : ''} />
-        <Stat label="Checked" value={d.data ? ist(d.data.at).split(' ').slice(-1)[0] : '…'} sub={d.data ? `API on Node ${d.data.build.node}` : undefined} />
+        <Stat label="Checked" value={d.data ? ist(d.data.at).split(' ').slice(-2).join(' ') : '…'} sub={d.data ? `API on Node ${d.data.build.node}` : undefined} />
       </div>
       <Card title="Checks" pad={false}>
         {!d.data ? <div className="p-5"><Skeleton h="h-64" /></div> : (
@@ -28,7 +28,7 @@ export default function Diagnostics() {
           </tbody></table>
         )}
       </Card>
-      <p className="mt-4 text-xs text-graphite-500">Account checks use the same authenticated reads as the portfolio. OKX shows BLOCKED: it is unavailable in India, so only the mock/public-endpoint adapter tests apply.</p>
+      <p className="mt-4 text-xs text-graphite-500">Account rows show each connection's last verified state (Re-check on Exchanges verifies again with an authenticated read). OKX shows BLOCKED: it is unavailable in India, so only the mock/public-endpoint adapter tests apply.</p>
     </div>
   )
 }

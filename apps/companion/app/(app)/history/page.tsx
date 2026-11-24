@@ -15,16 +15,19 @@ function History() {
   const [open, setOpen] = useState<FullReceipt | null>(null)
   const list = (rc.data?.receipts ?? []).filter(r => (env === 'all' || (env === 'demo' ? r.environment === 'demo' || r.environment === 'paper' : !(r.environment === 'demo' || r.environment === 'paper'))) && (status === 'all' || r.status === status))
   useEffect(() => { const id = q.get('order'); if (id && rc.data) setOpen(rc.data.receipts.find(r => r.orderId === id) ?? null) }, [q, rc.data])
+  const [exported, setExported] = useState<string | null>(null)
   function exportCsv() {
     const rows = [['created_ist', 'account', 'environment', 'instrument', 'side', 'type', 'status', 'filled_qty', 'avg_price', 'exchange_order_id', 'confirmed_via', 'protection'], ...list.map(r => [ist(r.createdAt), r.account, r.environmentLabel, r.instrumentId, r.side, r.type, r.status, r.filledQuantity, r.avgFillPrice ?? '', r.providerOrderId ?? '', r.confirmedVia ?? '', r.protection?.state ?? ''])]
     const blob = new Blob([rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')], { type: 'text/csv' })
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'helm-receipts.csv'; a.click(); URL.revokeObjectURL(a.href)
+    setExported(`Exported ${rows.length - 1} receipt(s) to helm-receipts.csv`)
   }
   const statuses = ['all', ...Array.from(new Set((rc.data?.receipts ?? []).map(r => r.status)))]
   return (
     <div>
       <PageHeader kicker="HISTORY & RECEIPTS" title="Every order, with its full story" subtitle="Each receipt shows what you confirmed, what the exchange reported, the fills, fees, protection and every state change. SIMULATED and STATIC SANDBOX results are labelled and never presented as exchange fills."
         actions={<><Segmented value={env} onChange={setEnv} options={[['all', 'All'], ['demo', 'Demo exchanges'], ['sim', 'SIM / sandbox']]} testId="hist-env" /><select className="input h-9 w-40 py-1" value={status} onChange={e => setStatus(e.target.value)} aria-label="Status">{statuses.map(s => <option key={s}>{s}</option>)}</select><Btn onClick={exportCsv} disabled={!list.length}>Export CSV</Btn></>} />
+      {exported && <p role="status" className="mb-3 text-xs text-up" data-testid="export-status">{exported}</p>}
       <ErrorNote error={rc.error} onRetry={rc.reload} />
       <Card pad={false}>
         {!rc.data ? <div className="p-5"><Skeleton /></div> : list.length === 0 ? <div className="p-5"><Empty title="No receipts match" action={<Btn href="/terminal" variant="amber">Place a demo trade</Btn>} /></div> : (

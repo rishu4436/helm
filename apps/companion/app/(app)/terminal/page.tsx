@@ -58,7 +58,7 @@ function Terminal() {
           <Card title="Account">
             <div className="grid gap-2">
               {tradable.map(a => (
-                <button type="button" key={a.id} onClick={() => setAccountId(a.id)} data-testid={`acct-${a.alias}`} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm ${a.id === accountId ? 'border-amber-helm bg-amber-helm/5' : 'border-graphite-800 hover:border-graphite-700'}`}>
+                <button type="button" key={a.id} aria-pressed={a.id === accountId} onClick={() => setAccountId(a.id)} data-testid={`acct-${a.alias}`} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm ${a.id === accountId ? 'border-amber-helm bg-amber-helm/5' : 'border-graphite-800 hover:border-graphite-700'}`}>
                   <span className="font-medium">{a.alias}</span><span className="ml-auto flex gap-1"><EnvPill env={a.environment} />{a.state !== 'CONNECTED' && <Pill v={a.state} />}</span>
                 </button>
               ))}
@@ -66,7 +66,7 @@ function Terminal() {
           </Card>
           <Card title="Order">
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">{ASSETS.map(x => <button type="button" key={x} onClick={() => setAsset(x)} className={`rounded-md border px-3 py-1 text-sm ${asset === x ? 'border-amber-helm text-amber-helm' : 'border-graphite-700 text-graphite-300'}`}>{x}</button>)}</div>
+              <div className="flex flex-wrap gap-2">{ASSETS.map(x => <button type="button" key={x} aria-pressed={asset === x} onClick={() => setAsset(x)} className={`rounded-md border px-3 py-1 text-sm ${asset === x ? 'border-amber-helm text-amber-helm' : 'border-graphite-700 text-graphite-300'}`}>{x}</button>)}</div>
               <div className="flex flex-wrap gap-3">
                 <Segmented value={product} onChange={setProduct} options={(acct?.products ?? ['spot']).filter(p => p === 'spot' || p === 'perp').map(p => [p as 'spot' | 'perp', p === 'perp' ? 'Perpetual' : 'Spot'])} testId="product" />
                 <Segmented value={side} onChange={setSide} options={[['BUY', product === 'perp' ? 'Long / Buy' : 'Buy'], ['SELL', product === 'perp' ? 'Short / Sell' : 'Sell']]} testId="side" />
