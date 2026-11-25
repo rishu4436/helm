@@ -46,6 +46,10 @@ describe('UX 2.0 preferences', () => {
     expect(r.statusCode).toBe(200)
     r = await app.inject({ method: 'PUT', url: '/v1/preferences', headers: H(t), payload: { privacy: true, onboarding: { stage: 'gestures' } } })
     expect(r.json().preferences).toMatchObject({ mode: 'pro', watchlist: ['BTC', 'SOL'], privacy: true, onboarding: { stage: 'gestures' } })
+    r = await app.inject({ method: 'PUT', url: '/v1/preferences', headers: H(t), payload: { lastOrder: { asset: 'eth', accountId: 'a1', product: 'spot', side: 'BUY' }, recentSizes: ['50', '25.5'] } })
+    expect(r.json().preferences).toMatchObject({ lastOrder: { asset: 'ETH', product: 'spot' }, recentSizes: ['50', '25.5'] })
+    for (const bad of [{ lastOrder: { asset: 'BTC', accountId: 'a', product: 'option', side: 'BUY' } }, { recentSizes: ['1', '2', '3', '4'] }, { lastOrder: { asset: 'BTC', accountId: 'a', product: 'spot', side: 'BUY', key: 'x' } }])
+      expect((await app.inject({ method: 'PUT', url: '/v1/preferences', headers: H(t), payload: bad })).statusCode).toBe(400)
     expect((await app.inject({ url: '/v1/preferences', headers: H(t2) })).json().preferences).toEqual({})
     for (const bad of [{ maxOrderNotionalUsd: '999999' }, { mode: 'god' }, { watchlist: ['B T C'] }, { deckOrder: ['withdraw'] }]) {
       expect((await app.inject({ method: 'PUT', url: '/v1/preferences', headers: H(t), payload: bad })).statusCode).toBe(400)

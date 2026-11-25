@@ -29,7 +29,7 @@ const P: PortfolioPayload = {
 describe('graphics engine', () => {
   it('ribbon legend lines never overlap and stay inside the image, with "+n more" when space runs out', () => {
     for (const [w, h, n] of [[190, 76, 3], [190, 76, 6], [288, 100, 4], [120, 60, 2]] as const) {
-      const ops = layoutGraphic({ kind: 'ribbon', segments: Array.from({ length: n }, (_, i) => ({ label: `Exchange Demo ${i}`, value: 100 - i * 10 })) }, w, h)
+      const ops = layoutGraphic({ kind: 'ribbon', scope: 'test', segments: Array.from({ length: n }, (_, i) => ({ label: `Exchange Demo ${i}`, value: 100 - i * 10 })) }, w, h)
       const texts = ops.filter((o): o is Extract<typeof o, { op: 'text' }> => o.op === 'text')
       const ys = texts.map(t => t.y)
       expect(new Set(ys).size).toBe(ys.length)

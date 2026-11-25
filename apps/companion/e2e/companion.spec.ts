@@ -8,7 +8,7 @@ import { API, asDemo, demoToken, settle, shot, watchErrors } from './helpers'
 const PAGES: Array<[string, string, RegExp]> = [
   ['/dashboard', 'dashboard', /Good to see you/], ['/portfolio', 'portfolio', /Holdings across/], ['/positions', 'positions', /Open positions/],
   ['/terminal', 'terminal', /Trade any connected/], ['/protect', 'protect', /Every entry can carry/], ['/recipes', 'recipes', /Recipes|routines/i],
-  ['/voice', 'voice', /Voice Studio|Talk to HELM/i], ['/shield', 'shield', /Shield/], ['/pulse', 'pulse', /Pulse/], ['/markets', 'markets', /best price/],
+  ['/voice', 'voice', /Voice Studio|Talk to HELM/i], ['/shield', 'shield', /Shield/], ['/pulse', 'pulse', /Activity & alerts/], ['/markets', 'markets', /best price/],
   ['/vision', 'vision', /Vision/], ['/devices', 'devices', /Devices/], ['/history', 'history', /Every order/], ['/connect', 'exchanges', /Exchanges/],
   ['/capabilities', 'capabilities', /Capability/], ['/security', 'security', /Security/], ['/settings', 'settings', /Settings/], ['/diagnostics', 'diagnostics', /Diagnostics/],
 ]

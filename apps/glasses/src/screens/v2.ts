@@ -83,7 +83,7 @@ export function homeItems(g: Glance, c: ViewCtx, extra: { watchTop?: WatchItem |
   switch (g.mode) {
     case 'empty': out.push({ id: 'practice', label: 'Try HELM with practice data' }, { id: 'connect-help', label: 'How to connect an exchange' }); break
     case 'disconnected': out.push({ id: 'accounts', label: 'Reconnect: accounts need attention' }); break
-    case 'risk': if (alert) out.push({ id: 'alert', label: `! ${alert.title}`, ref: alert.id }); break
+    case 'risk': if (alert) out.push({ id: 'alert', label: `! ${alert.title}`, ref: alert.id }); if (g.positions) out.push({ id: 'positions', label: `Positions · ${g.positions} open${g.unprotected ? ` · ${g.unprotected} ${term('unprotected', c.mode)}` : ''}` }); break
     case 'futures': out.push({ id: 'positions', label: `Positions · ${g.positions} open${g.unprotected ? ` · ${g.unprotected} ${term('unprotected', c.mode)}` : ''}` }); break
     case 'multi': {
       const accts = [...(g.primary?.accounts ?? [])].sort((a, b) => num(b.valueUsd) - num(a.valueUsd))
@@ -93,9 +93,11 @@ export function homeItems(g: Glance, c: ViewCtx, extra: { watchTop?: WatchItem |
     case 'spot': out.push({ id: 'holdings', label: 'Holdings · what you hold, where' }); break
   }
   if (alert && g.mode !== 'risk') out.push({ id: 'alert', label: `Alert: ${alert.title}`, ref: alert.id })
-  if (g.mode !== 'empty') out.push({ id: 'portfolio', label: g.primary ? `Portfolio · ${usd(g.primary.valueUsd)}` : 'Portfolio' })
+  // Actions before reference: Markets and Trade sit right under the contextual rows (fewest swipes to act);
+  // the portfolio value is already in the glance header, so its breakdown row comes after them.
   out.push({ id: 'markets', label: extra.watchTop?.price ? `Markets · ${extra.watchTop.asset} ${fmtPrice(Number(extra.watchTop.price))}` : 'Markets' })
   out.push({ id: 'trade', label: 'Trade' })
+  if (g.mode !== 'empty') out.push({ id: 'portfolio', label: g.primary ? `Portfolio · ${usd(g.primary.valueUsd)}` : 'Portfolio' })
   out.push({ id: 'activity', label: `${term('pulse', c.mode)}${extra.activityNow ? ` · ${extra.activityNow} now` : ''}` })
   out.push({ id: 'deck', label: 'Quick Deck' }, { id: 'voice', label: 'Voice command' }, { id: 'more', label: 'More: risk, accounts, settings, help' })
   // De-duplicate destinations (e.g. the contextual first row may already be Portfolio).
@@ -264,14 +266,22 @@ export function watchlistScreen(items: WatchItem[], favorites: string[], c: View
   return menuScreen('watchlist', 'MARKETS · WATCHLIST', source, rows, hints(c), source === 'SAMPLE' ? 'Sample quotes · not a market feed' : 'Public quotes · 24h change from the venue ticker')
 }
 export type MarketActionId = 'venues' | 'trade' | 'fav' | 'voice' | 'back'
-export function marketScreen(s: Snapshot, fav: boolean, c: ViewCtx): ScreenSpec {
+/** Two-line venue summary for the market screen: tightest spread first, then the runner-up (only fresh, complete quotes). */
+export function venueLines(vm: VenueModel | null): [string, string] | null {
+  if (!vm) return null
+  const ok = vm.rows.filter(r => r.fresh && r.complete).sort((a, b) => Number(a.spreadBps) - Number(b.spreadBps))
+  if (ok.length < 2) return ['Venues: not enough fresh', 'quotes to compare']
+  const f = (r: (typeof ok)[number]) => `${venueName(r.venue)} ${Number(r.spreadBps).toFixed(1)} bp`
+  return [`Tightest: ${f(ok[0]!)}`, `then ${ok.slice(1, 3).map(f).join(' · ')}`]
+}
+export function marketScreen(s: Snapshot, fav: boolean, c: ViewCtx, vm: VenueModel | null = null): ScreenSpec {
   const pts = (s.candles?.closes ?? []).map(Number).filter(Number.isFinite)
-  const gfx: Graphic | undefined = pts.length >= 2 ? { kind: 'sparkline', points: pts, caption: `${s.candles!.interval} closes · ${s.period}` } : undefined
+  const gfx: Graphic | undefined = pts.length >= 2 ? { kind: 'sparkline', points: pts, caption: `${s.candles!.interval} · ${s.period} · ${s.source.slice(0, 14)}` } : undefined
+  const vl = venueLines(vm)
   const body = [
     s.price ? fmtPrice(Number(s.price)) : 'Price unavailable',
     s.change24hPct ? `${signedPct(Number(s.change24hPct), 2)} over ${s.period}` : 'Change unavailable',
-    gfx ? 'Sparkline: verified candles' : 'No verified candles: no chart',
-    `Source: ${s.source.slice(0, 19)}`,
+    ...(vl ?? [gfx ? 'Sparkline: verified candles' : 'No verified candles: no chart', `Source: ${s.source.slice(0, 19)}`]),
   ].join('\n')
   const items: MenuItem<MarketActionId>[] = [{ id: 'venues', label: 'Compare venues (Venue Compass)' }, { id: 'trade', label: `Prepare ${s.asset} order` }, { id: 'fav', label: fav ? 'Remove from favorites' : 'Add to favorites' }, { id: 'voice', label: 'Voice' }]
   return detailScreen({ key: `market-${s.asset}`, title: `${s.asset} · MARKET`, context: s.at ? ageLabel(Math.max(0, Math.round((Date.now() - Date.parse(s.at)) / 1000))) : 'age n/a', body, bodyLines: 4, bodyW: 288, gfx, gfxH: 104, items, hint: hints(c) })
@@ -366,8 +376,9 @@ export function receiptScreen(r: Receipt, items: MenuItem[], c: ViewCtx): Screen
 }
 
 // ---------- ACTIVITY (Pulse) ----------
-export function activityRows(a: ActivityPayload, c: ViewCtx): MenuItem[] {
+export function activityRows(a: ActivityPayload, c: ViewCtx, lastReceipt: Pick<Receipt, 'orderId' | 'side' | 'instrumentId' | 'status'> | null = null): MenuItem[] {
   const rows: MenuItem[] = []
+  if (lastReceipt) rows.push({ id: 'last-receipt', ref: lastReceipt.orderId, label: `Last receipt · ${lastReceipt.side} ${sym(lastReceipt.instrumentId).base} · ${lastReceipt.status}` })
   for (const e of a.current) rows.push({ id: 'event', ref: e.id, label: `${e.acknowledged ? 'seen' : 'NOW'} · ${e.title}` })
   rows.push({ id: 'receipts', label: 'Receipts · orders and fills' })
   for (const e of a.recent) rows.push({ id: 'event', ref: e.id, label: `${shortTime(e.at)} · ${e.title}` })

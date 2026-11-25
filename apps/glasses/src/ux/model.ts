@@ -232,6 +232,11 @@ export function nextStep(d: Draft, accts: Acct[]): BuilderStep {
   if (!d.reduceOnly && !d.answered.includes('protection')) return 'protection'
   return 'review'
 }
+/** Order eligible accounts: last used, then the saved default, then most free balance. Ordering only — the user still picks. */
+export function orderAccounts<A extends { id: string }>(el: A[], o: { last: string | null; preferred: string | null; freeUsd: (id: string) => number | null }): A[] {
+  const rank = (a: A) => (a.id === o.last ? 0 : a.id === o.preferred ? 1 : 2)
+  return [...el].sort((a, b) => rank(a) - rank(b) || (o.freeUsd(b.id) ?? -1) - (o.freeUsd(a.id) ?? -1))
+}
 /** Fill in the single obvious answer (one eligible account, one product) without guessing anything else. */
 export function autoResolve(d: Draft, accts: Acct[]): Draft {
   const out = { ...d }

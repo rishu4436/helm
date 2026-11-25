@@ -9,7 +9,7 @@ import { HelmMark } from './brand'
 export const NAV: Array<{ group: string; items: Array<{ href: string; label: string; icon: string }> }> = [
   { group: 'Overview', items: [{ href: '/dashboard', label: 'Dashboard', icon: '◎' }, { href: '/portfolio', label: 'Portfolio', icon: '▤' }, { href: '/positions', label: 'Positions & orders', icon: '≡' }] },
   { group: 'Trade', items: [{ href: '/terminal', label: 'Terminal', icon: '⌁' }, { href: '/protect', label: 'Trade-to-Protect', icon: '⛉' }, { href: '/recipes', label: 'Recipes', icon: '❖' }, { href: '/voice', label: 'Voice Studio', icon: '◉' }] },
-  { group: 'Risk', items: [{ href: '/shield', label: 'Shield & Compass', icon: '✧' }, { href: '/pulse', label: 'Pulse', icon: '∿' }] },
+  { group: 'Risk', items: [{ href: '/shield', label: 'Shield & Compass', icon: '✧' }, { href: '/pulse', label: 'Activity & alerts', icon: '∿' }] },
   { group: 'Markets', items: [{ href: '/markets', label: 'Market intelligence', icon: '⇅' }] },
   { group: 'Glasses', items: [{ href: '/vision', label: 'Vision', icon: '◐' }, { href: '/devices', label: 'Devices', icon: '▭' }] },
   { group: 'Records', items: [{ href: '/history', label: 'History & receipts', icon: '☰' }] },

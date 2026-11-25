@@ -50,6 +50,10 @@ export interface Prefs {
   sizePresets: string[]
   onboarding: { completedAt: string | null; skippedAt: string | null; stage: string | null }
   companionDraft?: { asset: string; notional: string; accountId?: string | null; expiresAt: string } | null
+  /** Context defaults (§16): the last confirmed order's choices are offered FIRST, never auto-selected. */
+  lastOrder?: { asset: string; accountId: string; product: 'spot' | 'perp'; side: 'BUY' | 'SELL' } | null
+  /** Most recent confirmed USD sizes, newest first (max 3), listed before the presets. */
+  recentSizes?: string[]
 }
 
 export const DEFAULT_DECK = ['portfolio', 'positions', 'allocation', 'watchlist', 'largest', 'risk', 'activity', 'voice'] as const

@@ -1,6 +1,6 @@
 {
   "kind": "AUTOMATED task walkthrough — no human participants",
-  "generatedAt": "2026-11-25T06:40:02.583Z",
+  "generatedAt": "2026-11-25T07:02:05.587Z",
   "method": "after = real Controller + SampleBackend (in-process, no network, no BLE); before = static analysis of main-branch main.ts (11-item menu)",
   "note": "controllerMsAvg is in-process controller time only; it is not simulator, BLE or physical-device latency",
   "tasks": [
@@ -14,6 +14,7 @@
       "after": {
         "gestures": 0,
         "voiceCommands": 0,
+        "path": "",
         "endScreen": "home-risk",
         "reached": true
       },
@@ -21,18 +22,35 @@
     },
     {
       "id": "bybit-btc-position",
-      "task": "Find the BTC position on Bybit (with details)",
+      "task": "See the BTC position on Bybit in a position list (like-for-like with the old text list)",
       "before": {
         "gestures": 2,
-        "path": "swipe → tap \"Positions & holdings\" (text list; a position could not be opened)"
+        "path": "swipe → tap \"Positions & holdings\" (text list)"
       },
       "after": {
-        "gestures": 4,
+        "gestures": 2,
         "voiceCommands": 0,
+        "path": "swipe×1 → tap \"Positions · 2 open · 1 no stop\"",
+        "endScreen": "positions-p0",
+        "reached": true
+      },
+      "controllerMsAvg": 0.92
+    },
+    {
+      "id": "bybit-btc-position-detail",
+      "task": "Open the BTC position on Bybit (entry, P/L, stop, liquidation + actions)",
+      "before": {
+        "gestures": null,
+        "path": "not possible: the old list rows could not be opened"
+      },
+      "after": {
+        "gestures": 3,
+        "voiceCommands": 0,
+        "path": "swipe×1 → tap \"Positions · 2 open · 1 no stop\" → tap \"BTC LONG · Bybit SIM · +$2.08 · no stop\"",
         "endScreen": "focus-s-byb|bybit:perp:BTC-USDT:USDT|LONG",
         "reached": true
       },
-      "controllerMsAvg": 0.87
+      "controllerMsAvg": 0.55
     },
     {
       "id": "largest-allocation",
@@ -42,12 +60,13 @@
         "path": "swipe ×6 → tap \"Exposure Compass\" (largest exchange line)"
       },
       "after": {
-        "gestures": 2,
+        "gestures": 5,
         "voiceCommands": 0,
+        "path": "swipe×4 → tap \"Portfolio · $19,377\"",
         "endScreen": "portfolio-simulated",
         "reached": true
       },
-      "controllerMsAvg": 0.31
+      "controllerMsAvg": 0.65
     },
     {
       "id": "unprotected",
@@ -59,6 +78,7 @@
       "after": {
         "gestures": 0,
         "voiceCommands": 0,
+        "path": "",
         "endScreen": "home-risk",
         "reached": true
       },
@@ -74,25 +94,45 @@
       "after": {
         "gestures": 6,
         "voiceCommands": 0,
+        "path": "tap \"! BTC LONG on Bybit has no stop\" → swipe×1 → tap \"Add protection\" → swipe×1 → tap \"Stop 3% from now\" → tap \"Continue to confirm\"",
         "endScreen": "confirm",
         "reached": true
       },
-      "controllerMsAvg": 0.38
+      "controllerMsAvg": 0.39
     },
     {
       "id": "trade-btc",
       "task": "Prepare a $100 BTC spot buy on Bybit, through to the confirm screen (gestures only)",
+      "scenario": "returning user: last confirmed order was a $100 BTC spot buy on Bybit (the old flow was fixed to BTC with $100 as its first preset)",
       "before": {
         "gestures": 9,
         "path": "swipe ×4 → tap Trade → swipe → tap Bybit → tap $100 preset → tap (impact) → tap (risk) → CONFIRM"
       },
       "after": {
-        "gestures": 12,
+        "gestures": 9,
         "voiceCommands": 0,
+        "path": "swipe×3 → tap \"Trade\" → tap \"BTC · 59,420\" → tap \"Bybit (sample) · SIM · last used\" → tap \"Buy BTC · spot, hold the coin\" → tap \"$100 · recent\" → tap \"Continue to confirm\"",
         "endScreen": "confirm",
         "reached": true
       },
-      "controllerMsAvg": 0.34
+      "controllerMsAvg": 0.36
+    },
+    {
+      "id": "trade-btc-first-time",
+      "task": "Same $100 BTC spot buy on Bybit with no history (gestures only)",
+      "scenario": "first trade ever: no last-used defaults, presets $25/$50/$100/$250",
+      "before": {
+        "gestures": 9,
+        "path": "same as trade-btc (the old flow had no history either)"
+      },
+      "after": {
+        "gestures": 11,
+        "voiceCommands": 0,
+        "path": "swipe×3 → tap \"Trade\" → tap \"BTC · 59,420\" → tap \"Bybit (sample) · SIM · $9,682 free\" → tap \"Buy BTC · spot, hold the coin\" → swipe×2 → tap \"$100\" → tap \"Continue to confirm\"",
+        "endScreen": "confirm",
+        "reached": true
+      },
+      "controllerMsAvg": 0.12
     },
     {
       "id": "trade-voice",
@@ -104,10 +144,11 @@
       "after": {
         "gestures": 2,
         "voiceCommands": 1,
+        "path": "tap \"Preview: BUY $100 BTC SPOT · Bybit (sample)\" → tap \"Continue to confirm\"",
         "endScreen": "confirm",
         "reached": true
       },
-      "controllerMsAvg": 1.68
+      "controllerMsAvg": 1.65
     },
     {
       "id": "cancel",
@@ -119,25 +160,28 @@
       "after": {
         "gestures": 1,
         "voiceCommands": 0,
+        "path": "tap \"Preview: BUY $100 BTC SPOT · Bybit (sample)\" → tap \"Continue to confirm\" → tap \"Cancel\"",
         "endScreen": "home-risk",
         "reached": true
       },
-      "controllerMsAvg": 0.49
+      "controllerMsAvg": 0.42
     },
     {
       "id": "last-receipt",
       "task": "Find the last receipt",
+      "scenario": "one earlier sample order exists (placed through SampleBackend before the walkthrough)",
       "before": {
         "gestures": 9,
         "path": "swipe ×7 → tap Receipts → tap first"
       },
       "after": {
-        "gestures": 8,
+        "gestures": 7,
         "voiceCommands": 0,
-        "endScreen": "receipts",
+        "path": "swipe×5 → tap \"Activity & Alerts · 1 now\" → tap \"Last receipt · BUY BTC · FILLED\"",
+        "endScreen": "receipt-sample-order-1",
         "reached": true
       },
-      "controllerMsAvg": 0.14
+      "controllerMsAvg": 0.33
     },
     {
       "id": "venue-compare",
@@ -147,12 +191,29 @@
         "path": "swipe ×2 → tap Watchlist → swipe → tap ETH (venue table)"
       },
       "after": {
+        "gestures": 5,
+        "voiceCommands": 0,
+        "path": "swipe×2 → tap \"Markets\" → swipe×1 → tap \"ETH   1,656 · -3.1% 24h\"",
+        "endScreen": "market-ETH",
+        "reached": true
+      },
+      "controllerMsAvg": 0.45
+    },
+    {
+      "id": "venue-compare-full",
+      "task": "Open the full ETH Venue Compass (spread bars, freshness, size-based cost)",
+      "before": {
+        "gestures": 5,
+        "path": "same as venue-compare (the old table had no impact/cost)"
+      },
+      "after": {
         "gestures": 6,
         "voiceCommands": 0,
+        "path": "swipe×2 → tap \"Markets\" → swipe×1 → tap \"ETH   1,656 · -3.1% 24h\" → tap \"Compare venues (Venue Compass)\"",
         "endScreen": "venues-ETH",
         "reached": true
       },
-      "controllerMsAvg": 0.41
+      "controllerMsAvg": 0.28
     }
   ]
 }

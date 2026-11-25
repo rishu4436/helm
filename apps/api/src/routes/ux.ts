@@ -28,6 +28,8 @@ export const PrefsPatch = z.object({
   sizePresets: z.array(z.string().regex(/^\d{1,7}(\.\d{1,2})?$/)).min(1).max(6),
   onboarding: z.object({ completedAt: z.string().max(40).nullable(), skippedAt: z.string().max(40).nullable(), stage: z.string().max(40).nullable() }).partial(),
   companionDraft: z.object({ asset, notional: z.string().regex(/^\d{1,9}(\.\d+)?$/), accountId: z.string().max(80).nullish(), expiresAt: z.string().max(40) }).nullable(),
+  lastOrder: z.object({ asset, accountId: z.string().max(80), product: z.enum(['spot', 'perp']), side: z.enum(['BUY', 'SELL']) }).strict().nullable(),
+  recentSizes: z.array(z.string().regex(/^\d{1,7}(\.\d{1,2})?$/)).max(3),
 }).partial().strict()
 
 export const uxRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {

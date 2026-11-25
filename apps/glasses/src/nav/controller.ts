@@ -544,12 +544,15 @@ export class Controller {
     })
   }
   openMarket(asset: string) {
-    return this.open(`Loading ${asset}`, async () => this.marketViewFrom(asset, await this.backend.snapshot(asset)))
+    return this.open(`Loading ${asset}`, async () => {
+      const [s, qs] = await Promise.all([this.backend.snapshot(asset), this.backend.venues(asset, 'spot', null).catch(() => null)])
+      return this.marketViewFrom(asset, s, qs ? M.venueModel(qs, null) : null)
+    })
   }
-  private marketViewFrom(asset: string, s: Awaited<ReturnType<HelmBackend['snapshot']>>): View {
+  private marketViewFrom(asset: string, s: Awaited<ReturnType<HelmBackend['snapshot']>>, vm: M.VenueModel | null = null): View {
     const fav = this.prefs.watchlist.includes(asset)
     const ids: V.MarketActionId[] = ['venues', 'trade', 'fav', 'voice']
-    return { name: 'market', items: ids.map(id => ({ id, label: id })), build: () => V.marketScreen(s, fav, this.ctx), onItem: it => (it.id === 'venues' ? this.openVenues(asset) : it.id === 'trade' ? this.openBuilder({ asset, orderType: 'MARKET', origin: 'market', answered: ['asset'] }) : it.id === 'voice' ? this.listen({ screen: 'market', asset }) : this.savePrefs({ watchlist: fav ? this.prefs.watchlist.filter(x => x !== asset) : [...this.prefs.watchlist, asset].slice(0, 12) }).then(() => this.replace(this.marketViewFrom(asset, s)))) }
+    return { name: 'market', items: ids.map(id => ({ id, label: id })), build: () => V.marketScreen(s, fav, this.ctx, vm), onItem: it => (it.id === 'venues' ? this.openVenues(asset) : it.id === 'trade' ? this.openBuilder({ asset, orderType: 'MARKET', origin: 'market', answered: ['asset'] }) : it.id === 'voice' ? this.listen({ screen: 'market', asset }) : this.savePrefs({ watchlist: fav ? this.prefs.watchlist.filter(x => x !== asset) : [...this.prefs.watchlist, asset].slice(0, 12) }).then(() => this.replace(this.marketViewFrom(asset, s, vm)))) }
   }
   openVenues(asset: string, sizeUsd?: number | null, providers?: string[]) {
     return this.open('Comparing venues', async () => {
@@ -592,13 +595,15 @@ export class Controller {
     const mk = (title: string, items: MenuItem[], onItem: (it: MenuItem) => unknown, note?: string): View => ({ name: `build-${step}`, items, build: () => V.builderScreen(step, title, ctxLine || 'new order', items, c, note), onItem })
     switch (step) {
       case 'asset': {
-        const items: MenuItem[] = [...this.prefs.watchlist.slice(0, 8).map(a => { const w = this.watch.find(x => x.asset === a); return { id: 'asset', ref: a, label: `${a}${w?.price ? ` · ${M.fmtPrice(Number(w.price))}` : ''}` } }), { id: 'voice', label: 'Say another asset' }]
+        const last = this.prefs.lastOrder?.asset
+        const assets = [...(last ? [last] : []), ...this.prefs.watchlist.filter(x => x !== last)].slice(0, 8)
+        const items: MenuItem[] = [...assets.map(a => { const w = this.watch.find(x => x.asset === a); return { id: 'asset', ref: a, label: `${a}${w?.price ? ` · ${M.fmtPrice(Number(w.price))}` : ''}` } }), { id: 'voice', label: 'Say another asset' }]
         return mk('NEW ORDER · ASSET', items, it => (it.id === 'voice' ? this.listen({ screen: 'build', draft: draftTicket(d) }) : nextWith({ asset: it.ref }, 'asset')))
       }
       case 'account': {
-        const el = M.eligibleAccounts(this.accts, d)
+        const el = M.orderAccounts(M.eligibleAccounts(this.accts, d), { last: this.prefs.lastOrder?.accountId ?? null, preferred: this.prefs.preferredExchange, freeUsd: id => M.numOrNull(this.portfolio?.accounts.find(x => x.accountId === id)?.availableUsd ?? null) })
         if (!el.length) return this.recoveryView('NO ACCOUNT', `No connected account can trade ${d.product ?? 'this'}. Connect a demo account in the companion.`, [{ id: 'back', label: 'Back' }, { id: 'home', label: 'Home' }])
-        const items: MenuItem[] = el.map(a => { const av = M.numOrNull(this.portfolio?.accounts.find(x => x.accountId === a.id)?.availableUsd ?? null); return { id: 'acct', ref: a.id, label: `${a.alias} · ${M.envTag(a.environment)}${av !== null ? ` · ${usdOf(c)(av, 0)} free` : ''}` } })
+        const items: MenuItem[] = el.map(a => { const av = M.numOrNull(this.portfolio?.accounts.find(x => x.accountId === a.id)?.availableUsd ?? null); return { id: 'acct', ref: a.id, label: `${a.alias} · ${M.envTag(a.environment)}${a.id === this.prefs.lastOrder?.accountId ? ' · last used' : av !== null ? ` · ${usdOf(c)(av, 0)} free` : ''}` } })
         return mk(`${d.asset} · WHICH ACCOUNT?`, items, it => nextWith({ accountId: it.ref }, 'account'), 'HELM never picks between several accounts for you')
       }
       case 'product': {
@@ -610,6 +615,8 @@ export class Controller {
         if (a.products.includes('spot') && d.side !== 'BUY') items.push({ id: 'spot', ref: 'SELL', label: pro ? `Sell ${d.asset} spot` : `Sell ${d.asset} you hold · spot` })
         if (a.products.includes('perp') && d.side !== 'SELL') items.push({ id: 'perp', ref: 'BUY', label: pro ? `Long ${d.asset} perp` : `Long · futures, gains if price rises` })
         if (a.products.includes('perp') && d.side !== 'BUY') items.push({ id: 'perp', ref: 'SELL', label: pro ? `Short ${d.asset} perp` : `Short · futures, gains if price falls` })
+        const lo = this.prefs.lastOrder
+        if (lo) { const i = items.findIndex(x => x.id === lo.product && x.ref === lo.side); if (i > 0) items.unshift(...items.splice(i, 1)) }
         return mk(`${d.asset} · WHAT KIND OF ORDER?`, items, it => this.push(this.builderView({ ...d, product: it.id as 'spot' | 'perp', side: it.ref as 'BUY' | 'SELL', answered: [...d.answered, 'product', 'side'] })), pro ? undefined : 'Futures use leverage: gains and losses grow')
       }
       case 'side': {
@@ -618,7 +625,9 @@ export class Controller {
       }
       case 'size': {
         const usd = usdOf(c)
-        const items: MenuItem[] = this.prefs.sizePresets.map(s => ({ id: 'usd', ref: s, label: usd(Number(s), 0) }))
+        const recent = (this.prefs.recentSizes ?? []).filter(s => Number(s) > 0)
+        const sizes = [...recent, ...this.prefs.sizePresets.filter(s => !recent.includes(s))].slice(0, 6)
+        const items: MenuItem[] = sizes.map(s => ({ id: 'usd', ref: s, label: `${usd(Number(s), 0)}${recent.includes(s) ? ' · recent' : ''}` }))
         if (d.product === 'spot' && d.side === 'SELL') items.unshift({ id: 'frac', ref: '0.25', label: `25% of your ${d.asset}` }, { id: 'frac', ref: '0.5', label: `50% of your ${d.asset}` }, { id: 'frac', ref: '1', label: `All your ${d.asset}` })
         items.push({ id: 'custom', label: 'Custom amount (swipe to adjust)' })
         return mk(`${d.asset} · HOW MUCH?`, items, it => (it.id === 'custom' ? this.push(this.stepperView(d, 50)) : it.id === 'frac' ? nextWith({ fraction: it.ref }, 'size') : nextWith({ notional: it.ref }, 'size')))
@@ -767,6 +776,10 @@ export class Controller {
     }
     this.busy = false
     this.log(`receipt ${receipt.orderId} ${receipt.status}`)
+    if (tk && p.kind !== 'protect_existing' && !tk.reduceOnly) {
+      const sz = tk.notional && /^\d{1,7}(\.\d{1,2})?$/.test(tk.notional) ? [tk.notional] : []
+      void this.savePrefs({ lastOrder: { asset: tk.asset, accountId: tk.accountId, product: tk.product, side: tk.side }, recentSizes: [...sz, ...(this.prefs.recentSizes ?? []).filter(s => !sz.includes(s))].slice(0, 3) })
+    }
     this.loaded = 0
     try { await this.refresh(true) } catch { /* receipt still shown */ }
     this.stack = [this.homeView()]
@@ -804,11 +817,19 @@ export class Controller {
   }
 
   // ---------------- ACTIVITY ----------------
-  openActivity() { return this.open('Loading activity', async () => { this.activity = await this.backend.activity(); return this.activityView() }) }
+  openActivity() {
+    return this.open('Loading activity', async () => {
+      const [a, rs] = await Promise.all([this.backend.activity(), this.backend.receipts().catch(() => [] as Receipt[])])
+      this.activity = a
+      this.lastRcpt = rs[0] ?? null
+      return this.activityView()
+    })
+  }
+  private lastRcpt: Receipt | null = null
   private activityView(): View {
-    const a = this.activity!
-    const rows = V.activityRows(a, this.ctx)
-    return { name: 'activity', items: rows, build: () => V.activityScreen(a, rows, this.ctx), onItem: it => (it.id === 'receipts' ? this.openReceipts() : it.ref ? this.openEvent(it.ref) : undefined) }
+    const a = this.activity!, last = this.lastRcpt
+    const rows = V.activityRows(a, this.ctx, last)
+    return { name: 'activity', items: rows, build: () => V.activityScreen(a, rows, this.ctx), onItem: it => (it.id === 'last-receipt' && last ? this.push(this.receiptView(last, null)) : it.id === 'receipts' ? this.openReceipts() : it.ref ? this.openEvent(it.ref) : undefined) }
   }
   openEvent(id: string) {
     return this.open('Loading', async () => {
