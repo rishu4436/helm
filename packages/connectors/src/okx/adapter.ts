@@ -23,6 +23,10 @@ const ERRORS: Record<string, HelmErrorCode> = {
   '51008': 'INSUFFICIENT_BALANCE', '51004': 'INSUFFICIENT_MARGIN',
   '51603': 'ORDER_UNKNOWN', '51121': 'INVALID_QUANTITY', '51020': 'INVALID_QUANTITY', '51006': 'INVALID_PRICE',
   '51169': 'ORDER_REJECTED',
+  // Region / compliance / IP restrictions: reported honestly, never retried or routed around.
+  '51155': 'ACCESS_RESTRICTED', '51156': 'ACCESS_RESTRICTED', '50110': 'ACCESS_RESTRICTED',
+  '50001': 'EXCHANGE_UNAVAILABLE', '50013': 'EXCHANGE_UNAVAILABLE', '50026': 'EXCHANGE_UNAVAILABLE',
+  '50004': 'ORDER_UNKNOWN', // endpoint request timeout: outcome unknown
 }
 export function mapOkxError(code: string): HelmErrorCode { return ERRORS[code] ?? 'PROVIDER_ERROR' }
 
@@ -111,6 +115,7 @@ export class OkxAdapter extends BaseAdapter {
   private unwrap<T>(status: number, body: unknown): T[] {
     const b = body as OkxEnvelope<T> | null
     if (!b || typeof b !== 'object' || typeof b.code !== 'string') {
+      if (status === 403 || status === 451) throw new HelmError('ACCESS_RESTRICTED', undefined, { provider: 'okx', providerCode: String(status), detail: 'blocked before reaching the API (region/WAF)', retryable: false })
       throw new HelmError('PROVIDER_ERROR', undefined, { provider: 'okx', providerCode: String(status), detail: 'non-envelope response' })
     }
     if (b.code !== '0') {

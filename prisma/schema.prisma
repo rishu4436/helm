@@ -73,6 +73,28 @@ model User {
   orders             Order[]
   tradingSessions    TradingSession[]
   portfolioSnapshots PortfolioSnapshot[]
+  preference         UserPreference?
+  activityMarks      ActivityMark[]
+}
+
+/// UX 2.0 per-user presentation preferences (mode, home layout, deck, privacy, watchlist). Never trading limits.
+model UserPreference {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Acknowledge / dismiss (with cooldown) state for computed Activity items (e.g. "position has no stop").
+model ActivityMark {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId         String
+  acknowledgedAt DateTime?
+  dismissedUntil DateTime?
+  updatedAt      DateTime  @updatedAt
+  @@unique([userId, itemId])
 }
 
 model AuthSession {
@@ -369,6 +391,7 @@ model PulseEvent {
   dedupeKey    String
   createdAt    DateTime  @default(now())
   dismissedAt  DateTime?
+  acknowledgedAt DateTime?
   @@index([userId, createdAt])
   @@unique([userId, dedupeKey])
 }

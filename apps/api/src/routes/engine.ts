@@ -6,11 +6,12 @@ import { RiskPolicySchema, compass, scenario } from '@helm/risk-engine'
 import { rank, type PulseEventInput } from '@helm/pulse'
 import { toJsonSafe } from '@helm/portfolio'
 import { parseIntent, resolveAccount, sttFromEnv, type ResolvableAccount } from '@helm/voice-engine'
+import { resolveContextual, type VCtx } from '@helm/voice-engine/context'
 import { requireUser, requireUserOrDevice } from '../auth'
 import { audit } from '../audit'
 import type { AppCtx } from '../app'
 import { listAccounts, type LoadedAccount } from '../engine/accounts'
-import { compareVenues, instrumentIdFor, priceBook, VALUATION_ASSETS } from '../engine/market'
+import { compareVenues, instrumentIdFor, snapshot, tickers, VALUATION_ASSETS } from '../engine/market'
 import { cachedPortfolio, invalidatePortfolio } from '../engine/portfolio'
 import { cancelOrder, confirmTrade, policyFor, previewProtectExisting, previewTrade, receipt, refreshOrder, simulationLabel } from '../engine/trade'
 
@@ -41,18 +42,21 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
 
   app.get('/v1/portfolio', { preHandler: any, config: ctx.rl(60) }, async req => {
     const { portfolio, inputs } = await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)
-    return send({ portfolio, accountErrors: inputs.filter(i => i.error).map(i => ({ accountId: i.account.id, error: i.error })) })
+    const h = holdingsOf(portfolio, inputs)
+    return send({ portfolio: { ...portfolio, holdings: h.holdings, accounts: portfolio.accounts.map(a => ({ ...a, availableUsd: h.availableUsd[a.accountId] ?? null })), availableNote: h.availableNote }, accountErrors: inputs.filter(i => i.error).map(i => ({ accountId: i.account.id, error: i.error })) })
   })
 
   app.get<{ Querystring: { assets?: string } }>('/v1/markets/watchlist', { preHandler: any }, async req => {
     const assets = (req.query.assets ?? VALUATION_ASSETS.join(',')).split(',').map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 12)
-    const book = await priceBook()
-    return send({ source: 'Binance Demo public spot books (mid, USDT at par)', items: assets.map(a => ({ asset: a, price: book.get(a)?.price ?? null, at: book.get(a)?.timestamp ?? null })) })
+    return send({ source: 'Binance Demo 24h ticker (USDT pairs)', items: await tickers(assets) })
   })
 
-  app.get<{ Params: { asset: string }; Querystring: { product?: 'spot' | 'perp' } }>('/v1/markets/:asset', { preHandler: any, config: ctx.rl(60) }, async req => {
+  app.get<{ Params: { asset: string } }>('/v1/markets/:asset/snapshot', { preHandler: any, config: ctx.rl(60) }, async req => send(await snapshot(req.params.asset)))
+  app.get<{ Params: { asset: string }; Querystring: { product?: 'spot' | 'perp'; notional?: string } }>('/v1/markets/:asset', { preHandler: any, config: ctx.rl(60) }, async req => {
     const asset = req.params.asset.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)
-    return { asset, product: req.query.product ?? 'spot', venues: await compareVenues(asset, req.query.product ?? 'spot') }
+    const product = req.query.product === 'perp' ? 'perp' : 'spot'
+    const n = req.query.notional && /^\d{1,9}(\.\d+)?$/.test(req.query.notional) && Number(req.query.notional) > 0 ? dec(req.query.notional) : null
+    return { asset, product, notionalUsd: n?.toFixed() ?? null, feeNote: n ? 'Est. cost = book impact + published standard taker fee (assumption; your tier may differ)' : undefined, venues: await compareVenues(asset, product, undefined, n) }
   })
 
   app.post('/v1/trade/preview', { preHandler: any, config: ctx.rl(60) }, async req => {
@@ -142,7 +146,9 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
 
   // ----- Voice -----
   app.post('/v1/voice/command', { preHandler: any, config: ctx.rl(30), bodyLimit: 1024 * 1024 /* ≤ ~20 s of 16 kHz PCM16 as base64 */ }, async req => {
-    const b = z.object({ transcript: z.string().max(500).optional(), audioBase64: z.string().max(4_000_000).optional(), sampleRate: z.number().int().optional() }).refine(x => x.transcript || x.audioBase64).parse(req.body)
+    const VDraft = z.object({ accountId: z.string().max(80), asset: z.string().max(16), product: z.enum(['spot', 'perp']), side: z.enum(['BUY', 'SELL']), notional: z.string().max(40), quantity: z.string().max(40), fraction: z.string().max(40), leverage: z.string().max(40), stopOffsetPercent: z.string().max(40), reduceOnly: z.boolean(), instrumentId: z.string().max(80) }).partial()
+    const VContext = z.object({ screen: z.string().max(40), accountId: z.string().max(80).nullish(), asset: z.string().max(16).nullish(), positionKey: z.string().max(200).nullish(), draft: VDraft.nullish(), proposalId: z.string().max(80).nullish(), eventId: z.string().max(120).nullish() })
+    const b = z.object({ transcript: z.string().max(500).optional(), audioBase64: z.string().max(4_000_000).optional(), sampleRate: z.number().int().optional(), context: VContext.optional() }).refine(x => x.transcript || x.audioBase64).parse(req.body)
     let transcript = b.transcript ?? '', sttProvider = 'typed', sttLabel: string | null = null, confidence: number | null = null
     if (!b.transcript) {
       const stt = sttFromEnv()
@@ -154,8 +160,12 @@ export const engineRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
     const accounts = (await listAccounts(prisma, ctx.key, ctx.adapters, req.userId!)).map(resolvable)
     const res = resolveAccount(intent as TradeIntent, accounts)
     const next = nextScreen(intent as TradeIntent, res)
-    await prisma.voiceCommand.create({ data: { userId: req.userId!, transcript, sttProvider, confidence: confidence ?? undefined, intent: intent as unknown as Prisma.InputJsonValue, outcome: next.screen } })
-    return { transcript, sttProvider, sttLabel, parser, intent, resolution: res, next }
+    // UX 2.0: resolve against what the user is looking at. Never guesses account/asset/size; nothing executes here.
+    let positions: Array<{ accountId: string; instrumentId: string; side: string; quantity: string }> = []
+    try { positions = (await cachedPortfolio(prisma, ctx.key, ctx.adapters, req.userId!)).portfolio.positions.map(p => ({ accountId: p.accountId, instrumentId: p.instrumentId, side: p.side, quantity: p.quantity.toFixed() })) } catch { /* positions unknown → resolver asks */ }
+    const contextual = resolveContextual(transcript, (b.context ?? { screen: 'home' }) as VCtx, accounts, positions)
+    await prisma.voiceCommand.create({ data: { userId: req.userId!, transcript, sttProvider, confidence: confidence ?? undefined, intent: intent as unknown as Prisma.InputJsonValue, outcome: `${contextual.action.kind}:${next.screen}` } })
+    return { transcript, sttProvider, sttLabel, parser, intent, resolution: res, next, interpretation: contextual.interpretation, action: contextual.action }
   })
 }
 
@@ -167,4 +177,16 @@ export function nextScreen(i: TradeIntent, r: ReturnType<typeof resolveAccount>)
   if (trading && i.clarificationNeeded.length) return { screen: 'clarify', message: `Missing: ${i.clarificationNeeded.join(', ')}` }
   const map: Record<string, string> = { PLACE_ORDER: 'ticket', CLOSE_POSITION: 'ticket', REDUCE_POSITION: 'ticket', CANCEL_ORDER: 'orders', PREPARE_PROTECTION: 'protect', QUERY_POSITIONS: 'positions', QUERY_BALANCE: 'overview', QUERY_PORTFOLIO: 'overview', QUERY_EXPOSURE: 'compass', QUERY_UNPROTECTED: 'protect', QUERY_ORDERS: 'orders', STRESS_TEST: 'scenario', COMPARE_VENUES: 'market', EMERGENCY_REVIEW: 'emergency' }
   return { screen: map[i.intent] ?? 'overview' }
+}
+
+/** Per-asset holdings (spot/wallet balances) and venue-reported available cash per account. */
+export function holdingsOf(portfolio: { valuations: Array<{ accountId: string; asset: string; value: { toFixed(): string } | null }> }, inputs: Array<{ account: { id: string; alias: string; provider: string }; balances: Array<{ asset: string; free: { toFixed(): string; plus(x: unknown): unknown }; locked: { toFixed(): string }; total: { toFixed(): string; isZero(): boolean } }> }>) {
+  const STABLE = new Set(['USDT', 'USDC', 'USD', 'FDUSD', 'BUSD', 'DAI'])
+  const holdings = inputs.flatMap(i => i.balances.filter(b => !b.total.isZero()).map(b => ({
+    accountId: i.account.id, account: i.account.alias, provider: i.account.provider, asset: b.asset.toUpperCase(),
+    free: b.free.toFixed(), locked: b.locked.toFixed(), total: b.total.toFixed(),
+    valueUsd: portfolio.valuations.find(v => v.accountId === i.account.id && v.asset === b.asset.toUpperCase())?.value?.toFixed() ?? null,
+  })))
+  const availableUsd = Object.fromEntries(inputs.map(i => [i.account.id, i.balances.filter(b => STABLE.has(b.asset.toUpperCase())).reduce((s, b) => s + Number(b.free.toFixed()), 0).toFixed(2)]))
+  return { holdings, availableUsd, availableNote: 'Free stablecoin balance as reported by the venue' }
 }

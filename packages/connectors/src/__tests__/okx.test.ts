@@ -94,3 +94,22 @@ describe('OKX parsing', () => {
     expect(mapOkxState('partially_filled')).toBe('PARTIALLY_FILLED')
   })
 })
+
+describe('OKX restricted access is reported honestly', () => {
+  it('maps compliance/IP codes to ACCESS_RESTRICTED and outages to EXCHANGE_UNAVAILABLE', async () => {
+    const { mapOkxError } = await import('../okx/adapter')
+    expect(mapOkxError('51155')).toBe('ACCESS_RESTRICTED')
+    expect(mapOkxError('50110')).toBe('ACCESS_RESTRICTED')
+    expect(mapOkxError('50001')).toBe('EXCHANGE_UNAVAILABLE')
+    expect(mapOkxError('99999')).toBe('PROVIDER_ERROR')
+  })
+  it('a region/WAF 403 page or compliance code fails the connection with ACCESS_RESTRICTED, no retries', async () => {
+    const waf = mockFetch([[...time], ['GET', '/api/v5/account/config', { status: 403, body: '<html>Access denied</html>' }]])
+    const h = await new OkxAdapter(creds, { accountId: 'o', fetch: waf.fetch }).connect()
+    expect(h.state).not.toBe('CONNECTED')
+    expect(h.reasons.join(' ')).toContain('ACCESS_RESTRICTED (403)')
+    expect(waf.calls.filter(c => c.url.includes('/account/config'))).toHaveLength(1)
+    const comp = mockFetch([[...time], ['GET', '/api/v5/account/config', { body: { code: '51155', msg: 'compliance restriction', data: [] } }]])
+    expect((await new OkxAdapter(creds, { accountId: 'o', fetch: comp.fetch }).connect()).reasons.join(' ')).toContain('ACCESS_RESTRICTED (51155)')
+  })
+})

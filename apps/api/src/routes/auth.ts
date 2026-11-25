@@ -4,6 +4,7 @@ import { hashToken } from '@helm/security'
 import { createSession, hashPassword, requireUser, verifyPassword } from '../auth'
 import { audit } from '../audit'
 import type { AppCtx } from '../app'
+import { maybeCleanupGuests } from '../engine/guests'
 import { DEMO_SIM_ACCOUNTS, GUEST_EMAIL_DOMAIN, isGuestEmail, provisionSimulatedAccount } from '../engine/provision-sim'
 import { randomBytes } from 'node:crypto'
 
@@ -36,6 +37,7 @@ export const authRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
   })
 
   app.post('/v1/auth/demo', { config: ctx.rl(5, '10 minutes') }, async (req, reply) => {
+    maybeCleanupGuests(prisma, req.log)
     const email = `demo-${randomBytes(6).toString('hex')}${GUEST_EMAIL_DOMAIN}`
     const user = await prisma.user.create({ data: { email, passwordHash: await hashPassword(randomBytes(24).toString('base64url')), displayName: 'Demo visitor' } })
     const s = await createSession(prisma, user.id, req.headers['user-agent'])

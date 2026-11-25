@@ -20,6 +20,7 @@ export const HELM_ERROR_CODES = [
   'RISK_POLICY_VIOLATION',
   'ENVIRONMENT_MISMATCH',
   'LIVE_TRADING_DISABLED',
+  'ACCESS_RESTRICTED',
   'PROVIDER_ERROR',
 ] as const
 export type HelmErrorCode = (typeof HELM_ERROR_CODES)[number]
@@ -45,6 +46,7 @@ const USER_MESSAGES: Record<HelmErrorCode, string> = {
   RISK_POLICY_VIOLATION: 'Blocked by your HELM Shield risk policy.',
   ENVIRONMENT_MISMATCH: 'Blocked: this endpoint or account is not a verified demo/paper environment.',
   LIVE_TRADING_DISABLED: 'Live trading is disabled in HELM.',
+  ACCESS_RESTRICTED: 'The exchange restricted this request (region, compliance or IP rules). HELM will not work around it.',
   PROVIDER_ERROR: 'The exchange returned an error.',
 }
 

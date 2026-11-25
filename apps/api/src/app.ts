@@ -10,6 +10,7 @@ import { pairingRoutes } from './routes/pairing'
 import { connectionRoutes } from './routes/connections'
 import { metaRoutes } from './routes/meta'
 import { engineRoutes } from './routes/engine'
+import { uxRoutes } from './routes/ux'
 import { recipeRoutes } from './routes/recipes'
 import { insightRoutes } from './routes/insights'
 import { setMarketFetch } from './engine/market'
@@ -37,7 +38,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof ZodError) return reply.code(400).send({ error: { code: 'INVALID_INPUT', message: 'Invalid request', issues: err.issues.map(i => ({ path: i.path.join('.'), message: i.message })) } })
     if (err instanceof HelmError) {
-      const status = err.code === 'UNSUPPORTED_OPERATION' ? 422 : err.code === 'ENVIRONMENT_MISMATCH' || err.code === 'LIVE_TRADING_DISABLED' ? 403 : err.code === 'RATE_LIMITED' ? 429 : err.code === 'RISK_POLICY_VIOLATION' ? 422 : err.code === 'STALE_PROPOSAL' ? 409 : 400
+      const status = err.code === 'UNSUPPORTED_OPERATION' ? 422 : err.code === 'ENVIRONMENT_MISMATCH' || err.code === 'LIVE_TRADING_DISABLED' || err.code === 'ACCESS_RESTRICTED' ? 403 : err.code === 'RATE_LIMITED' ? 429 : err.code === 'RISK_POLICY_VIOLATION' ? 422 : err.code === 'STALE_PROPOSAL' ? 409 : 400
       return reply.code(status).send({ error: err.toJSON() })
     }
     const e = err as { statusCode?: number; message?: string; helm?: { code: string; message: string } }
@@ -55,6 +56,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   await app.register(pairingRoutes(ctx))
   await app.register(connectionRoutes(ctx))
   await app.register(engineRoutes(ctx))
+  await app.register(uxRoutes(ctx))
   await app.register(recipeRoutes(ctx))
   await app.register(insightRoutes(ctx))
   return app

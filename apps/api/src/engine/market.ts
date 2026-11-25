@@ -1,11 +1,11 @@
 import { dec, instrumentId, sum, type Decimal, type ExchangeAdapter, type Instrument, type InstrumentId, type OrderBook, type ProductType, type ProviderId } from '@helm/shared'
-import { simInstruments, type FetchLike } from '@helm/connectors'
+import { GuardedHttp, simInstruments, type FetchLike } from '@helm/connectors'
 import type { PriceBook } from '@helm/portfolio'
 import { publicMarket } from '../registry'
 
 let marketFetch: FetchLike | undefined
 /** Override the fetch used for public market data (tests, offline demo). */
-export function setMarketFetch(f: FetchLike | undefined) { marketFetch = f; priceCache = null }
+export function setMarketFetch(f: FetchLike | undefined) { marketFetch = f; priceCache = null; tickerCache?.clear() }
 
 const instCache = new Map<string, { at: number; inst: Instrument }>()
 const TTL = 10 * 60_000
@@ -81,9 +81,13 @@ export async function priceBook(fetchImpl?: FetchLike): Promise<PriceBook> {
 }
 
 // ---------- multi-venue comparison (public books only) ----------
-export interface VenueQuote { venue: ProviderId; source: string; instrumentId: string; bid: string | null; ask: string | null; spreadBps: string | null; depthUsd10bps: string | null; ageMs: number | null; error?: string }
+export interface VenueQuote { venue: ProviderId; source: string; instrumentId: string; bid: string | null; ask: string | null; spreadBps: string | null; depthUsd10bps: string | null; ageMs: number | null; impactBps?: string | null; estCostBps?: string | null; error?: string }
 
-export async function compareVenues(asset: string, product: 'spot' | 'perp' = 'spot', fetchImpl?: FetchLike): Promise<VenueQuote[]> {
+/**
+ * Public-book comparison. With `notionalUsd`, also walks the ask side for that size: impactBps = (avg fill − mid) / mid,
+ * estCostBps = impact + the published standard taker fee (an assumption, labelled). Null when the book is too thin.
+ */
+export async function compareVenues(asset: string, product: 'spot' | 'perp' = 'spot', fetchImpl?: FetchLike, notionalUsd?: Decimal | null): Promise<VenueQuote[]> {
   const sources: Record<'binance' | 'okx' | 'bybit', string> = { binance: 'Binance Demo public book', okx: 'OKX public book (production market data)', bybit: 'Bybit Demo public book' }
   return Promise.all((['binance', 'okx', 'bybit'] as const).map(async v => {
     const id = instrumentIdFor(v, 'public', asset, product)
@@ -92,9 +96,56 @@ export async function compareVenues(asset: string, product: 'spot' | 'perp' = 's
       const bid = b.bids[0]?.price ?? null, ask = b.asks[0]?.price ?? null
       const mid = bid && ask ? bid.plus(ask).div(2) : null
       const depth = mid ? sum([...b.bids.filter(l => l.price.gte(mid.mul('0.999'))), ...b.asks.filter(l => l.price.lte(mid.mul('1.001')))].map(l => l.price.mul(l.quantity))) : null
-      return { venue: v, source: sources[v], instrumentId: id, bid: bid?.toFixed() ?? null, ask: ask?.toFixed() ?? null, spreadBps: bid && ask && mid ? ask.minus(bid).div(mid).mul(10000).toFixed(2) : null, depthUsd10bps: depth?.toFixed(0) ?? null, ageMs: Date.now() - new Date(b.timestamp).getTime() }
+      let impactBps: string | null = null, estCostBps: string | null = null
+      if (notionalUsd && mid) {
+        const legs = walkBook(b, 'BUY', undefined, notionalUsd)
+        const filled = legsNotional(legs)
+        if (filled.gte(notionalUsd.mul('0.999'))) {
+          const avg = filled.div(legsQty(legs))
+          const imp = avg.minus(mid).div(mid).mul(10000)
+          impactBps = imp.toFixed(2)
+          estCostBps = imp.plus((FEE_ASSUMPTION[`${v}:${product}`] ?? dec(0)).mul(10000)).toFixed(2)
+        }
+      }
+      return { venue: v, source: sources[v], instrumentId: id, bid: bid?.toFixed() ?? null, ask: ask?.toFixed() ?? null, spreadBps: bid && ask && mid ? ask.minus(bid).div(mid).mul(10000).toFixed(2) : null, depthUsd10bps: depth?.toFixed(0) ?? null, ageMs: Date.now() - new Date(b.timestamp).getTime(), ...(notionalUsd ? { impactBps, estCostBps } : {}) }
     } catch (e) {
       return { venue: v, source: sources[v], instrumentId: id, bid: null, ask: null, spreadBps: null, depthUsd10bps: null, ageMs: null, error: (e as { code?: string }).code ?? 'UNAVAILABLE' }
     }
   }))
+}
+
+// ---------- 24h ticker + verified candles (Binance Demo public spot data) ----------
+const BINANCE_DEMO = 'https://demo-api.binance.com'
+const tickerCache = new Map<string, { at: number; v: { price: string | null; change24hPct: string | null; at: string | null } }>()
+const cleanAsset = (a: string) => a.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)
+async function publicGet(path: string, fetchImpl?: FetchLike): Promise<unknown> {
+  const http = new GuardedHttp('binance', fetchImpl ?? marketFetch ?? (globalThis.fetch as unknown as FetchLike), 8000)
+  const r = await http.request({ method: 'GET', url: `${BINANCE_DEMO}${path}`, authenticated: false })
+  if (r.status >= 400) throw Object.assign(new Error(`HTTP ${r.status}`), { code: 'UNAVAILABLE' })
+  return r.body
+}
+/** Last price + venue-reported 24h change for each asset (USDT pair). Unknown assets → nulls, never guessed. */
+export async function tickers(assets: string[], fetchImpl?: FetchLike) {
+  const want = [...new Set(assets.map(cleanAsset).filter(Boolean))].slice(0, 12)
+  const stale = want.filter(a => { const c = tickerCache.get(a); return !c || Date.now() - c.at > 10_000 })
+  await Promise.all(stale.map(async a => {
+    if (a === 'USDT') { tickerCache.set(a, { at: Date.now(), v: { price: '1', change24hPct: null, at: new Date().toISOString() } }); return }
+    try {
+      const t = (await publicGet(`/api/v3/ticker/24hr?symbol=${a}USDT`, fetchImpl)) as { lastPrice?: string; priceChangePercent?: string; closeTime?: number }
+      tickerCache.set(a, { at: Date.now(), v: { price: t.lastPrice ? dec(t.lastPrice).toFixed() : null, change24hPct: t.priceChangePercent ? dec(t.priceChangePercent).toFixed(2) : null, at: t.closeTime ? new Date(t.closeTime).toISOString() : null } })
+    } catch { tickerCache.set(a, { at: Date.now(), v: { price: null, change24hPct: null, at: null } }) }
+  }))
+  return want.map(a => ({ asset: a, ...tickerCache.get(a)!.v }))
+}
+/** Market snapshot: ticker + the last 24 hourly closes. The sparkline uses only these verified candles. */
+export async function snapshot(asset: string, fetchImpl?: FetchLike) {
+  const a = cleanAsset(asset)
+  const [t] = await tickers([a], fetchImpl)
+  let candles: { interval: string; closes: string[]; source: string } | null = null
+  try {
+    const k = (await publicGet(`/api/v3/klines?symbol=${a}USDT&interval=1h&limit=24`, fetchImpl)) as Array<[number, string, string, string, string]>
+    const closes = Array.isArray(k) ? k.map(r => r[4]).filter(x => typeof x === 'string' && Number.isFinite(Number(x))) : []
+    if (closes.length >= 2) candles = { interval: '1h', closes, source: 'Binance Demo klines' }
+  } catch { /* no candles → no chart */ }
+  return { asset: a, price: t?.price ?? null, change24hPct: t?.change24hPct ?? null, period: '24h', candles, source: 'Binance Demo ticker', at: t?.at ?? null }
 }

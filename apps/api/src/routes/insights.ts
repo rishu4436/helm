@@ -49,7 +49,7 @@ export const insightRoutes = (ctx: AppCtx): FastifyPluginAsync => async app => {
       const st = a.connection.state
       checks.push({ id: `acct:${a.account.id}`, label: a.account.alias, status: st === 'CONNECTED' || st === 'READ_ONLY' ? 'PASS' : st === 'LIMITED' ? 'WARN' : 'FAIL', detail: `${a.account.provider} · ${a.account.environment} · ${st}${a.connection.reasons.length ? ` — ${a.connection.reasons.join('; ')}` : ''}`, ms: accMs })
     }
-    checks.push({ id: 'okx', label: 'OKX (logged in)', status: 'WARN', detail: 'BLOCKED — OKX is unavailable in the user\'s region (India). Adapter is built and tested with mocks + public endpoints.' })
+    if (!accts.some(a => a.account.provider === 'okx')) checks.push({ id: 'okx', label: 'OKX Demo', status: 'WARN', detail: 'Not connected. Connect an OKX Demo Trading key (key, secret, passphrase) on Exchanges. Adapter verified with mocks + public endpoints; a logged-in OKX Demo run by the HELM team is NOT RUN.' })
     const devices = await prisma.device.count({ where: { userId: req.userId!, revokedAt: null } })
     checks.push({ id: 'devices', label: 'Paired glasses', status: devices ? 'PASS' : 'WARN', detail: devices ? `${devices} active device(s)` : 'No G2 paired yet' })
     return { at: new Date().toISOString(), checks, guard: Object.fromEntries(Object.entries(ENDPOINT_RULES).map(([k, r]) => [k, { signedHostsAllowed: r.authenticated ?? [], requiredAuthHeader: r.requiredAuthHeader?.name ?? null, loopbackOnly: !!r.loopbackOnly }])), build: { node: process.version } }

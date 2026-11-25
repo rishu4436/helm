@@ -22,7 +22,7 @@ const fakeFetch: FetchLike = async url => {
   if (u.pathname === '/v5/market/orderbook') { const b = book(px[sym] ?? 100); return json({ retCode: 0, retMsg: 'OK', result: { b: b.bids, a: b.asks, ts: Date.now() }, time: Date.now() }) }
   if (u.pathname === '/api/v5/market/books' || u.pathname.endsWith('/market/books')) {
     const inst = u.searchParams.get('instId') ?? 'BTC-USDT'
-    const asset = inst.split('-')[0]
+    const asset = inst.split('-')[0] ?? 'BTC'
     const b = book(px[asset] ?? 100)
     return json({ code: '0', data: [{ bids: b.bids, asks: b.asks, ts: String(Date.now()) }] })
   }
@@ -313,7 +313,8 @@ describe('insights for the companion', () => {
     expect(JSON.stringify(au)).not.toMatch(/confirmToken|apiSecret/)
     const d = (await app.inject({ method: 'GET', url: '/v1/diagnostics', headers: H(t) })).json()
     expect(d.checks.find((c: { id: string }) => c.id === 'live')).toMatchObject({ status: 'PASS' })
-    expect(d.checks.find((c: { id: string }) => c.id === 'okx').detail).toMatch(/BLOCKED/)
+    expect(d.checks.find((c: { id: string }) => c.id === 'okx').detail).toMatch(/Not connected/)
+    expect(JSON.stringify(d.checks)).not.toMatch(/India|BLOCKED/)
     expect(d.guard.binance.signedHostsAllowed.every((h: string) => h.startsWith('demo-'))).toBe(true)
   })
 })
