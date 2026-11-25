@@ -280,6 +280,39 @@ describe('controller · onboarding practice', () => {
   })
 })
 
+describe('controller · flow 1 (new user) end to end', () => {
+  it('Welcome → gestures → practice Home → Portfolio → position detail → simulated practice order → receipt → finish', async () => {
+    const r = rig(); await r.c.start()
+    r.c.prefs.onboarding.completedAt = null
+    await r.c.replaceRoot(r.c.onboardWelcomeView())
+    expect(r.last().key).toBe('ob-welcome')
+    await r.tap(/^Try HELM/)
+    await r.send({ kind: 'swipe', dir: 'down' }); await r.send({ kind: 'tap', source: 'sys' }); await r.send({ kind: 'double' }); await r.send({ kind: 'tap', source: 'sys' })
+    await r.tap(/Start practice/)
+    expect(r.c.backend.kind).toBe('practice')
+    expect(r.last().texts.map(t => t.text).join(' ')).toMatch(/PRACTICE|practice/)
+    await r.tap(/^Portfolio/)
+    expect(r.c.current?.name).toMatch(/^portfolio-/)
+    await r.tap(/^Positions/)
+    await r.tap(/BTC LONG/)
+    expect(r.c.current?.name).toBe('focus')
+    await r.tap(/^Reduce 50%|^Close half|Reduce/)
+    if (r.c.current?.name !== 'review') await r.tap(/^Continue|^Preview/)
+    expect(r.c.current?.name).toBe('review')
+    await r.tap(/^Continue to confirm|^Review findings/)
+    if (r.c.current?.name === 'findings') await r.send({ kind: 'tap', source: 'list', index: 1 })
+    expect(r.c.current?.name).toBe('confirm')
+    expect(r.list()[0]).toBe('Cancel')
+    await r.send({ kind: 'tap', source: 'list', index: 1 })
+    expect(r.c.current?.name).toBe('receipt')
+    expect(r.last().texts.map(t => t.text).join(' ')).toMatch(/SIMULATED/)
+    await r.tap(/^Finish practice/)
+    expect(r.c.backend.kind).toBe('sample')
+    expect(r.c.current?.name).toBe('ob-finish')
+    expect(r.c.prefs.onboarding.stage).toBe('done')
+  })
+})
+
 describe('events · Even Hub envelope mapping', () => {
   it('maps list taps with index, text scrolls to swipes, double-taps and lifecycle', () => {
     expect(toInput({ listEvent: { currentSelectItemIndex: 2, currentSelectItemName: 'X' } })).toEqual({ kind: 'tap', source: 'list', index: 2, name: 'X' })

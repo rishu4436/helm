@@ -247,7 +247,7 @@ export class Controller {
     const items: MenuItem[] = V.homeItems(g, this.ctx, { watchTop: this.watch[0] ?? null, activityNow: this.activity?.current.length ?? 0 })
     if (this.backend.kind === 'practice') items.unshift({ id: 'finish', label: 'Finish practice · back to your accounts' })
     return {
-      name: 'home', items, build: () => V.homeScreen(g, this.portfolio, items, this.ctx, this.prefs.metrics),
+      name: 'home', items, build: () => V.homeScreen(g, this.portfolio, items, this.ctx, this.prefs.metrics, this.backend.kind === 'practice' ? 'PRACTICE · sample data' : undefined),
       onItem: it => this.homeAction(String(it.id), it.ref),
       tickMs: 15000, onTick: async () => { try { await this.refresh(); if (this.view?.name === 'home' && !this.busy) await this.replace(this.homeView()) } catch { /* stale */ } },
     }

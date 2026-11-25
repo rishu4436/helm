@@ -105,9 +105,9 @@ export function homeItems(g: Glance, c: ViewCtx, extra: { watchTop?: WatchItem |
   return out.filter(i => (seen.has(i.id) && i.id !== 'alert' ? false : (seen.add(i.id), true)))
 }
 
-export function homeScreen(g: Glance, p: PortfolioPayload | null, items: MenuItem[], c: ViewCtx, metrics: Prefs['metrics'] = ['value', 'pnl', 'positions', 'health']): ScreenSpec {
+export function homeScreen(g: Glance, p: PortfolioPayload | null, items: MenuItem[], c: ViewCtx, metrics: Prefs['metrics'] = ['value', 'pnl', 'positions', 'health'], badge?: string): ScreenSpec {
   const usd = usdOf(c), pnl = pnlOf(c)
-  const title = g.primary ? `HELM · ${g.primary.label}` : 'HELM'
+  const title = badge ? `HELM · ${badge}` : g.primary ? `HELM · ${g.primary.label}` : 'HELM'
   const fresh = g.mode === 'disconnected' ? 'STALE' : ageLabel(g.ageSec)
   let glanceText: string
   if (g.mode === 'empty') glanceText = 'No exchange connected yet.\nTry practice data, or connect\na demo account in the companion.'
