@@ -3,6 +3,7 @@
  * container limits and text fit (via @evenrealities/pretext) without a device.
  * Canvas: 576×288, 4-bit green, one fixed LVGL font (27px line height).
  */
+import { IMG_MAX_H, IMG_MAX_W, IMG_MIN_H, IMG_MIN_W, fingerprint, type Graphic } from './gfx/graphics'
 export const W = 576
 export const H = 288
 export const LINE_H = 27
@@ -26,10 +27,22 @@ export interface ListBox {
   border?: number
   capture?: boolean
 }
-export interface ImageBox { id: number; name: string; x: number; y: number; w: number; h: number; draw: 'wordmark' | { code: string } }
+export type ImageDraw = 'wordmark' | { code: string } | { gfx: Graphic }
+/**
+ * Image container. `alt` + `altId` give every financial graphic a text fallback: if the image transfer is
+ * rejected, the renderer writes `alt` into text container `altId` (placed under the image) so nothing is lost.
+ */
+export interface ImageBox { id: number; name: string; x: number; y: number; w: number; h: number; draw: ImageDraw; alt?: string; altId?: number }
+
+/** Content fingerprint of an image container (changes whenever the drawn data changes, even if geometry does not). */
+export function imagePrint(i: ImageBox): string {
+  return fingerprint({ d: i.draw, w: i.w, h: i.h })
+}
 
 export interface ScreenSpec {
   key: string // screen identity; same key + same structure → in-place text updates
+  /** Binds the rendered screen to app state (e.g. a proposalId): confirmation is only enabled once THIS binding has rendered. */
+  bind?: string
   texts: TextBox[]
   lists?: ListBox[]
   images?: ImageBox[]
@@ -51,8 +64,9 @@ export function clipBytes(t: string, max = LIST_ITEM_MAX_BYTES): string {
 
 export function structureSignature(s: ScreenSpec): string {
   const t = s.texts.map(b => `t${b.id}:${b.name}:${b.x},${b.y},${b.w},${b.h},${b.border ?? 0},${b.capture ? 1 : 0}`)
-  const l = (s.lists ?? []).map(b => `l${b.id}:${b.items.join('|')}`)
-  const i = (s.images ?? []).map(b => `i${b.id}:${b.x},${b.y},${b.w},${b.h}`)
+  const l = (s.lists ?? []).map(b => `l${b.id}:${b.name}:${b.x},${b.y},${b.w},${b.h},${b.capture ? 1 : 0}:${b.items.join('|')}`)
+  // Geometry only: image CONTENT is tracked separately by imagePrint so changed chart data re-sends the image without a rebuild.
+  const i = (s.images ?? []).map(b => `i${b.id}:${b.name}:${b.x},${b.y},${b.w},${b.h}`)
   return [s.key, ...t, ...l, ...i].join(';')
 }
 
@@ -73,7 +87,13 @@ export function validateSpec(s: ScreenSpec): string[] {
     ids.add(b.id); names.add(b.name)
     if (b.x < 0 || b.y < 0 || b.x + b.w > W || b.y + b.h > H) errs.push(`${b.name} outside canvas`)
   }
-  for (const i of images) if (i.w < 20 || i.w > 288 || i.h < 20 || i.h > 144) errs.push(`${i.name} image size out of range`)
+  for (const i of images) {
+    if (i.w < IMG_MIN_W || i.w > IMG_MAX_W || i.h < IMG_MIN_H || i.h > IMG_MAX_H) errs.push(`${i.name} image size out of range`)
+    if (typeof i.draw === 'object' && 'gfx' in i.draw) {
+      if (!i.alt) errs.push(`${i.name} graphic needs alt text`)
+      if (i.altId === undefined || !s.texts.some(t => t.id === i.altId)) errs.push(`${i.name} graphic needs an altId text container`)
+    }
+  }
   for (const l of lists) {
     if (l.items.length < 1 || l.items.length > 20) errs.push(`${l.name} needs 1–20 items`)
     for (const it of l.items) if (utf8Len(it) > LIST_ITEM_MAX_BYTES) errs.push(`${l.name} item exceeds ${LIST_ITEM_MAX_BYTES} bytes`)
