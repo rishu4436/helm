@@ -3,17 +3,20 @@ export const API_BASE: string = (import.meta as unknown as { env: Record<string,
 
 export class ApiError extends Error { constructor(readonly status: number, readonly code: string, message: string) { super(message) } }
 
-async function call<T>(path: string, init: { method?: string; body?: unknown; token?: string } = {}): Promise<{ status: number; data: T }> {
+export async function call<T>(path: string, init: { method?: string; body?: unknown; token?: string; timeoutMs?: number } = {}): Promise<{ status: number; data: T }> {
   let res: Response
+  const ac = typeof AbortController !== 'undefined' ? new AbortController() : null
+  const timer = ac ? setTimeout(() => ac.abort(), init.timeoutMs ?? 25000) : null
   try {
     res = await fetch(`${API_BASE}${path}`, {
       method: init.method ?? 'GET',
       headers: { ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(init.token ? { Authorization: `Bearer ${init.token}` } : {}) },
       body: init.body ? JSON.stringify(init.body) : undefined,
+      signal: ac?.signal,
     })
-  } catch {
-    throw new ApiError(0, 'NETWORK', 'Server unreachable')
-  }
+  } catch (e) {
+    throw (e as Error)?.name === 'AbortError' ? new ApiError(0, 'TIMEOUT', 'Server did not answer in time') : new ApiError(0, 'NETWORK', 'Server unreachable')
+  } finally { if (timer) clearTimeout(timer) }
   const data = (await res.json().catch(() => ({}))) as T & { error?: { code: string; message: string } }
   if (res.status >= 400) throw new ApiError(res.status, data.error?.code ?? 'HTTP_' + res.status, data.error?.message ?? 'Request failed')
   return { status: res.status, data }
@@ -46,7 +49,7 @@ export interface PreviewResp {
   risk: { verdict: 'ALLOW' | 'WARN' | 'BLOCK'; findings: Finding[]; policyVersion: number }
 }
 export interface Receipt { orderId: string; account: string; provider: string; environmentLabel: string; label: string | null; instrumentId: string; side: string; type: string; status: string; providerOrderId: string | null; quantity: string | null; quoteQuantity: string | null; filledQuantity: string; avgFillPrice: string | null; fills: Array<{ price: string; qty: string; fee: string | null; feeAsset: string | null }>; protection: { state: string; stopPrice: string | null; protectedQuantity: string } | null; fillTruth: string; orphanCleanup?: Array<{ result: string }> | null; events: Array<{ to: string; reason: string | null }> }
-export interface Ticket { accountId: string; asset: string; product: 'spot' | 'perp'; side: 'BUY' | 'SELL'; notional?: string; quantity?: string; fraction?: string; leverage?: string; stopOffsetPercent?: string; reduceOnly?: boolean }
+export interface Ticket { accountId: string; asset: string; product: 'spot' | 'perp'; side: 'BUY' | 'SELL'; notional?: string; quantity?: string; fraction?: string; leverage?: string; stopOffsetPercent?: string; reduceOnly?: boolean; instrumentId?: string; limitPrice?: string; type?: 'MARKET' | 'LIMIT' }
 export interface VoiceResp { transcript: string; sttProvider: string; sttLabel: string | null; intent: { intent: string; asset: string | null; side: 'BUY' | 'SELL' | null; product: string | null; notional: string | null; quantity: string | null; fraction: string | null; leverage: string | null; stopOffsetPercent: string | null; provider: string | null }; resolution: { status: string; question?: string; options?: Array<{ id: string; alias: string; provider: string }>; account?: { id: string; alias: string; provider: string }; message?: string }; next: { screen: string; message?: string } }
 
 export const trade = {

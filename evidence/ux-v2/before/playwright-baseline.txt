@@ -1,0 +1,72 @@
+
+Running 46 tests using 1 worker
+
+(node:190372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/companion.spec.ts:17:3 › public › landing renders and the labelled simulated demo walks voice → Which exchange? → confirm (2.3s)
+  ✓   2 e2e/companion.spec.ts:45:3 › public › register, sign out, bad password, sign in (3.4s)
+  ✓   3 e2e/companion.spec.ts:68:3 › public › unauthenticated app routes redirect to login (99ms)
+  ✓   4 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /dashboard loads without errors (7.4s)
+  ✓   5 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /portfolio loads without errors (7.5s)
+  ✓   6 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /positions loads without errors (7.1s)
+  ✓   7 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /terminal loads without errors (5.7s)
+  ✓   8 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /protect loads without errors (6.4s)
+  ✓   9 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /recipes loads without errors (3.5s)
+  ✓  10 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /voice loads without errors (3.6s)
+  ✓  11 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /shield loads without errors (7.4s)
+  ✓  12 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /pulse loads without errors (3.6s)
+  ✓  13 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /markets loads without errors (5.1s)
+  ✓  14 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /vision loads without errors (6.2s)
+  ✓  15 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /devices loads without errors (3.5s)
+  ✓  16 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /history loads without errors (3.7s)
+  ✓  17 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /connect loads without errors (3.6s)
+  ✓  18 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /capabilities loads without errors (3.6s)
+  ✓  19 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /security loads without errors (3.6s)
+  ✓  20 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /settings loads without errors (3.5s)
+  ✓  21 e2e/companion.spec.ts:78:5 › signed in as the demo user › page /diagnostics loads without errors (3.6s)
+  ✓  22 e2e/companion.spec.ts:89:3 › signed in as the demo user › terminal previews on Binance Demo without confirming, then confirms only on a SIMULATED account (18.3s)
+  ✓  23 e2e/companion.spec.ts:114:3 › signed in as the demo user › Trade-to-Protect recovery on a SIMULATED perp: unprotected → Preview stop → confirm → PROTECTED → reduce-only close (24.7s)
+  ✓  24 e2e/companion.spec.ts:148:3 › signed in as the demo user › voice sample (real WAV) → local STT → intent, no order placed (4.4s)
+  ✓  25 e2e/companion.spec.ts:163:3 › signed in as the demo user › shield scenario: crypto crash preset with stop-aware result (5.8s)
+  ✓  26 e2e/companion.spec.ts:173:3 › signed in as the demo user › recipes: pre-sleep runs checks + scenario; spot buy asks Which exchange? (5.2s)
+  ✓  27 e2e/companion.spec.ts:184:3 › signed in as the demo user › vision mirrors live screens with ring navigation (2.7s)
+[audit] /: clicked 7/7 eligible; dead 0
+  ✓  28 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on / (9.2s)
+[audit] /dashboard: clicked 6/6 eligible; dead 0
+  ✓  29 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /dashboard (11.5s)
+[audit] /portfolio: clicked 3/3 eligible; dead 0
+  ✓  30 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /portfolio (8.7s)
+[audit] /positions: clicked 1/1 eligible; dead 0
+  ✓  31 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /positions (5.9s)
+[audit] /terminal: clicked 12/12 eligible; dead 0
+  ✓  32 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /terminal (15.1s)
+[audit] /protect: clicked 0/0 eligible; dead 0
+  ✓  33 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /protect (5.0s)
+[audit] /recipes: clicked 6/6 eligible; dead 0
+  ✓  34 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /recipes (8.4s)
+[audit] /voice: clicked 16/25 eligible; dead 0
+  ✓  35 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /voice (17.7s)
+[audit] /shield: clicked 8/8 eligible; dead 0
+  ✓  36 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /shield (13.6s)
+[audit] /pulse: clicked 3/33 eligible; dead 0
+  ✓  37 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /pulse (6.0s)
+[audit] /markets: clicked 6/6 eligible; dead 0
+  ✓  38 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /markets (9.9s)
+[audit] /vision: clicked 9/10 eligible; dead 0
+  ✓  39 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /vision (13.8s)
+[audit] /devices: clicked 0/0 eligible; dead 0
+  ✓  40 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /devices (2.7s)
+[audit] /history: clicked 3/53 eligible; dead 0
+  ✓  41 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /history (5.7s)
+[audit] /connect: clicked 17/17 eligible; dead 0
+  ✓  42 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /connect (18.7s)
+[audit] /capabilities: clicked 0/0 eligible; dead 0
+  ✓  43 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /capabilities (2.7s)
+[audit] /security: clicked 1/1 eligible; dead 0
+  ✓  44 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /security (3.7s)
+[audit] /settings: clicked 0/0 eligible; dead 0
+  ✓  45 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /settings (2.7s)
+[audit] /diagnostics: clicked 1/1 eligible; dead 0
+  ✓  46 e2e/dead-buttons.spec.ts:21:3 › no dead buttons on /diagnostics (3.7s)
+
+  46 passed (5.4m)
