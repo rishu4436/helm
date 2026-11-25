@@ -11,9 +11,9 @@ export type ScopeId = 'exchange' | 'simulated' | 'sandbox'
 export const scopeOf = (env: string): ScopeId => (env === 'demo' || env === 'paper' ? 'exchange' : env === 'simulated' ? 'simulated' : 'sandbox')
 export const SCOPE_LABEL: Record<ScopeId, string> = { exchange: 'Exchange demo', simulated: 'HELM simulated', sandbox: 'Static sandbox' }
 export const SCOPE_NOTE: Record<ScopeId, string> = {
-  exchange: 'exchange-reported demo/paper values',
-  simulated: 'HELM-simulated balances, not exchange funds',
-  sandbox: 'predefined sandbox values, not a balance',
+  exchange: 'Exchange-reported demo values',
+  simulated: 'Simulated: not exchange funds',
+  sandbox: 'Static sandbox: not a balance',
 }
 export const ENV_TAG: Record<string, string> = { demo: 'DEMO', paper: 'PAPER', sandbox_static: 'SANDBOX', simulated: 'SIM' }
 export const envTag = (env: string) => ENV_TAG[env] ?? env.toUpperCase()
@@ -247,14 +247,15 @@ export function stepAmount(v: number, dir: 1 | -1, min = 5, max = 1000) {
 }
 
 // ---------- fast path ----------
-export interface ReviewLike { canConfirm: boolean; expiresAt: string; account: { connectionState: string }; preview: { estimatedPrice: string | null; estimatedNotional: string | null }; risk: { verdict: 'ALLOW' | 'WARN' | 'BLOCK' } }
+export interface ReviewLike { kind?: string; canConfirm: boolean; expiresAt: string; account: { connectionState: string }; preview: { estimatedPrice: string | null; estimatedNotional: string | null }; risk: { verdict: 'ALLOW' | 'WARN' | 'BLOCK' } }
 /** The concise one-screen review is used only when every condition holds; otherwise the full risk step is mandatory. */
 export function fastPathEligible(p: ReviewLike, now = Date.now()): { ok: boolean; reasons: string[] } {
   const r: string[] = []
   if (p.risk.verdict !== 'ALLOW') r.push(p.risk.verdict === 'WARN' ? 'risk findings need review' : 'order blocked')
   if (!p.canConfirm) r.push('cannot confirm')
   if (p.account.connectionState !== 'CONNECTED') r.push(`account ${p.account.connectionState}`)
-  if (!p.preview.estimatedPrice || !p.preview.estimatedNotional) r.push('price estimate incomplete')
+  // A protective stop has no fill estimate by nature; new orders need a complete price estimate.
+  if (p.kind !== 'protect_existing' && (!p.preview.estimatedPrice || !p.preview.estimatedNotional)) r.push('price estimate incomplete')
   if (Date.parse(p.expiresAt) - now < 10_000) r.push('preview about to expire')
   return { ok: r.length === 0, reasons: r }
 }

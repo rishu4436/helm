@@ -226,7 +226,7 @@ export function altText(g: Graphic): string {
     case 'bars': return `${g.title}: ${g.rows.map(r => `${r.label} ${r.value === null ? (r.note ?? 'n/a') : `${formatNum(r.value)}${g.unit}`}`).join(', ')}`
     case 'sparkline': return g.points.length >= 2 ? `${g.caption}: ${formatNum(g.points[0]!)} to ${formatNum(g.points[g.points.length - 1]!)}` : 'No verified candles'
     case 'range': return g.markers.map(m => `${MARKER_LABEL[m.kind]} ${m.price === null ? 'unavailable' : formatNum(m.price)}`).join(', ')
-    case 'beforeAfter': return `${g.label}: $${formatNum(g.before)} now, $${formatNum(g.after)} after`
+    case 'beforeAfter': return `${g.label}: ${g.before < 0 ? '-' : ''}$${formatNum(Math.abs(g.before))} now, ${g.after < 0 ? '-' : ''}$${formatNum(Math.abs(g.after))} after`
     case 'meter': return `${g.label}: ${formatNum(g.value)}% of ${formatNum(g.limit)}% limit`
   }
 }

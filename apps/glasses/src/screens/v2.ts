@@ -221,7 +221,7 @@ export function positionRiskScreen(f: FocusModel, policy: { nearLiquidationPct?:
     f.liqDistancePct !== null ? `${pct(f.liqDistancePct)} from ${term('liq', c.mode)}${near !== null ? ` (alert < ${near}%)` : ''}` : 'Liquidation not reported by venue',
     `Margin ${usd(f.margin, 0)}${f.marginMode ? ` · ${f.marginMode}` : ''}`,
     `Share of portfolio ${pct(sharePct)}`,
-    f.row.stop ? `Stop ${fmtPrice(f.stopPrice)} (not a guaranteed max loss)` : 'No stop listed at the venue',
+    f.row.stop ? `Stop ${fmtPrice(f.stopPrice)} · not a max-loss cap` : 'No stop listed at the venue',
   ].join('\n')
   return detailScreen({ key: `prisk-${f.row.key}`, title: `${f.row.base} POSITION RISK`, context: shortAlias(f.row.alias), body, bodyLines: 4, bodyW: 330, gfx, gfxH: 64, items: [{ id: 'back', label: 'Back to position' }, ...(f.row.stop || f.row.product === 'spot' ? [] : [{ id: 'protect', label: 'Add protection (stop)' }])], hint: hints(c, 'select') })
 }
@@ -264,7 +264,7 @@ export function marketScreen(s: Snapshot, fav: boolean, c: ViewCtx): ScreenSpec 
     s.price ? fmtPrice(Number(s.price)) : 'Price unavailable',
     s.change24hPct ? `${signedPct(Number(s.change24hPct), 2)} over ${s.period}` : 'Change unavailable',
     gfx ? 'Sparkline: verified candles' : 'No verified candles: no chart',
-    `Source: ${s.source.slice(0, 26)}`,
+    `Source: ${s.source.slice(0, 19)}`,
   ].join('\n')
   const items: MenuItem<MarketActionId>[] = [{ id: 'venues', label: 'Compare venues (Venue Compass)' }, { id: 'trade', label: `Prepare ${s.asset} order` }, { id: 'fav', label: fav ? 'Remove from favorites' : 'Add to favorites' }, { id: 'voice', label: 'Voice' }]
   return detailScreen({ key: `market-${s.asset}`, title: `${s.asset} · MARKET`, context: s.at ? ageLabel(Math.max(0, Math.round((Date.now() - Date.parse(s.at)) / 1000))) : 'age n/a', body, bodyLines: 4, bodyW: 288, gfx, gfxH: 104, items, hint: hints(c) })
@@ -304,7 +304,8 @@ export function reviewItems(p: PreviewResp, fast: boolean): MenuItem<ReviewId>[]
 }
 export function reviewScreen(p: PreviewResp, items: MenuItem[], c: ViewCtx, now = Date.now()): ScreenSpec {
   if (p.kind === 'protect_existing') return protectReviewScreen(p, items, c, now)
-  const usd = usdOf(c)
+  // The order's own size and cost are always shown — confirming blind is unsafe. Privacy hides portfolio values only.
+  const usd = usdOf({ ...c, privacy: false })
   const s = sym(p.order.instrument), v = p.preview, i = v.impact
   const perp = s.product !== 'spot'
   const dir = perp && !p.order.reduceOnly ? (p.order.side === 'BUY' ? 'LONG' : 'SHORT') : p.order.side
@@ -313,7 +314,7 @@ export function reviewScreen(p: PreviewResp, items: MenuItem[], c: ViewCtx, now 
     `${dir} ${size} · ${prodLabel(s.product)}${p.order.leverage ? ` ${p.order.leverage}x` : ''}`,
     `${p.account.alias} · ${p.account.environmentLabel}`,
     `≈ ${usd(v.estimatedNotional)} at ${fmtPrice(v.estimatedPrice ? Number(v.estimatedPrice) : null)}${v.requiredMargin ? ` · margin ${usd(v.requiredMargin)}` : ''}`,
-    p.order.reduceOnly ? `${c.mode === 'pro' ? 'Reduce-only' : 'Reduce/close only (never adds exposure)'}${v.willCancel?.length ? ` · then cancels ${v.willCancel.length} stop` : ''}` : v.protection ? `Stop ${v.protection.stopOffsetPercent}% ≈ ${fmtPrice(v.protection.estimatedStopPrice ? Number(v.protection.estimatedStopPrice) : null)}` : 'No protective stop',
+    p.order.reduceOnly ? (v.willCancel?.length ? `Reduce-only, then cancels ${v.willCancel.length} stop` : c.mode === 'pro' ? 'Reduce-only' : 'Only reduces or closes, never adds') : v.protection ? `Stop ${v.protection.stopOffsetPercent}% ≈ ${fmtPrice(v.protection.estimatedStopPrice ? Number(v.protection.estimatedStopPrice) : null)}` : 'No protective stop',
     `${p.risk.verdict === 'ALLOW' ? '' : p.risk.verdict === 'WARN' ? '▲ ' : '■ '}${term(p.risk.verdict, c.mode)}`,
   ].join('\n')
   const gfx: Graphic = { kind: 'beforeAfter', label: `${i.asset} exposure (USD)`, before: num(i.currentExposureUsd), after: num(i.proposedExposureUsd) }
@@ -416,7 +417,7 @@ export function settingsItems(p: Prefs, accts: Acct[]): MenuItem<SettingId>[] {
     { id: 'tutorial', label: 'Restart the tutorial' },
   ]
 }
-export const settingsScreen = (p: Prefs, accts: Acct[], c: ViewCtx, saved?: string) => menuScreen('settings', 'SETTINGS', saved ?? 'saved per user', settingsItems(p, accts), hints(c, 'change'), 'Changes presentation only; trading limits are the same in every mode')
+export const settingsScreen = (p: Prefs, accts: Acct[], c: ViewCtx, saved?: string) => menuScreen('settings', 'SETTINGS', saved ?? 'saved per user', settingsItems(p, accts), hints(c, 'change'), 'Presentation only; your trading limits never change')
 export const helpItems = (): MenuItem[] => [{ id: 'gestures', label: 'Gestures: swipe, tap, double-tap' }, { id: 'tutorial', label: 'Restart the tutorial' }, { id: 'terms', label: 'What the words mean' }, { id: 'safety', label: 'How HELM keeps orders safe' }, { id: 'voice', label: 'Voice command examples' }]
 export const helpScreen = (c: ViewCtx) => menuScreen('help', 'HELP', '', helpItems(), hints(c))
 export function infoScreen(key: string, title: string, context: string, body: string, c: ViewCtx, items: MenuItem[] = [{ id: 'back', label: 'Back' }]): ScreenSpec {
@@ -465,4 +466,14 @@ export function protectPickScreen(base: string, side: string, alias: string, dis
 }
 export function listScreen(key: string, title: string, context: string, items: MenuItem[], c: ViewCtx, note?: string, noteLines = 1): ScreenSpec {
   return menuScreen(key, title, context, items, hints(c), note, noteLines)
+}
+
+// ---------- EXPOSURE COMPASS (detail) ----------
+export function compassScreen(cp: { largestDirectional?: { asset: string; direction: string; netUsd: string } | null; largestExchange?: { alias: string; sharePct: string } | null; unprotected: unknown[]; nearRisk: unknown[]; marginWarnings: unknown[]; rose?: Array<{ asset: string; sharePct: string; direction: string }> }, net: string, c: ViewCtx): ScreenSpec {
+  const usd = usdOf(c)
+  const ld = cp.largestDirectional ? `${cp.largestDirectional.asset} ${cp.largestDirectional.direction} ${usd(Math.abs(Number(cp.largestDirectional.netUsd)), 0)}` : 'flat'
+  const le = cp.largestExchange ? `${shortAlias(cp.largestExchange.alias)} ${Math.round(Number(cp.largestExchange.sharePct))}%` : 'none'
+  const rose = (cp.rose ?? []).slice(0, 4).map(r => `${r.asset} ${Math.round(Number(r.sharePct))}%${r.direction === 'SHORT' ? '↓' : r.direction === 'LONG' ? '↑' : ''}`).join(' ')
+  const body = `Largest: ${ld}\nTop account: ${le}\nNo stop: ${cp.unprotected.length} · near ${term('liq', c.mode)}: ${cp.nearRisk.length}\nMargin warnings: ${cp.marginWarnings.length}\n${rose || 'No exposure'}`
+  return cardScreen({ key: 'compass', title: term('compass', c.mode).toUpperCase(), context: usd(net, 0), body, hint: 'tap or double-tap: back' })
 }

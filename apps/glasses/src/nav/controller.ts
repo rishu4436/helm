@@ -858,7 +858,7 @@ export class Controller {
       return v
     })
   }
-  openCompass() { return this.open('Loading', async () => { const r = await this.backend.compass(); const v: View = { name: 'compass', build: () => T.compassScreen(r.compass, r.netLiquidationUsd), onTap: () => this.back() }; return v }) }
+  openCompass() { return this.open('Loading', async () => { const r = await this.backend.compass(); const v: View = { name: 'compass', build: () => V.compassScreen(r.compass, r.netLiquidationUsd, this.ctx), onTap: () => this.back() }; return v }) }
   openEmergency() {
     return this.open('Loading', async () => {
       const its = await this.backend.emergency()
