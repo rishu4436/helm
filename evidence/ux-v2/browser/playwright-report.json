@@ -4,9 +4,9 @@
       "/usr/local/lib/nodejs/node",
       "/workspace/helm/node_modules/.pnpm/@playwright+test@1.65.1/node_modules/@playwright/test/cli.js",
       "test",
-      "e2e/companion.spec.ts",
+      "e2e/dead-buttons.spec.ts",
       "-g",
-      "OKX gets"
+      "/markets"
     ],
     "configFile": "/workspace/helm/apps/companion/playwright.config.ts",
     "rootDir": "/workspace/helm/apps/companion/e2e",
@@ -98,61 +98,66 @@
   },
   "suites": [
     {
-      "title": "companion.spec.ts",
-      "file": "companion.spec.ts",
+      "title": "dead-buttons.spec.ts",
+      "file": "dead-buttons.spec.ts",
       "column": 0,
       "line": 0,
-      "specs": [],
-      "suites": [
+      "specs": [
         {
-          "title": "signed in as the demo user",
-          "file": "companion.spec.ts",
-          "line": 75,
-          "column": 6,
-          "specs": [
+          "title": "no dead buttons on /markets",
+          "ok": true,
+          "tags": [],
+          "tests": [
             {
-              "title": "OKX gets the standard provider card and the Demo key / secret / passphrase form (no region block)",
-              "ok": true,
-              "tags": [],
-              "tests": [
+              "timeout": 120000,
+              "annotations": [
                 {
-                  "timeout": 120000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 825,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-11-25T06:48:00.224Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "type": "audit",
+                  "description": "/markets: 5 buttons clicked, 5 eligible, dead: 0"
                 }
               ],
-              "id": "d84b00394e37adc97eb7-75937c4b54b72119fa28",
-              "file": "companion.spec.ts",
-              "line": 185,
-              "column": 3
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9100,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[audit] /markets: clicked 5/5 eligible; dead 0\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-25T06:54:45.784Z",
+                  "annotations": [
+                    {
+                      "type": "audit",
+                      "description": "/markets: 5 buttons clicked, 5 eligible, dead: 0"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
-          ]
+          ],
+          "id": "2c5e3b75e22f5d9aac9e-5636df85f474f5192dc9",
+          "file": "dead-buttons.spec.ts",
+          "line": 21,
+          "column": 3
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-25T06:47:59.795Z",
-    "duration": 1412.028,
+    "startTime": "2026-11-25T06:54:45.444Z",
+    "duration": 9608.661,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

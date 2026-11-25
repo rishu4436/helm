@@ -24,7 +24,7 @@ function Markets() {
       <PageHeader kicker="MARKET INTELLIGENCE" title="Where is the best price right now?" subtitle="Live public order books from every venue HELM supports, side by side. HELM never routes for you — it shows the facts, you pick the venue." actions={<><Segmented value={product} onChange={setProduct} options={[['spot', 'Spot'], ['perp', 'Perpetual']]} testId="mk-product" /><Btn onClick={() => { mk.reload(); wl.reload() }}>Refresh</Btn></>} />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         {(wl.data?.items ?? ASSETS.map(a => ({ asset: a, price: null, at: null }))).map(i => (
-          <button key={i.asset} onClick={() => setAsset(i.asset)} className={`card p-4 text-left ${asset === i.asset ? 'border-amber-helm' : 'hover:border-graphite-700'}`} data-testid={`asset-${i.asset}`}>
+          <button key={i.asset} onClick={() => setAsset(i.asset)} aria-pressed={asset === i.asset} className={`card p-4 text-left ${asset === i.asset ? 'border-amber-helm' : 'hover:border-graphite-700'}`} data-testid={`asset-${i.asset}`}>
             <div className="text-xs font-semibold tracking-[0.14em] text-graphite-500">{i.asset}</div><div className="num mt-1 text-xl">{usd(i.price, Number(i.price) < 10 ? 4 : 2)}</div><div className="text-[11px] text-graphite-500">{ago(i.at)}</div>
           </button>
         ))}
