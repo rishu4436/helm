@@ -136,7 +136,8 @@ describe('controller · shared navigation', () => {
     await r.tap(/^ETH/)
     expect(r.c.current?.name).toBe('build-account')
     await r.tap(/^Binance/)
-    await r.tap(/^Spot/)
+    expect(r.c.current?.name).toBe('build-product') // market + direction in one step
+    expect(r.list()).toEqual(expect.arrayContaining([expect.stringMatching(/^Buy ETH/), expect.stringMatching(/^Short/)]))
     await r.tap(/^Buy ETH/)
     await r.tap(/^\$50$/)
     expect(r.c.current?.name).toBe('review')
@@ -205,7 +206,7 @@ describe('controller · contextual voice', () => {
   })
   it('"make it 25 dollars instead" edits the current draft', async () => {
     const r = rig(); await r.c.start()
-    await r.tap(/^Trade/); await r.tap(/^ETH/); await r.tap(/^Binance/); await r.tap(/^Spot/); await r.tap(/^Buy ETH/); await r.tap(/^\$50$/)
+    await r.tap(/^Trade/); await r.tap(/^ETH/); await r.tap(/^Binance/); await r.tap(/^Buy ETH/); await r.tap(/^\$50$/)
     await r.tap(/Change by voice/)
     await r.tap(/Make it 25 dollars instead/)
     expect(r.list()[0]).toMatch(/\$25 ETH/)

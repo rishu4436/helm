@@ -73,8 +73,8 @@ export function GlassesSim({ make, caption, testId = 'g2sim', ids = {}, autoFocu
             : <div className="g2-glass rounded-[18px] border border-graphite-800" style={{ width: 576, height: 288, maxWidth: '100%' }} />}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="G2 gestures">
-        <button type="button" className="btn btn-ghost" onClick={() => swipe('up')} data-testid={ids.up ?? `${testId}-up`}>Swipe ↑</button>
-        <button type="button" className="btn btn-ghost" onClick={() => swipe('down')} data-testid={ids.down ?? `${testId}-down`}>Swipe ↓</button>
+        <button type="button" className="btn btn-ghost" onClick={() => swipe('up')} disabled={!!list && sel <= 0} title={list && sel <= 0 ? 'Already at the top row' : undefined} data-testid={ids.up ?? `${testId}-up`}>Swipe ↑</button>
+        <button type="button" className="btn btn-ghost" onClick={() => swipe('down')} disabled={!!list && sel >= list.items.length - 1} title={list && sel >= list.items.length - 1 ? 'Already at the last row' : undefined} data-testid={ids.down ?? `${testId}-down`}>Swipe ↓</button>
         <button type="button" className="btn btn-amber" onClick={tap} data-testid={ids.tap ?? `${testId}-tap`}>Tap</button>
         <button type="button" className="btn btn-ghost" onClick={dbl} data-testid={ids.double ?? `${testId}-double`}>Double-tap</button>
         <span className="text-xs text-graphite-500">Keys: ↑ ↓ · Enter = tap · Esc = double-tap</span>

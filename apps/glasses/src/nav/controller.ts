@@ -602,11 +602,15 @@ export class Controller {
         return mk(`${d.asset} · WHICH ACCOUNT?`, items, it => nextWith({ accountId: it.ref }, 'account'), 'HELM never picks between several accounts for you')
       }
       case 'product': {
+        // One step for market + direction (saves a screen); the review still states both explicitly.
         const a = this.accts.find(x => x.id === d.accountId)!
+        const pro = c.mode === 'pro'
         const items: MenuItem[] = []
-        if (a.products.includes('spot')) items.push({ id: 'spot', label: c.mode === 'pro' ? 'Spot' : 'Spot · buy and hold the coin' })
-        if (a.products.includes('perp')) items.push({ id: 'perp', label: c.mode === 'pro' ? 'Perpetual futures' : 'Futures · leveraged long or short' })
-        return mk(`${d.asset} · SPOT OR FUTURES`, items, it => nextWith({ product: it.id as 'spot' | 'perp' }, 'product'))
+        if (a.products.includes('spot') && d.side !== 'SELL') items.push({ id: 'spot', ref: 'BUY', label: pro ? `Buy ${d.asset} spot` : `Buy ${d.asset} · spot, hold the coin` })
+        if (a.products.includes('spot') && d.side !== 'BUY') items.push({ id: 'spot', ref: 'SELL', label: pro ? `Sell ${d.asset} spot` : `Sell ${d.asset} you hold · spot` })
+        if (a.products.includes('perp') && d.side !== 'SELL') items.push({ id: 'perp', ref: 'BUY', label: pro ? `Long ${d.asset} perp` : `Long · futures, gains if price rises` })
+        if (a.products.includes('perp') && d.side !== 'BUY') items.push({ id: 'perp', ref: 'SELL', label: pro ? `Short ${d.asset} perp` : `Short · futures, gains if price falls` })
+        return mk(`${d.asset} · WHAT KIND OF ORDER?`, items, it => this.push(this.builderView({ ...d, product: it.id as 'spot' | 'perp', side: it.ref as 'BUY' | 'SELL', answered: [...d.answered, 'product', 'side'] })), pro ? undefined : 'Futures use leverage: gains and losses grow')
       }
       case 'side': {
         const items: MenuItem[] = d.product === 'perp' ? [{ id: 'BUY', label: 'Long · profit if price rises' }, { id: 'SELL', label: 'Short · profit if price falls' }] : [{ id: 'BUY', label: `Buy ${d.asset}` }, { id: 'SELL', label: `Sell ${d.asset}` }]
@@ -804,7 +808,7 @@ export class Controller {
   private activityView(): View {
     const a = this.activity!
     const rows = V.activityRows(a, this.ctx)
-    return { name: 'activity', items: rows, build: () => V.activityScreen(a, rows, this.ctx), onItem: it => (it.ref ? this.openEvent(it.ref) : undefined) }
+    return { name: 'activity', items: rows, build: () => V.activityScreen(a, rows, this.ctx), onItem: it => (it.id === 'receipts' ? this.openReceipts() : it.ref ? this.openEvent(it.ref) : undefined) }
   }
   openEvent(id: string) {
     return this.open('Loading', async () => {

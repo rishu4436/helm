@@ -151,8 +151,11 @@ export type PortfolioId = 'scope' | 'account' | 'positions' | 'holdings' | 'risk
 export function portfolioItems(p: PortfolioPayload, scope: Scope, scopes: Scope[], c: ViewCtx, posCount: number, holdCount: number): MenuItem<PortfolioId>[] {
   const usd = usdOf(c)
   const out: MenuItem<PortfolioId>[] = []
+  // What people open most comes first (positions when any are open), then the accounts in ribbon order.
+  const pos: MenuItem<PortfolioId> = { id: 'positions', label: `Positions · ${posCount} open` }, hold: MenuItem<PortfolioId> = { id: 'holdings', label: `Holdings · ${holdCount} asset${holdCount === 1 ? '' : 's'}` }
+  out.push(...(posCount > 0 ? [pos, hold] : [hold, pos]))
   for (const a of scope.accounts) out.push({ id: 'account', ref: a.accountId, label: `${a.alias} · ${scope.valueUsd > 0 ? Math.round((num(a.valueUsd) / scope.valueUsd) * 100) : 0}% · ${usd(a.valueUsd, 0)}${a.error ? ' · read error' : ''}` })
-  out.push({ id: 'positions', label: `Positions · ${posCount} open` }, { id: 'holdings', label: `Holdings · ${holdCount} asset${holdCount === 1 ? '' : 's'}` }, { id: 'risk', label: term('compass', c.mode) })
+  out.push({ id: 'risk', label: term('compass', c.mode) })
   if (scopes.length > 1) for (const s of scopes.filter(s => s.id !== scope.id)) out.push({ id: 'scope', ref: s.id, label: `Switch to ${s.label} · ${usd(s.valueUsd, 0)}` })
   void p
   return out
@@ -362,6 +365,7 @@ export function receiptScreen(r: Receipt, items: MenuItem[], c: ViewCtx): Screen
 export function activityRows(a: ActivityPayload, c: ViewCtx): MenuItem[] {
   const rows: MenuItem[] = []
   for (const e of a.current) rows.push({ id: 'event', ref: e.id, label: `${e.acknowledged ? 'seen' : 'NOW'} · ${e.title}` })
+  rows.push({ id: 'receipts', label: 'Receipts · orders and fills' })
   for (const e of a.recent) rows.push({ id: 'event', ref: e.id, label: `${shortTime(e.at)} · ${e.title}` })
   for (const e of a.resolved.slice(0, 6)) rows.push({ id: 'event', ref: e.id, label: `resolved · ${e.title}` })
   void c

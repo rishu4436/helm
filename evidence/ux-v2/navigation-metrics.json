@@ -1,0 +1,158 @@
+{
+  "kind": "AUTOMATED task walkthrough — no human participants",
+  "generatedAt": "2026-11-25T06:40:02.583Z",
+  "method": "after = real Controller + SampleBackend (in-process, no network, no BLE); before = static analysis of main-branch main.ts (11-item menu)",
+  "note": "controllerMsAvg is in-process controller time only; it is not simulator, BLE or physical-device latency",
+  "tasks": [
+    {
+      "id": "portfolio-value",
+      "task": "Find total portfolio value",
+      "before": {
+        "gestures": 1,
+        "path": "Home menu → tap Overview"
+      },
+      "after": {
+        "gestures": 0,
+        "voiceCommands": 0,
+        "endScreen": "home-risk",
+        "reached": true
+      },
+      "controllerMsAvg": 0
+    },
+    {
+      "id": "bybit-btc-position",
+      "task": "Find the BTC position on Bybit (with details)",
+      "before": {
+        "gestures": 2,
+        "path": "swipe → tap \"Positions & holdings\" (text list; a position could not be opened)"
+      },
+      "after": {
+        "gestures": 4,
+        "voiceCommands": 0,
+        "endScreen": "focus-s-byb|bybit:perp:BTC-USDT:USDT|LONG",
+        "reached": true
+      },
+      "controllerMsAvg": 0.87
+    },
+    {
+      "id": "largest-allocation",
+      "task": "Identify which exchange has the largest allocation",
+      "before": {
+        "gestures": 7,
+        "path": "swipe ×6 → tap \"Exposure Compass\" (largest exchange line)"
+      },
+      "after": {
+        "gestures": 2,
+        "voiceCommands": 0,
+        "endScreen": "portfolio-simulated",
+        "reached": true
+      },
+      "controllerMsAvg": 0.31
+    },
+    {
+      "id": "unprotected",
+      "task": "Find an unprotected position",
+      "before": {
+        "gestures": 10,
+        "path": "swipe ×9 → tap \"Protect positions\""
+      },
+      "after": {
+        "gestures": 0,
+        "voiceCommands": 0,
+        "endScreen": "home-risk",
+        "reached": true
+      },
+      "controllerMsAvg": 0
+    },
+    {
+      "id": "protect",
+      "task": "Protect the unprotected position with a 3% stop, through to the confirm screen",
+      "before": {
+        "gestures": 14,
+        "path": "swipe ×9 → tap Protect positions → tap position → swipe → tap 3% → tap (impact) → tap (risk) → CONFIRM"
+      },
+      "after": {
+        "gestures": 6,
+        "voiceCommands": 0,
+        "endScreen": "confirm",
+        "reached": true
+      },
+      "controllerMsAvg": 0.38
+    },
+    {
+      "id": "trade-btc",
+      "task": "Prepare a $100 BTC spot buy on Bybit, through to the confirm screen (gestures only)",
+      "before": {
+        "gestures": 9,
+        "path": "swipe ×4 → tap Trade → swipe → tap Bybit → tap $100 preset → tap (impact) → tap (risk) → CONFIRM"
+      },
+      "after": {
+        "gestures": 12,
+        "voiceCommands": 0,
+        "endScreen": "confirm",
+        "reached": true
+      },
+      "controllerMsAvg": 0.34
+    },
+    {
+      "id": "trade-voice",
+      "task": "Same $100 BTC buy on Bybit by voice, to the confirm screen",
+      "before": {
+        "gestures": 5,
+        "path": "swipe ×3 → tap Voice command → tap (finish) → speak → tap (heard) → tap (impact) → tap (risk) → CONFIRM (≈5 gestures after speaking, plus 3 to reach Voice)"
+      },
+      "after": {
+        "gestures": 2,
+        "voiceCommands": 1,
+        "endScreen": "confirm",
+        "reached": true
+      },
+      "controllerMsAvg": 1.68
+    },
+    {
+      "id": "cancel",
+      "task": "Cancel an order preview from the confirm screen",
+      "before": {
+        "gestures": 1,
+        "path": "tap (Cancel is default)"
+      },
+      "after": {
+        "gestures": 1,
+        "voiceCommands": 0,
+        "endScreen": "home-risk",
+        "reached": true
+      },
+      "controllerMsAvg": 0.49
+    },
+    {
+      "id": "last-receipt",
+      "task": "Find the last receipt",
+      "before": {
+        "gestures": 9,
+        "path": "swipe ×7 → tap Receipts → tap first"
+      },
+      "after": {
+        "gestures": 8,
+        "voiceCommands": 0,
+        "endScreen": "receipts",
+        "reached": true
+      },
+      "controllerMsAvg": 0.14
+    },
+    {
+      "id": "venue-compare",
+      "task": "Compare venues for ETH",
+      "before": {
+        "gestures": 5,
+        "path": "swipe ×2 → tap Watchlist → swipe → tap ETH (venue table)"
+      },
+      "after": {
+        "gestures": 6,
+        "voiceCommands": 0,
+        "endScreen": "venues-ETH",
+        "reached": true
+      },
+      "controllerMsAvg": 0.41
+    }
+  ]
+}
