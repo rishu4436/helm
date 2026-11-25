@@ -15,7 +15,7 @@ const SAFETY: Array<[string, string]> = [
 ]
 const STATUS: Record<string, [string, string]> = {
   binance: ['DEMO', 'Live in the flagship demo (Spot + USDⓈ-M).'], bybit: ['DEMO', 'Live in the flagship demo (Unified).'],
-  okx: ['BLOCKED', 'Adapter built and tested; logged-in demo unavailable in our region (India).'], coinbase: ['STATIC SANDBOX', 'Predefined mocked responses — never shown as fills.'],
+  okx: ['DEMO', 'Demo Trading key + secret + passphrase; x-simulated-trading on every request.'], coinbase: ['STATIC SANDBOX', 'Predefined mocked responses — never shown as fills.'],
   ibkr: ['PAPER', 'Via local Client Portal Gateway.'], alpaca: ['DISABLED', 'Not in the track app list.'],
 }
 

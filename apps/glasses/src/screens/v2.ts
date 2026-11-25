@@ -251,10 +251,10 @@ export function holdingDetailScreen(h: HoldingAgg, row: HoldingAgg['rows'][numbe
 }
 
 // ---------- MARKETS ----------
-export function watchlistScreen(items: WatchItem[], favorites: string[], c: ViewCtx): ScreenSpec {
+export function watchlistScreen(items: WatchItem[], favorites: string[], c: ViewCtx, source = 'Binance Demo'): ScreenSpec {
   const rows: MenuItem[] = items.map(w => ({ id: 'asset', ref: w.asset, label: `${favorites.includes(w.asset) ? '* ' : ''}${w.asset.padEnd(5)} ${w.price ? fmtPrice(Number(w.price)) : 'unavailable'}${w.change24hPct ? ` · ${signedPct(Number(w.change24hPct))} 24h` : ''}` }))
   rows.push({ id: 'search', label: 'Find another asset by voice' })
-  return menuScreen('watchlist', 'MARKETS · WATCHLIST', 'Binance Demo', rows, hints(c), 'Public quotes · 24h change from the venue ticker')
+  return menuScreen('watchlist', 'MARKETS · WATCHLIST', source, rows, hints(c), source === 'SAMPLE' ? 'Sample quotes · not a market feed' : 'Public quotes · 24h change from the venue ticker')
 }
 export type MarketActionId = 'venues' | 'trade' | 'fav' | 'voice' | 'back'
 export function marketScreen(s: Snapshot, fav: boolean, c: ViewCtx): ScreenSpec {

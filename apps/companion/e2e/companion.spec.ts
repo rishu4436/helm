@@ -14,31 +14,32 @@ const PAGES: Array<[string, string, RegExp]> = [
 ]
 
 test.describe('public', () => {
-  test('landing renders and the labelled simulated demo walks voice → Which exchange? → confirm', async ({ page }) => {
+  test('landing runs the real G2 controller on labelled sample data: voice → Which account? → review → Cancel default → receipt', async ({ page }) => {
     const errs = watchErrors(page)
     await page.goto('/')
     await expect(page.getByText('SIMULATED SAMPLE DATA').first()).toBeVisible()
-    await shot(page, '01-landing')
     const g2 = page.getByTestId('landing-g2')
+    await expect(g2).toContainText('has no stop') // Home leads with what needs attention
+    await shot(page, '01-landing')
     await page.getByTestId('demo-say').fill('Buy 100 dollars of BTC')
     await page.getByTestId('demo-speak').click()
-    await expect(g2).toContainText('HEARD'); await expect(g2).toContainText('PLACE_ORDER')
-    await page.getByTestId('ring-tap').click()
-    await expect(g2).toContainText('Which exchange?')
-    await page.getByTestId('ring-down').click(); await page.getByTestId('ring-tap').click()
-    await expect(g2).toContainText('TRADE IMPACT'); await expect(page.getByText('Chose Bybit (sample)')).toBeVisible()
-    await page.getByTestId('ring-tap').click(); await expect(g2).toContainText('RISK CHECK')
+    await expect(g2).toContainText('HEARD'); await expect(g2).toContainText('Which account?') // never guesses the exchange
+    await page.getByTestId('ring-down').click(); await page.getByTestId('ring-tap').click() // Bybit (sample)
+    await expect(g2).toContainText('Preview: BUY $100 BTC')
+    await page.getByTestId('ring-tap').click(); await expect(g2).toContainText('REVIEW')
     await page.getByTestId('ring-tap').click(); await expect(g2).toContainText('CONFIRM ORDER')
     await page.getByTestId('ring-tap').click() // Cancel is the default selection
-    await expect(page.getByText('Cancelled — Cancel is the default selection')).toBeVisible()
-    await page.getByTestId('demo-say').fill('Long 150 dollars of ETH on Binance with a 3% stop')
+    await expect(g2).not.toContainText('CONFIRM ORDER'); await expect(g2).not.toContainText('RECEIPT')
+    await page.getByTestId('demo-say').fill('Buy 50 dollars of ETH on Binance')
     await page.getByTestId('demo-speak').click()
-    for (let i = 0; i < 3; i++) await page.getByTestId('ring-tap').click()
+    await page.getByTestId('ring-tap').click(); await page.getByTestId('ring-tap').click()
+    await expect(g2).toContainText('CONFIRM ORDER')
     await page.getByTestId('ring-down').click(); await page.getByTestId('ring-tap').click()
     await expect(g2).toContainText('RECEIPT'); await expect(g2).toContainText('SIMULATED')
     await shot(page, '02-landing-demo-receipt')
     await page.getByTestId('demo-say').fill('Withdraw all my bitcoin'); await page.getByTestId('demo-speak').click()
-    await expect(g2).toContainText('UNKNOWN')
+    await expect(g2).toContainText('Not a HELM command')
+    await page.getByTestId('ring-back').click()
     expect(errs).toEqual([])
   })
 
@@ -181,16 +182,17 @@ test.describe('signed in as the demo user', () => {
     expect(errs).toEqual([])
   })
 
-  test('vision mirrors live screens with ring navigation', async ({ page }) => {
+  test('vision runs the real G2 app on live demo data, read-only', async ({ page }) => {
     await page.goto('/vision')
     const g2 = page.getByTestId('vision-g2')
     await expect(g2).toContainText('HELM')
-    await page.getByTestId('vision-tap').click() // Overview
-    await expect(g2).toContainText('ALL EXCHANGES')
-    await page.getByTestId('vision-back').click()
-    for (let i = 0; i < 6; i++) await page.getByTestId('vision-down').click()
+    await expect(g2).toContainText('Portfolio')
+    const idx = (await g2.locator('.absolute > .g2-text').allInnerTexts()).findIndex(r => /^Portfolio/.test(r.trim()))
+    for (let i = 0; i < Math.max(0, idx); i++) await page.getByTestId('vision-down').click()
     await page.getByTestId('vision-tap').click()
-    await expect(g2).toContainText('EXPOSURE COMPASS')
-    await shot(page, '15-vision-compass')
+    await expect(g2).toContainText('PORTFOLIO')
+    await shot(page, '15-vision-portfolio')
+    await page.getByTestId('vision-back').click()
+    await expect(g2).not.toContainText('PORTFOLIO ·')
   })
 })

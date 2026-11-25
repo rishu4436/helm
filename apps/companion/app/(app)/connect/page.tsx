@@ -10,14 +10,17 @@ type F = { name: string; label: string; type?: 'password' | 'text' | 'select'; o
 const FORMS: Record<string, { fields: F[]; help: React.ReactNode }> = {
   binance: { fields: [{ name: 'apiKey', label: 'Demo API key' }, { name: 'apiSecret', label: 'Demo API secret', type: 'password' }, { name: 'market', label: 'Account', type: 'select', options: [['spot', 'Spot'], ['usdm', 'USDⓈ-M Futures']] }],
     help: <>Create a key at <b>demo.binance.com → API Management</b>. Enable reading and trading only — never withdrawals. Production Binance keys will not work: HELM only talks to <code>demo-api.binance.com</code> / <code>demo-fapi.binance.com</code>.</> },
-  okx: { fields: [], help: <>OKX is <b>unavailable in India</b>, so a logged-in OKX demo is <b>BLOCKED</b> for this team. The adapter (with <code>x-simulated-trading: 1</code> on every request) is built and tested against mocks and OKX public endpoints.</> },
+  okx: { fields: [{ name: 'apiKey', label: 'Demo API key' }, { name: 'apiSecret', label: 'Demo API secret', type: 'password' }, { name: 'passphrase', label: 'API passphrase (set when you created the key)', type: 'password' }],
+    help: <>On OKX, switch to <b>Demo Trading</b>, then create a <b>Demo Trading API key</b> with Read + Trade only (never Withdraw). The passphrase is the one you chose for that key, not your login password. HELM sends <code>x-simulated-trading: 1</code> on every request, so a production key is rejected. If OKX restricts access where you are, HELM shows <b>Access restricted</b> and does not try to work around it.</> },
   bybit: { fields: [{ name: 'apiKey', label: 'Demo API key' }, { name: 'apiSecret', label: 'Demo API secret', type: 'password' }],
     help: <>Log in to Bybit, switch to <b>Demo Trading</b> (a separate account), then create the key from avatar → API inside demo mode. Read + trade only. HELM uses <code>api-demo.bybit.com</code>.</> },
   coinbase: { fields: [], help: <>Connects the Advanced Trade <b>static sandbox</b>. It needs no credentials and returns <b>predefined mock responses</b> — HELM labels every result STATIC SANDBOX and never presents it as a fill.</> },
   ibkr: { fields: [], help: <>Start the IBKR <b>Client Portal Gateway</b> on this computer, open <code>https://localhost:5000</code> and log in with your <b>paper</b> account there. HELM never sees your IBKR password; the gateway must stay on localhost.</> },
   alpaca: { fields: [], help: <>Alpaca is not in the official Exchanges &amp; Stocks track list, so it stays disabled.</> },
 }
-const BLOCKED = new Set(['okx'])
+
+/** Plain-language reason, keeping the provider code visible. */
+const explain = (r: string) => r.startsWith('ACCESS_RESTRICTED') ? `Access restricted by the exchange (region, compliance or IP rules) · ${r}. HELM will not work around it.` : r.startsWith('ENVIRONMENT_MISMATCH') ? `This looks like a production key, not a Demo Trading key · ${r}` : r.startsWith('INVALID_CREDENTIALS') ? `Key, secret or passphrase rejected · ${r}` : r
 
 export default function Connect() {
   const { reloadAccounts } = useShell()
@@ -75,11 +78,10 @@ export default function Connect() {
       <ErrorNote error={prov.error ?? conns.error} />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {!prov.data ? <Skeleton h="h-24" /> : prov.data.providers.map(p => {
-          const blocked = BLOCKED.has(p.id)
           return (
-            <button key={p.id} disabled={!p.enabled && !blocked} onClick={() => pick(p)} data-testid={`provider-${p.id}`} className={`card p-5 text-left transition ${picked === p.id ? 'border-amber-helm' : 'hover:border-graphite-700'} disabled:opacity-40`}>
-              <div className="flex items-center justify-between"><span className="font-semibold">{p.name}</span><EnvPill env={blocked ? 'blocked' : p.hackathonEnvironment} /></div>
-              <div className="mt-2 text-xs text-graphite-500">{blocked ? 'Unavailable in your region (India) · adapter tested with mocks' : p.enabled ? p.connectionMethod.replace(/_/g, ' ') : 'disabled — not in track list'}</div>
+            <button key={p.id} disabled={!p.enabled} onClick={() => pick(p)} data-testid={`provider-${p.id}`} className={`card p-5 text-left transition ${picked === p.id ? 'border-amber-helm' : 'hover:border-graphite-700'} disabled:opacity-40`}>
+              <div className="flex items-center justify-between"><span className="font-semibold">{p.name}</span><EnvPill env={p.hackathonEnvironment} /></div>
+              <div className="mt-2 text-xs text-graphite-500">{p.enabled ? p.connectionMethod.replace(/_/g, ' ') : 'disabled — not in track list'}</div>
             </button>
           )
         })}
@@ -97,7 +99,6 @@ export default function Connect() {
                     <Btn type="button" variant="amber" busy={busy === `sim-${picked}`} testId={`sim-${picked}`} onClick={() => addSim(picked)}>Add {picked === 'okx' ? 'OKX' : picked[0].toUpperCase()+picked.slice(1)} (SIMULATED)</Btn>
                   </div>
                 )}
-                {BLOCKED.has(picked) ? <div className="flex items-start gap-3"><Pill v="BLOCKED" /><p className="text-sm text-graphite-300">Logged-in OKX demo keys are unavailable in India. Use the simulator above, or connect Binance Demo / Bybit Demo.</p></div> : (
               <form className="space-y-3" onSubmit={e => { e.preventDefault(); void submit() }}>
                 <Field label="Account name"><input className="input" value={alias} onChange={e => setAlias(e.target.value)} required maxLength={40} data-testid="conn-alias" /></Field>
                 {cfg.fields.map(f => <Field key={f.name} label={f.label}>{f.type === 'select'
@@ -106,13 +107,12 @@ export default function Connect() {
                 <Btn type="submit" variant="amber" busy={busy === 'connect'} testId="conn-submit">{picked === 'ibkr' ? 'Check gateway session' : 'Verify & connect'}</Btn>
                 <p className="text-xs text-graphite-500">HELM never asks for exchange passwords, 2FA codes, recovery phrases or withdrawal permission. Keys are AES-256-GCM encrypted and never sent to your glasses.</p>
               </form>
-                )}
               </div>
             )}
           </div>
         </Card>
       )}
-      {msg && <div role="status" className={`mt-6 rounded-xl border px-4 py-3 text-sm ${msg.ok ? 'border-up/40 text-up' : 'border-down/40 text-down'}`}>{msg.text}{msg.reasons && msg.reasons.length > 0 && <ul className="mt-1 list-disc pl-5 text-graphite-300">{msg.reasons.map(r => <li key={r}>{r}</li>)}</ul>}</div>}
+      {msg && <div role="status" className={`mt-6 rounded-xl border px-4 py-3 text-sm ${msg.ok ? 'border-up/40 text-up' : 'border-down/40 text-down'}`}>{msg.text}{msg.reasons && msg.reasons.length > 0 && <ul className="mt-1 list-disc pl-5 text-graphite-300">{msg.reasons.map(r => <li key={r}>{explain(r)}</li>)}</ul>}</div>}
 
       <h2 className="mb-3 mt-10 text-[12px] font-semibold tracking-[0.16em] text-graphite-300 uppercase">Connected ({list.length})</h2>
       {!conns.data ? <Skeleton /> : list.length === 0 ? <Empty title="Nothing connected yet" hint="Pick a provider above." /> : (
@@ -130,7 +130,7 @@ export default function Connect() {
                     <Btn variant="quiet" danger onClick={() => setDel(c)}>Disconnect</Btn>
                   </div>
                 </div>
-                {c.reasons.length > 0 && <ul className="mt-2 text-xs text-graphite-300">{c.reasons.map(r => <li key={r}>• {r}</li>)}</ul>}
+                {c.reasons.length > 0 && <ul className="mt-2 text-xs text-graphite-300">{c.reasons.map(r => <li key={r}>• {explain(r)}</li>)}</ul>}
                 {caps && <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-graphite-300">{caps.orderTypes.map(o => <span key={o} className="rounded bg-graphite-800 px-2 py-0.5">{o}</span>)}{caps.reduceOnly && <span className="rounded bg-graphite-800 px-2 py-0.5">reduce-only</span>}{caps.hedgeMode && <span className="rounded bg-graphite-800 px-2 py-0.5">hedge mode</span>}</div>}
                 {b && (typeof b === 'string' ? <p className="mt-3 text-sm text-down">{b}</p> : (
                   <table className="num mt-3 w-full max-w-sm text-sm"><tbody>{b.filter(x => Number(x.total) !== 0).slice(0, 12).map(x => <tr key={x.asset} className="border-t border-graphite-800"><td className="py-1.5 text-graphite-300">{x.asset}</td><td className="text-right">{x.total}</td></tr>)}</tbody></table>

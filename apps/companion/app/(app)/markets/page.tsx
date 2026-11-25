@@ -45,7 +45,7 @@ function Markets() {
                 <td className="text-right">{v.venue !== 'okx' && !v.error ? <Btn variant="quiet" href={`/terminal?asset=${asset}&product=${product}`}>Trade</Btn> : <span className="text-[11px] text-graphite-500">{v.venue === 'okx' ? 'data only' : ''}</span>}</td></tr>
             ))}</tbody></table>
         )}
-        <div className="border-t border-graphite-800 px-5 py-2 text-[11px] text-graphite-500">OKX: production public market data only. Logged-in OKX is BLOCKED (not available in your region, India). Prices are not advice.</div>
+        <div className="border-t border-graphite-800 px-5 py-2 text-[11px] text-graphite-500">Public order books from each venue (OKX public data comes from its production host, read-only). Prices are not advice.</div>
       </Card>
     </div>
   )

@@ -539,7 +539,7 @@ export class Controller {
     return this.open('Loading markets', async () => {
       this.watch = await this.backend.watchlist(this.prefs.watchlist)
       const items: MenuItem[] = [...this.watch.map(w => ({ id: 'asset', ref: w.asset, label: w.asset })), { id: 'search', label: 'search' }]
-      const v: View = { name: 'watchlist', items, build: () => V.watchlistScreen(this.watch, [], this.ctx), onItem: it => (it.id === 'search' ? this.listen({ screen: 'market' }) : this.openMarket(it.ref!)) }
+      const v: View = { name: 'watchlist', items, build: () => V.watchlistScreen(this.watch, [], this.ctx, this.backend.kind === 'live' ? 'Binance Demo' : 'SAMPLE'), onItem: it => (it.id === 'search' ? this.listen({ screen: 'market' }) : this.openMarket(it.ref!)) }
       return v
     })
   }

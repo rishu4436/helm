@@ -24,11 +24,11 @@ export default function Diagnostics() {
       <Card title="Checks" pad={false}>
         {!d.data ? <div className="p-5"><Skeleton h="h-64" /></div> : (
           <table className="tbl"><thead><tr><th>Status</th><th>Check</th><th>Detail</th><th className="text-right">Time</th></tr></thead><tbody>
-            {c.map(x => <tr key={x.id} data-testid={`check-${x.id}`}><td><Pill v={x.id === 'okx' ? 'BLOCKED' : x.status} /></td><td className="font-medium">{x.label}</td><td className="text-sm text-graphite-300">{x.detail}</td><td className="num text-right text-xs text-graphite-500">{x.ms !== undefined ? `${x.ms} ms` : ''}</td></tr>)}
+            {c.map(x => <tr key={x.id} data-testid={`check-${x.id}`}><td><Pill v={x.status} /></td><td className="font-medium">{x.label}</td><td className="text-sm text-graphite-300">{x.detail}</td><td className="num text-right text-xs text-graphite-500">{x.ms !== undefined ? `${x.ms} ms` : ''}</td></tr>)}
           </tbody></table>
         )}
       </Card>
-      <p className="mt-4 text-xs text-graphite-500">Account rows show each connection's last verified state (Re-check on Exchanges verifies again with an authenticated read). OKX shows BLOCKED: it is unavailable in India, so only the mock/public-endpoint adapter tests apply.</p>
+      <p className="mt-4 text-xs text-graphite-500">Account rows show each connection's last verified state (Re-check on Exchanges verifies again with an authenticated read).</p>
     </div>
   )
 }

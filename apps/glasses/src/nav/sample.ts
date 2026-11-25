@@ -70,7 +70,7 @@ export class SampleBackend implements HelmBackend {
   async snapshot(asset: string): Promise<Snapshot> {
     const px = SAMPLE_PX[asset]
     const closes = px ? Array.from({ length: 24 }, (_, i) => String((px * (1 + 0.012 * Math.sin(i / 3.2) - 0.0005 * i)).toFixed(2))) : []
-    return { asset, price: px ? String(px) : null, change24hPct: px ? '-1.24' : null, period: '24h', candles: px ? { interval: '1h', closes, source: 'sample' } : null, source: 'SAMPLE data (not a market feed)', at: this.now() }
+    return { asset, price: px ? String(px) : null, change24hPct: px ? '-1.24' : null, period: '24h', candles: px ? { interval: '1h', closes, source: 'sample' } : null, source: 'SAMPLE data', at: this.now() }
   }
   async venues(asset: string): Promise<VenueQuote[]> {
     const px = SAMPLE_PX[asset] ?? 100
@@ -141,6 +141,10 @@ export class SampleBackend implements HelmBackend {
       const d = p.order.side === 'BUY' ? q : -q
       if (h) { h.total = String(Number(h.total) + d); h.free = String(Number(h.free) + d); h.valueUsd = String(Number(h.total) * px) }
       else if (d > 0) this.holdings.push({ accountId: p.account.id, asset: s.base, total: String(d), free: String(d), locked: '0', valueUsd: String(d * px) })
+      // Cash leg: a buy spends USDT (plus fee), a sale returns it (minus fee). Net value only moves by the fee.
+      const cash = this.holdings.find(x => x.accountId === p.account.id && x.asset === 'USDT')
+      const fee = Number(p.preview.estimatedFee ?? 0), dc = -d * px - fee
+      if (cash) { cash.total = String(Number(cash.total) + dc); cash.free = String(Number(cash.free) + dc); cash.valueUsd = cash.total }
       return
     }
     const pos = this.positions.find(x => x.accountId === p.account.id && x.instrumentId === p.order.instrument)

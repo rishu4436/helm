@@ -2,7 +2,9 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import type { ApiError } from '@/lib/api'
-import type { ScreenSpec } from '@helm/glasses/src/layout'
+import type { ImageBox, ScreenSpec } from '@helm/glasses/src/layout'
+import { layoutGraphic } from '@helm/glasses/src/gfx/graphics'
+import { paintOps } from '@helm/glasses/src/gfx/raster'
 
 type BtnProps = { children: React.ReactNode; onClick?: () => void | Promise<void>; href?: string; variant?: 'amber' | 'ghost' | 'danger' | 'quiet'; busy?: boolean; disabled?: boolean; type?: 'button' | 'submit'; title?: string; className?: string; testId?: string; danger?: boolean }
 /** Every button either navigates (href), submits a form, or runs an action. No dead buttons (enforced at render). */
@@ -121,10 +123,23 @@ export function G2Screen({ spec, selected = 0, scale = 1, caption, testId }: { s
               </div>
             )
           })}
-          {(spec.images ?? []).map(im => im.draw === 'wordmark' ? <div key={im.id} className="g2-text absolute flex items-center justify-center text-[64px] font-bold tracking-[0.25em]" style={{ left: im.x, top: im.y, width: im.w, height: im.h }}>HELM</div> : null)}
+          {(spec.images ?? []).map(im => im.draw === 'wordmark' ? <div key={im.id} className="g2-text absolute flex items-center justify-center text-[64px] font-bold tracking-[0.25em]" style={{ left: im.x, top: im.y, width: im.w, height: im.h }}>HELM</div> : typeof im.draw === 'object' && 'gfx' in im.draw ? <GfxImage key={im.id} im={im} /> : null)}
         </div>
       </div>
       {caption && <figcaption className="mt-2 text-center text-xs text-graphite-500">{caption}</figcaption>}
     </figure>
   )
+}
+
+/** Paints a glasses graphic with the exact same draw ops the G2 receives (layoutGraphic → paintOps), tinted G2 green. */
+function GfxImage({ im }: { im: ImageBox }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  const draw = im.draw as { gfx: Parameters<typeof layoutGraphic>[0] }
+  const sig = JSON.stringify(draw.gfx)
+  useEffect(() => {
+    const c = ref.current; const g = c?.getContext('2d'); if (!c || !g) return
+    g.clearRect(0, 0, im.w, im.h)
+    try { paintOps(g, layoutGraphic(draw.gfx, im.w, im.h), im.w, im.h, [77, 255, 124]) } catch { /* fall back to alt text below */ }
+  }, [sig, im.w, im.h]) // eslint-disable-line react-hooks/exhaustive-deps
+  return <canvas ref={ref} width={im.w} height={im.h} role="img" aria-label={im.alt ?? 'chart'} className="absolute" style={{ left: im.x, top: im.y, width: im.w, height: im.h }} />
 }

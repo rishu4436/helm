@@ -98,7 +98,7 @@ function Terminal() {
                       <td className={`r num ${best.bid?.venue === v.venue ? 'text-up' : ''}`}>{usd(v.bid)}</td><td className={`r num ${best.ask?.venue === v.venue ? 'text-up' : ''}`}>{usd(v.ask)}</td><td className="r num whitespace-nowrap">{v.spreadBps ?? "—"} bps</td><td className="r num">{usd(v.depthUsd10bps, 0)}</td><td className="text-xs text-graphite-500">{v.source}</td></>}
                   </tr>))}</tbody></table>
             ) : <div className="p-5 text-sm text-graphite-500">{mk.error ? mk.error.message : 'Loading books…'}</div>}
-            <div className="border-t border-graphite-800 px-5 py-2 text-[11px] text-graphite-500">Green = best bid / best ask across venues. Public order books; OKX shows production public market data only (logged-in OKX is blocked in your region).</div>
+            <div className="border-t border-graphite-800 px-5 py-2 text-[11px] text-graphite-500">Green = best bid / best ask across venues. Public order books; OKX public data comes from its production host (read-only).</div>
           </Card>
           <Card title="Preview & confirm" testId="preview-card">
             <ErrorNote error={err} />

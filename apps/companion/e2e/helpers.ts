@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { expect, type Page } from '@playwright/test'
 
 export const API = 'http://localhost:4000'
-export const EVIDENCE = new URL('../../../evidence/companion/', import.meta.url).pathname
+export const EVIDENCE = process.env.HELM_EVIDENCE_DIR ?? new URL('../../../evidence/companion/', import.meta.url).pathname
 
 /** Reads HELM_DEMO_PASSWORD from the gitignored .env. Never logged. */
 function demoPassword(): string {

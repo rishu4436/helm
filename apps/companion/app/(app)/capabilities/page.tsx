@@ -23,12 +23,12 @@ export default function Capabilities() {
       <ErrorNote error={err} />
       {!ms.length && !err ? <Skeleton h="h-96" /> : (
         <Card pad={false} className="overflow-x-auto">
-          <table className="tbl"><thead><tr><th>Capability</th>{ms.map(m => <th key={name(m)} className="capitalize"><div>{name(m)}</div><div className="mt-1"><EnvPill env={m.provider === 'okx' ? 'blocked' : m.environment} /></div></th>)}</tr></thead>
+          <table className="tbl"><thead><tr><th>Capability</th>{ms.map(m => <th key={name(m)} className="capitalize"><div>{name(m)}</div><div className="mt-1"><EnvPill env={m.environment} /></div></th>)}</tr></thead>
             <tbody>{ROWS.map(([label, f]) => <tr key={label}><td className="text-graphite-300">{label}</td>{ms.map(m => { const v = f(m); return <td key={name(m)}>{typeof v === 'string' ? <span className="text-xs">{v}</span> : v ? <span className="text-up">●</span> : <span className="text-graphite-700">—</span>}</td> })}</tr>)}</tbody>
           </table>
         </Card>
       )}
-      <div className="mt-6 space-y-2 text-xs text-graphite-500">{ms.map(m => <p key={name(m)}><b className="capitalize text-graphite-300">{name(m)}:</b> {m.restrictions.join(' · ')}{m.provider === 'okx' ? ' · Logged-in OKX demo is BLOCKED for this team: OKX is unavailable in India. The adapter is built and tested with mocks and public endpoints.' : ''}</p>)}</div>
+      <div className="mt-6 space-y-2 text-xs text-graphite-500">{ms.map(m => <p key={name(m)}><b className="capitalize text-graphite-300">{name(m)}:</b> {m.restrictions.join(' · ')}</p>)}</div>
     </div>
   )
 }

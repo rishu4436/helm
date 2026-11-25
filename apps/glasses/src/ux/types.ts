@@ -27,7 +27,7 @@ export interface ActivityAction { kind: 'position' | 'protect' | 'receipt' | 'ac
 export interface ActivityItem {
   id: string; kind: string; severity: number; title: string; detail: string
   accountId?: string | null; account?: string | null; instrumentId?: string | null; asset?: string | null
-  at: string; state: 'current' | 'recent' | 'resolved'; relevant: boolean; count?: number; acknowledged?: boolean
+  at: string; state: 'current' | 'recent' | 'resolved'; relevant: boolean; count?: number; acknowledged?: boolean; dismissible?: boolean
   actions: ActivityAction[]
 }
 export interface ActivityPayload { current: ActivityItem[]; recent: ActivityItem[]; resolved: ActivityItem[]; asOf: string }

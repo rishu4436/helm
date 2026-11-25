@@ -1,5 +1,7 @@
 /** HELM backend client for the glasses. Holds only the HELM device token — never exchange secrets. */
-export const API_BASE: string = (import.meta as unknown as { env: Record<string, string> }).env.VITE_HELM_API ?? 'http://localhost:4000'
+export let API_BASE: string = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_HELM_API ?? 'http://localhost:4000'
+/** The companion (Vision mirror) points the shared client at its own configured API. */
+export function setApiBase(url: string) { API_BASE = url.replace(/\/$/, '') }
 
 export class ApiError extends Error { constructor(readonly status: number, readonly code: string, message: string) { super(message) } }
 
