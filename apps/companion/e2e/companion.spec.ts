@@ -204,7 +204,7 @@ test.describe('signed in as the demo user', () => {
     const g2 = page.getByTestId('vision-g2')
     await expect(g2).toContainText('HELM')
     await expect(g2).toContainText(/Portfolio|Accounts ·/)
-    const rows = (await g2.locator('.absolute > .g2-text').allInnerTexts()).map(r => r.trim())
+    const rows = (await g2.locator('.g2-text.whitespace-nowrap').allInnerTexts()).map(r => r.trim()) // list rows only
     const idx = rows.findIndex(r => /^(Portfolio|Accounts ·)/.test(r))
     for (let i = 0; i < Math.max(0, idx); i++) await page.getByTestId('vision-down').click()
     await page.getByTestId('vision-tap').click()

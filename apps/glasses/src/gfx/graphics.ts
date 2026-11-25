@@ -94,15 +94,19 @@ function ribbonOps(g: Extract<Graphic, { kind: 'ribbon' }>, w: number, h: number
     ops.push({ op: 'rect', x, y, w: Math.max(1, sw - 2), h: barH, shade: SHADES[i % SHADES.length]!, style: PATTERNS[i % PATTERNS.length]! })
     x += sw
   })
-  // Legend row: pattern swatch + label + percent (labels never rely on shade alone).
-  const legendY = y + barH + 6
-  const colW = w / Math.min(sh.length, 3)
-  sh.slice(0, 3).forEach((s, i) => {
-    const lx = Math.round(i * colW)
-    ops.push({ op: 'rect', x: lx + 1, y: legendY + 2, w: 10, h: 10, shade: SHADES[i % SHADES.length]!, style: PATTERNS[i % PATTERNS.length]! })
-    ops.push({ op: 'text', x: lx + 15, y: legendY + 12, text: `${s.label.slice(0, 9)} ${fmtPct(s.share * 100)}%`, size: 14, shade: 15, align: 'left' })
+  // Legend: one line per segment (swatch + label + percent), sized to the space left so labels never overlap.
+  // Labels never rely on shade alone; segments that do not fit are summarised as "+n more".
+  const legendY = y + barH + 4, lineH = 15
+  const rows = Math.max(1, Math.floor((h - legendY) / lineH))
+  const maxChars = Math.max(6, Math.floor((w - 16) / 7.4))
+  const shown = sh.length > rows ? rows - 1 : rows
+  sh.slice(0, Math.max(0, shown)).forEach((s, i) => {
+    const ly = legendY + i * lineH
+    const pctTxt = ` ${fmtPct(s.share * 100)}%`
+    ops.push({ op: 'rect', x: 1, y: ly + 2, w: 10, h: 10, shade: SHADES[i % SHADES.length]!, style: PATTERNS[i % PATTERNS.length]! })
+    ops.push({ op: 'text', x: 15, y: ly + 12, text: `${s.label.slice(0, Math.max(3, maxChars - pctTxt.length))}${pctTxt}`, size: 13, shade: 15, align: 'left' })
   })
-  if (sh.length > 3) ops.push({ op: 'text', x: w - 2, y: legendY + 28, text: `+${sh.length - 3} more`, size: 13, shade: 10, align: 'right' })
+  if (sh.length > shown) ops.push({ op: 'text', x: 15, y: legendY + Math.max(0, shown) * lineH + 12, text: `+${sh.length - Math.max(0, shown)} more`, size: 13, shade: 10, align: 'left' })
   return ops
 }
 

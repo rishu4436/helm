@@ -27,6 +27,17 @@ const P: PortfolioPayload = {
 }
 
 describe('graphics engine', () => {
+  it('ribbon legend lines never overlap and stay inside the image, with "+n more" when space runs out', () => {
+    for (const [w, h, n] of [[190, 76, 3], [190, 76, 6], [288, 100, 4], [120, 60, 2]] as const) {
+      const ops = layoutGraphic({ kind: 'ribbon', segments: Array.from({ length: n }, (_, i) => ({ label: `Exchange Demo ${i}`, value: 100 - i * 10 })) }, w, h)
+      const texts = ops.filter((o): o is Extract<typeof o, { op: 'text' }> => o.op === 'text')
+      const ys = texts.map(t => t.y)
+      expect(new Set(ys).size).toBe(ys.length)
+      for (const t of texts) { expect(t.y).toBeLessThanOrEqual(h); expect(t.text.length * 7.4 + t.x).toBeLessThanOrEqual(w + 8) }
+      const shownSegments = texts.filter(t => /%$/.test(t.text)).length
+      if (shownSegments < n) expect(texts.some(t => /^\+\d+ more$/.test(t.text))).toBe(true)
+    }
+  })
   it('ribbon proportions are exact and exclude non-positive values', () => {
     const s = ribbonShares([{ label: 'A', value: 600 }, { label: 'B', value: 400 }, { label: 'C', value: -5 }])
     expect(s.map(x => x.share)).toEqual([0.6, 0.4])

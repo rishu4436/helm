@@ -4,9 +4,9 @@
       "/usr/local/lib/nodejs/node",
       "/workspace/helm/node_modules/.pnpm/@playwright+test@1.65.1/node_modules/@playwright/test/cli.js",
       "test",
-      "e2e/dead-buttons.spec.ts",
+      "e2e/companion.spec.ts",
       "-g",
-      "/markets"
+      "vision runs|landing runs"
     ],
     "configFile": "/workspace/helm/apps/companion/playwright.config.ts",
     "rootDir": "/workspace/helm/apps/companion/e2e",
@@ -98,67 +98,104 @@
   },
   "suites": [
     {
-      "title": "dead-buttons.spec.ts",
-      "file": "dead-buttons.spec.ts",
+      "title": "companion.spec.ts",
+      "file": "companion.spec.ts",
       "column": 0,
       "line": 0,
-      "specs": [
+      "specs": [],
+      "suites": [
         {
-          "title": "no dead buttons on /markets",
-          "ok": true,
-          "tags": [],
-          "tests": [
+          "title": "public",
+          "file": "companion.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
             {
-              "timeout": 120000,
-              "annotations": [
+              "title": "landing runs the real G2 controller on labelled sample data: voice → Which account? → review → Cancel default → receipt",
+              "ok": true,
+              "tags": [],
+              "tests": [
                 {
-                  "type": "audit",
-                  "description": "/markets: 5 buttons clicked, 5 eligible, dead: 0"
-                }
-              ],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 9100,
-                  "errors": [],
-                  "stdout": [
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
                     {
-                      "text": "[audit] /markets: clicked 5/5 eligible; dead 0\n"
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1740,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-25T06:56:15.038Z",
+                      "annotations": [],
+                      "attachments": []
                     }
                   ],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-11-25T06:54:45.784Z",
-                  "annotations": [
-                    {
-                      "type": "audit",
-                      "description": "/markets: 5 buttons clicked, 5 eligible, dead: 0"
-                    }
-                  ],
-                  "attachments": []
+                  "status": "expected"
                 }
               ],
-              "status": "expected"
+              "id": "d84b00394e37adc97eb7-c78da9d8e554d06875f2",
+              "file": "companion.spec.ts",
+              "line": 17,
+              "column": 3
             }
-          ],
-          "id": "2c5e3b75e22f5d9aac9e-5636df85f474f5192dc9",
-          "file": "dead-buttons.spec.ts",
-          "line": 21,
-          "column": 3
+          ]
+        },
+        {
+          "title": "signed in as the demo user",
+          "file": "companion.spec.ts",
+          "line": 75,
+          "column": 6,
+          "specs": [
+            {
+              "title": "vision runs the real G2 app on live demo data, read-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4159,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-25T06:56:16.882Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d84b00394e37adc97eb7-27cfdfe40962a1828757",
+              "file": "companion.spec.ts",
+              "line": 200,
+              "column": 3
+            }
+          ]
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-25T06:54:45.444Z",
-    "duration": 9608.661,
-    "expected": 1,
+    "startTime": "2026-11-25T06:56:14.607Z",
+    "duration": 6521.573,
+    "expected": 2,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
