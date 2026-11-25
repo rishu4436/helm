@@ -115,7 +115,7 @@ export class Controller {
   // ---------------- lifecycle ----------------
   async start() {
     try { await this.refresh(true) } catch { /* shown as empty/stale */ }
-    if (!this.prefs.onboarding.completedAt && !this.prefs.onboarding.skippedAt && this.backend.kind === 'live') return this.replaceRoot(this.onboardWelcomeView())
+    if (!this.prefs.onboarding.completedAt && !this.prefs.onboarding.skippedAt && this.backend.kind === 'live' && this.backend.canExecute) return this.replaceRoot(this.onboardWelcomeView()) // read-only mirrors (Vision) never run or complete the tour
     return this.replaceRoot(this.homeView())
   }
   /** Reload accounts/portfolio/activity/prefs. Failures keep the last known values and are shown as stale. */

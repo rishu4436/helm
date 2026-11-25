@@ -182,12 +182,30 @@ test.describe('signed in as the demo user', () => {
     expect(errs).toEqual([])
   })
 
+  test('OKX gets the standard provider card and the Demo key / secret / passphrase form (no region block)', async ({ page }) => {
+    await page.goto('/connect')
+    const card = page.getByTestId('provider-okx')
+    await expect(card).toBeEnabled()
+    await expect(card).not.toContainText(/BLOCKED|India|region/i)
+    await card.click()
+    await expect(page.getByText('Demo API key')).toBeVisible()
+    await expect(page.getByText('Demo API secret')).toBeVisible()
+    await expect(page.getByText(/API passphrase/)).toBeVisible()
+    await expect(page.getByTestId('sim-okx')).toBeVisible()
+    await expect(page.locator('body')).not.toContainText(/unavailable in India|BLOCKED for this team/)
+    await expect(page.locator('input[type=password]')).toHaveCount(2) // secret + passphrase are masked
+    await shot(page, '16-okx-connect-form')
+  })
+
   test('vision runs the real G2 app on live demo data, read-only', async ({ page }) => {
+    // Earlier audits may have toggled the demo user's display prefs; start from the defaults.
+    await fetch(`${API}/v1/preferences`, { method: 'PUT', headers: { authorization: `Bearer ${await demoToken()}`, 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'beginner', privacy: false, homeMode: 'auto' }) })
     await page.goto('/vision')
     const g2 = page.getByTestId('vision-g2')
     await expect(g2).toContainText('HELM')
-    await expect(g2).toContainText('Portfolio')
-    const idx = (await g2.locator('.absolute > .g2-text').allInnerTexts()).findIndex(r => /^Portfolio/.test(r.trim()))
+    await expect(g2).toContainText(/Portfolio|Accounts ·/)
+    const rows = (await g2.locator('.absolute > .g2-text').allInnerTexts()).map(r => r.trim())
+    const idx = rows.findIndex(r => /^(Portfolio|Accounts ·)/.test(r))
     for (let i = 0; i < Math.max(0, idx); i++) await page.getByTestId('vision-down').click()
     await page.getByTestId('vision-tap').click()
     await expect(g2).toContainText('PORTFOLIO')

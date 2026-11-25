@@ -85,7 +85,11 @@ export function homeItems(g: Glance, c: ViewCtx, extra: { watchTop?: WatchItem |
     case 'disconnected': out.push({ id: 'accounts', label: 'Reconnect: accounts need attention' }); break
     case 'risk': if (alert) out.push({ id: 'alert', label: `! ${alert.title}`, ref: alert.id }); break
     case 'futures': out.push({ id: 'positions', label: `Positions · ${g.positions} open${g.unprotected ? ` · ${g.unprotected} ${term('unprotected', c.mode)}` : ''}` }); break
-    case 'multi': out.push({ id: 'portfolio', label: `Accounts · ${(g.primary?.accounts ?? []).slice(0, 2).map(a => `${shortAlias(a.alias)} ${g.primary!.valueUsd > 0 ? Math.round((num(a.valueUsd) / g.primary!.valueUsd) * 100) : 0}%`).join(' · ')}` }); break
+    case 'multi': {
+      const accts = [...(g.primary?.accounts ?? [])].sort((a, b) => num(b.valueUsd) - num(a.valueUsd))
+      const top = accts[0], share = top && g.primary!.valueUsd > 0 ? Math.round((num(top.valueUsd) / g.primary!.valueUsd) * 100) : null
+      out.push({ id: 'portfolio', label: `Accounts · ${accts.length}${top && share !== null ? ` · largest ${shortAlias(top.alias)} ${share}%` : ''}` }); break
+    }
     case 'spot': out.push({ id: 'holdings', label: 'Holdings · what you hold, where' }); break
   }
   if (alert && g.mode !== 'risk') out.push({ id: 'alert', label: `Alert: ${alert.title}`, ref: alert.id })
